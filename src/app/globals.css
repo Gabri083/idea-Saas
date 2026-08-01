@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --background: #08090b;
+  --surface: #101114;
+  --surface-2: #16181c;
+  --border: #232529;
+  --foreground: #f4f5f7;
+  --muted: #9a9da5;
+
+  --emerald: #34d399;
+  --emerald-dim: #10b981;
+  --amber: #fbbf24;
+  --cobalt: #4f7cff;
+  --cobalt-dim: #3b5fd9;
+  --rose: #fb7185;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-emerald: var(--emerald);
+  --color-emerald-dim: var(--emerald-dim);
+  --color-amber: var(--amber);
+  --color-cobalt: var(--cobalt);
+  --color-cobalt-dim: var(--cobalt-dim);
+  --color-rose: var(--rose);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #f4f5f7 0%, #b9c2ff 50%, #4f7cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-2);
+  border-radius: 999px;
+}
