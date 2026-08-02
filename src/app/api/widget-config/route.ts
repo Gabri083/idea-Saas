@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
+import { uuidSchema } from "@/lib/validation";
 
 const BodySchema = z.object({
-  business_id: z.string().uuid(),
+  business_id: uuidSchema,
   theme_mode: z.enum(["light", "dark"]),
   accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   border_radius: z.enum(["none", "sm", "md", "lg", "full"]),

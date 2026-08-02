@@ -3,9 +3,10 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { analyzeReviewText, clampRating, computeWeightedRating } from "@/lib/ai/scoring";
 import { syncRecurringIssuesAndGetPenalty } from "@/lib/ai/recurring-issues";
+import { uuidSchema } from "@/lib/validation";
 
 const RequestSchema = z.object({
-  business_id: z.string().uuid(),
+  business_id: uuidSchema,
   customer_name: z.string().min(1).max(120),
   customer_email: z.string().email(),
   review_text: z.string().min(10).max(4000),

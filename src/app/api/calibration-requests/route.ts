@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
+import { uuidSchema } from "@/lib/validation";
 
 const BodySchema = z.object({
-  business_id: z.string().uuid(),
-  recurring_issue_id: z.string().uuid(),
-  affected_review_ids: z.array(z.string().uuid()).default([]),
+  business_id: uuidSchema,
+  recurring_issue_id: uuidSchema,
+  affected_review_ids: z.array(uuidSchema).default([]),
   evidence: z.string().min(10).max(2000),
 });
 
