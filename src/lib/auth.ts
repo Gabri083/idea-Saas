@@ -33,3 +33,25 @@ export async function requireBusinessId(): Promise<string> {
   if (!businessId) redirect("/login");
   return businessId;
 }
+
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
+/** True when the signed-in user's email is on the ADMIN_EMAILS allowlist. */
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  if (!isSupabaseConfigured() || ADMIN_EMAILS.length === 0) return false;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return Boolean(user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase()));
+}
+
+/** Redirects to /login unless the signed-in user is on the ADMIN_EMAILS allowlist. */
+export async function requireAdmin(): Promise<void> {
+  if (!(await isCurrentUserAdmin())) redirect("/login");
+}
