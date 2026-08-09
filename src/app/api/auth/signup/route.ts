@@ -48,9 +48,11 @@ export async function POST(request: NextRequest) {
   });
 
   if (createUserError || !created.user) {
-    const message = createUserError?.message?.includes("already been registered")
+    console.error("signup: createUser failed", createUserError);
+    const isDuplicate = createUserError?.message?.toLowerCase().includes("regist");
+    const message = isDuplicate
       ? "Ese correo ya tiene una cuenta. Intenta iniciar sesión."
-      : "No se pudo crear la cuenta. Intenta de nuevo.";
+      : `No se pudo crear la cuenta: ${createUserError?.message ?? "error desconocido"}`;
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
@@ -68,6 +70,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (businessError || !business) {
+    console.error("signup: business insert failed", businessError);
     await admin.auth.admin.deleteUser(userId);
     return NextResponse.json({ error: "No se pudo crear tu negocio." }, { status: 500 });
   }
@@ -80,6 +83,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (profileError) {
+    console.error("signup: profile insert failed", profileError);
     await admin.auth.admin.deleteUser(userId);
     return NextResponse.json({ error: "No se pudo completar tu registro." }, { status: 500 });
   }
