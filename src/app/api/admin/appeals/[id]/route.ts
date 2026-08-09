@@ -2,10 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isCurrentUserAdmin } from "@/lib/auth";
+import { computeWeightedRating } from "@/lib/ai/scoring";
+
+const ScoreSchema = z.object({
+  product_score: z.number().int().min(1).max(5),
+  service_score: z.number().int().min(1).max(5),
+  delivery_score: z.number().int().min(1).max(5),
+});
 
 const BodySchema = z.object({
   status: z.enum(["approved", "rejected"]),
   resolution_notes: z.string().max(2000).optional(),
+  // Present only when the review is legitimate but was scored unfairly —
+  // corrects the facts instead of taking the review down.
+  corrected_scores: ScoreSchema.optional(),
 });
 
 export async function PATCH(
@@ -29,7 +39,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Apelación no encontrada." }, { status: 404 });
   }
 
-  const { status, resolution_notes } = parsed.data;
+  const { status, resolution_notes, corrected_scores } = parsed.data;
 
   await admin
     .from("appeals")
@@ -40,11 +50,21 @@ export async function PATCH(
     })
     .eq("id", id);
 
-  // Approved: the review was false/unfair, take it down. Rejected: it stands.
-  await admin
-    .from("reviews")
-    .update({ status: status === "approved" ? "archived" : "published" })
-    .eq("id", appeal.review_id);
+  if (status === "rejected") {
+    // The review stands as originally published.
+    await admin.from("reviews").update({ status: "published" }).eq("id", appeal.review_id);
+  } else if (corrected_scores) {
+    // Legitimate review, but the facts/score were wrong — fix the score,
+    // keep the review (and the customer's original text) published.
+    const overall_ai_rating = computeWeightedRating(corrected_scores);
+    await admin
+      .from("reviews")
+      .update({ ...corrected_scores, overall_ai_rating, status: "published" })
+      .eq("id", appeal.review_id);
+  } else {
+    // No corrected score given — the review itself was false/defamatory, take it down.
+    await admin.from("reviews").update({ status: "archived" }).eq("id", appeal.review_id);
+  }
 
   return NextResponse.json({ ok: true });
 }

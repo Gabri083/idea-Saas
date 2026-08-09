@@ -12,7 +12,14 @@ export interface AdminAppealRow {
   created_at: string;
   resolved_at: string | null;
   business: { name: string } | null;
-  review: { customer_name: string; review_text: string; overall_ai_rating: number } | null;
+  review: {
+    customer_name: string;
+    review_text: string;
+    overall_ai_rating: number;
+    product_score: number;
+    service_score: number;
+    delivery_score: number;
+  } | null;
 }
 
 export interface AdminCalibrationRow {
@@ -34,7 +41,7 @@ export async function getAllAppeals(): Promise<AdminAppealRow[]> {
   const { data } = await admin
     .from("appeals")
     .select(
-      "*, business:businesses(name), review:reviews(customer_name, review_text, overall_ai_rating)",
+      "*, business:businesses(name), review:reviews(customer_name, review_text, overall_ai_rating, product_score, service_score, delivery_score)",
     )
     .order("created_at", { ascending: false });
   return (data as AdminAppealRow[]) ?? [];
