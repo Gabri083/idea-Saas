@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { BUSINESS_CATEGORY_LABELS } from "@/lib/types";
 
 export function SignupForm() {
   const router = useRouter();
@@ -27,6 +28,8 @@ export function SignupForm() {
         body: JSON.stringify({
           business_name: formData.get("business_name"),
           full_name: formData.get("full_name"),
+          category: formData.get("category"),
+          business_description: formData.get("business_description") || undefined,
           email,
           password,
         }),
@@ -59,6 +62,46 @@ export function SignupForm() {
           minLength={2}
           placeholder="Mi Tienda"
           className="rounded-xl border border-border bg-surface px-4 py-2.5 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="category" className="text-sm font-medium">
+          Rubro de tu negocio
+        </label>
+        <select
+          id="category"
+          name="category"
+          required
+          defaultValue=""
+          className="rounded-xl border border-border bg-surface px-4 py-2.5 text-sm outline-none ring-cobalt/40 focus:ring-2"
+        >
+          <option value="" disabled>
+            Elige una opción
+          </option>
+          {Object.entries(BUSINESS_CATEGORY_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted">
+          Le da contexto a la IA para juzgar reseñas de forma justa según tu rubro.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="business_description" className="text-sm font-medium">
+          Cuéntanos brevemente qué vende tu negocio{" "}
+          <span className="text-muted">(opcional)</span>
+        </label>
+        <textarea
+          id="business_description"
+          name="business_description"
+          rows={2}
+          maxLength={300}
+          placeholder="Ej. Zapatillas urbanas hechas a mano, envíos a todo Chile."
+          className="resize-none rounded-xl border border-border bg-surface px-4 py-2.5 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
         />
       </div>
 

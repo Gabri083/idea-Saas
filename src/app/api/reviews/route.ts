@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
   const { data: business, error: businessError } = await admin
     .from("businesses")
-    .select("id")
+    .select("id, category, business_description")
     .eq("id", business_id)
     .maybeSingle();
 
@@ -37,10 +37,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Negocio no encontrado." }, { status: 404 });
   }
 
-  // Step 1 — structured, deterministic fact-based analysis via OpenAI JSON mode.
+  // Step 1 — structured, deterministic fact-based analysis via OpenAI JSON mode,
+  // calibrated to this business' rubro (restaurant vs. shoe store, etc.).
   let analysis;
   try {
-    analysis = await analyzeReviewText(review_text);
+    analysis = await analyzeReviewText(review_text, {
+      category: business.category,
+      business_description: business.business_description,
+    });
   } catch (err) {
     console.error("AI analysis failed", err);
     return NextResponse.json(

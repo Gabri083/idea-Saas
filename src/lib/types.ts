@@ -2,6 +2,25 @@ export type Plan = "starter" | "growth" | "enterprise";
 
 export type ReviewStatus = "published" | "in_appeal" | "resolved" | "archived";
 
+export type BusinessCategory =
+  | "restaurante"
+  | "moda_calzado"
+  | "belleza"
+  | "electronica"
+  | "hogar"
+  | "salud"
+  | "otro";
+
+export const BUSINESS_CATEGORY_LABELS: Record<BusinessCategory, string> = {
+  restaurante: "Restaurante / Comida",
+  moda_calzado: "Moda y calzado",
+  belleza: "Belleza y cuidado personal",
+  electronica: "Electrónica y tecnología",
+  hogar: "Hogar y decoración",
+  salud: "Salud y bienestar",
+  otro: "Otro",
+};
+
 export interface Business {
   id: string;
   name: string;
@@ -9,6 +28,8 @@ export interface Business {
   contact_email: string;
   plan: Plan;
   monthly_review_cap: number | null;
+  category: BusinessCategory | null;
+  business_description: string | null;
   created_at: string;
 }
 

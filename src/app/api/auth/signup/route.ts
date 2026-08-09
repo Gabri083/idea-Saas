@@ -6,6 +6,8 @@ import { isSupabaseConfigured } from "@/lib/data";
 const BodySchema = z.object({
   business_name: z.string().min(2).max(120),
   full_name: z.string().min(1).max(120),
+  category: z.enum(["restaurante", "moda_calzado", "belleza", "electronica", "hogar", "salud", "otro"]),
+  business_description: z.string().max(300).optional(),
   email: z.string().email(),
   password: z.string().min(8).max(72),
 });
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { business_name, full_name, email, password } = parsed.data;
+  const { business_name, full_name, category, business_description, email, password } = parsed.data;
   const admin = createAdminClient();
 
   const { data: created, error: createUserError } = await admin.auth.admin.createUser({
@@ -65,6 +67,8 @@ export async function POST(request: NextRequest) {
       slug: slugify(business_name),
       contact_email: email,
       plan: "starter",
+      category,
+      business_description: business_description || null,
     })
     .select()
     .single();

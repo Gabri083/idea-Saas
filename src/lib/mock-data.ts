@@ -22,6 +22,8 @@ export const mockBusiness: Business = {
   contact_email: "hola@aurorastudio.demo",
   plan: "growth",
   monthly_review_cap: null,
+  category: "moda_calzado",
+  business_description: "Tienda online de ropa y accesorios de diseño independiente.",
   created_at: daysAgo(120),
 };
 
