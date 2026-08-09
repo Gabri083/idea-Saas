@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { LogoutButton } from "@/components/dashboard/logout-button";
 import type { Business } from "@/lib/types";
 
 const planLabel: Record<Business["plan"], string> = {
@@ -23,6 +24,7 @@ export function Topbar({
       <div className="flex items-center gap-2">
         {demoMode && <Badge tone="amber">Modo demo — datos de ejemplo</Badge>}
         <Badge tone="cobalt">Plan {planLabel[business.plan]}</Badge>
+        {!demoMode && <LogoutButton />}
       </div>
     </header>
   );

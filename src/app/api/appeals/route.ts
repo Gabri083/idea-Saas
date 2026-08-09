@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
+import { getSessionBusinessId } from "@/lib/auth";
 import { uuidSchema } from "@/lib/validation";
 
 const BodySchema = z.object({
-  business_id: uuidSchema,
   review_id: uuidSchema,
   reason: z.string().min(10).max(2000),
   evidence_urls: z.array(z.string()).default([]),
@@ -20,14 +20,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { business_id, review_id, reason, evidence_urls } = parsed.data;
+  const businessId = await getSessionBusinessId();
+  if (!businessId) {
+    return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  }
+
+  const { review_id, reason, evidence_urls } = parsed.data;
 
   if (!isSupabaseConfigured()) {
     return NextResponse.json({
       demo: true,
       appeal: {
         id: crypto.randomUUID(),
-        business_id,
+        business_id: businessId,
         review_id,
         reason,
         evidence_urls,
@@ -40,9 +45,20 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient();
 
+  const { data: review } = await admin
+    .from("reviews")
+    .select("id")
+    .eq("id", review_id)
+    .eq("business_id", businessId)
+    .maybeSingle();
+
+  if (!review) {
+    return NextResponse.json({ error: "Reseña no encontrada." }, { status: 404 });
+  }
+
   const { data: appeal, error } = await admin
     .from("appeals")
-    .insert({ business_id, review_id, reason, evidence_urls })
+    .insert({ business_id: businessId, review_id, reason, evidence_urls })
     .select()
     .single();
 

@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
-import { uuidSchema } from "@/lib/validation";
+import { getSessionBusinessId } from "@/lib/auth";
 
 const BodySchema = z.object({
-  business_id: uuidSchema,
   theme_mode: z.enum(["light", "dark"]),
   accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   border_radius: z.enum(["none", "sm", "md", "lg", "full"]),
@@ -23,15 +22,19 @@ export async function PUT(request: NextRequest) {
     );
   }
 
+  const businessId = await getSessionBusinessId();
+  if (!businessId) {
+    return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  }
+
   if (!isSupabaseConfigured()) {
-    return NextResponse.json({ demo: true, config: parsed.data });
+    return NextResponse.json({ demo: true, config: { ...parsed.data, business_id: businessId } });
   }
 
   const admin = createAdminClient();
-  const { business_id, ...config } = parsed.data;
   const { data, error } = await admin
     .from("widget_configs")
-    .upsert({ business_id, ...config, updated_at: new Date().toISOString() })
+    .upsert({ business_id: businessId, ...parsed.data, updated_at: new Date().toISOString() })
     .select()
     .single();
 

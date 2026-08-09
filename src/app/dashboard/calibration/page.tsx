@@ -1,6 +1,6 @@
 import { CalibrationCenter } from "@/components/dashboard/calibration-center";
 import { getCalibrationRequests, getRecurringIssues, getReviews } from "@/lib/data";
-import { DEMO_BUSINESS_ID } from "@/lib/demo";
+import { requireBusinessId } from "@/lib/auth";
 
 export default async function CalibrationPage({
   searchParams,
@@ -8,10 +8,11 @@ export default async function CalibrationPage({
   searchParams: Promise<{ issueId?: string }>;
 }) {
   const { issueId } = await searchParams;
+  const businessId = await requireBusinessId();
   const [issues, reviews, requests] = await Promise.all([
-    getRecurringIssues(DEMO_BUSINESS_ID),
-    getReviews(DEMO_BUSINESS_ID),
-    getCalibrationRequests(DEMO_BUSINESS_ID),
+    getRecurringIssues(businessId),
+    getReviews(businessId),
+    getCalibrationRequests(businessId),
   ]);
 
   return (
@@ -25,7 +26,7 @@ export default async function CalibrationPage({
       </div>
 
       <CalibrationCenter
-        businessId={DEMO_BUSINESS_ID}
+        businessId={businessId}
         issues={issues}
         reviews={reviews}
         initialRequests={requests}

@@ -197,8 +197,8 @@ export function WidgetConfigurator({
         </Button>
       </Card>
 
-      <div className="flex flex-col gap-6">
-        <Card className="p-6">
+      <div className="flex min-w-0 flex-col gap-6">
+        <Card className="min-w-0 p-6">
           <p className="mb-4 text-sm font-medium text-muted">Previsualización en vivo</p>
           <div
             className="rounded-2xl border p-6"
@@ -253,12 +253,12 @@ export function WidgetConfigurator({
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="min-w-0 p-6">
           <p className="mb-3 text-sm font-medium text-muted">Código para tu tienda</p>
-          <div className="flex items-start gap-2 rounded-xl border border-border bg-surface p-4">
+          <div className="flex min-w-0 items-start gap-2 rounded-xl border border-border bg-surface p-4">
             <code
               suppressHydrationWarning
-              className="flex-1 overflow-x-auto whitespace-pre text-xs text-foreground/90"
+              className="min-w-0 flex-1 overflow-x-auto whitespace-pre text-xs text-foreground/90"
             >
               {snippet}
             </code>

@@ -78,7 +78,7 @@ export function Pricing() {
             </ul>
 
             <LinkButton
-              href="/dashboard"
+              href="/signup"
               variant={plan.highlighted ? "primary" : "secondary"}
               className="mt-8 w-full"
             >

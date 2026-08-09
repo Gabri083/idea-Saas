@@ -49,7 +49,7 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.15 }}
           className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
         >
-          <LinkButton href="/dashboard" size="lg">
+          <LinkButton href="/signup" size="lg">
             Comenzar Prueba Gratuita de 14 Días <ArrowRight size={18} />
           </LinkButton>
           <LinkButton href="/review/demo" variant="secondary" size="lg">

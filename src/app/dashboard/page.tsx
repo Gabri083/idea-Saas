@@ -5,13 +5,14 @@ import { StarRating } from "@/components/ui/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getRecurringIssues, getReviews } from "@/lib/data";
-import { DEMO_BUSINESS_ID } from "@/lib/demo";
+import { requireBusinessId } from "@/lib/auth";
 import { formatDate, isPastDeadline } from "@/lib/utils";
 
 export default async function DashboardOverviewPage() {
+  const businessId = await requireBusinessId();
   const [reviews, recurringIssues] = await Promise.all([
-    getReviews(DEMO_BUSINESS_ID),
-    getRecurringIssues(DEMO_BUSINESS_ID),
+    getReviews(businessId),
+    getRecurringIssues(businessId),
   ]);
 
   const avgAi = average(reviews.map((r) => r.overall_ai_rating));

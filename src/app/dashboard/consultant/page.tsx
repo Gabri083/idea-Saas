@@ -1,9 +1,10 @@
 import { ConsultantPanel } from "@/components/dashboard/consultant-panel";
 import { getRecurringIssues } from "@/lib/data";
-import { DEMO_BUSINESS_ID } from "@/lib/demo";
+import { requireBusinessId } from "@/lib/auth";
 
 export default async function ConsultantPage() {
-  const issues = await getRecurringIssues(DEMO_BUSINESS_ID);
+  const businessId = await requireBusinessId();
+  const issues = await getRecurringIssues(businessId);
 
   return (
     <div className="flex flex-col gap-6">

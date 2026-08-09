@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
+import { getSessionBusinessId } from "@/lib/auth";
 import { uuidSchema } from "@/lib/validation";
 
 const BodySchema = z.object({
-  business_id: uuidSchema,
   recurring_issue_id: uuidSchema,
   affected_review_ids: z.array(uuidSchema).default([]),
   evidence: z.string().min(10).max(2000),
@@ -20,12 +20,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const businessId = await getSessionBusinessId();
+  if (!businessId) {
+    return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  }
+
+  const payload = { ...parsed.data, business_id: businessId };
+
   if (!isSupabaseConfigured()) {
     return NextResponse.json({
       demo: true,
       calibration_request: {
         id: crypto.randomUUID(),
-        ...parsed.data,
+        ...payload,
         status: "pending",
         requested_at: new Date().toISOString(),
         resolved_at: null,
@@ -34,9 +41,21 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = createAdminClient();
+
+  const { data: issue } = await admin
+    .from("recurring_issues")
+    .select("id")
+    .eq("id", payload.recurring_issue_id)
+    .eq("business_id", businessId)
+    .maybeSingle();
+
+  if (!issue) {
+    return NextResponse.json({ error: "Problema recurrente no encontrado." }, { status: 404 });
+  }
+
   const { data, error } = await admin
     .from("calibration_requests")
-    .insert(parsed.data)
+    .insert(payload)
     .select()
     .single();
 

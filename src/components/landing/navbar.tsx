@@ -28,10 +28,10 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="hidden text-sm text-muted transition-colors hover:text-foreground sm:block">
+          <Link href="/login" className="hidden text-sm text-muted transition-colors hover:text-foreground sm:block">
             Iniciar sesión
           </Link>
-          <LinkButton href="/dashboard" size="sm">
+          <LinkButton href="/signup" size="sm">
             Prueba gratuita
           </LinkButton>
         </div>

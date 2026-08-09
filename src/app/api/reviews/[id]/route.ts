@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
+import { getSessionBusinessId } from "@/lib/auth";
 
 const BodySchema = z.object({
   status: z.enum(["published", "in_appeal", "resolved", "archived"]),
@@ -17,6 +18,11 @@ export async function PATCH(
     return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
   }
 
+  const businessId = await getSessionBusinessId();
+  if (!businessId) {
+    return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  }
+
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ demo: true, id, status: parsed.data.status });
   }
@@ -26,6 +32,7 @@ export async function PATCH(
     .from("reviews")
     .update({ status: parsed.data.status })
     .eq("id", id)
+    .eq("business_id", businessId)
     .select()
     .single();
 

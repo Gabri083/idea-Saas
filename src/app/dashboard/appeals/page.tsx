@@ -1,6 +1,6 @@
 import { AppealsManager } from "@/components/dashboard/appeals-manager";
 import { getAppeals, getReviews } from "@/lib/data";
-import { DEMO_BUSINESS_ID } from "@/lib/demo";
+import { requireBusinessId } from "@/lib/auth";
 
 export default async function AppealsPage({
   searchParams,
@@ -8,9 +8,10 @@ export default async function AppealsPage({
   searchParams: Promise<{ reviewId?: string }>;
 }) {
   const { reviewId } = await searchParams;
+  const businessId = await requireBusinessId();
   const [reviews, appeals] = await Promise.all([
-    getReviews(DEMO_BUSINESS_ID),
-    getAppeals(DEMO_BUSINESS_ID),
+    getReviews(businessId),
+    getAppeals(businessId),
   ]);
 
   return (
@@ -23,7 +24,7 @@ export default async function AppealsPage({
       </div>
 
       <AppealsManager
-        businessId={DEMO_BUSINESS_ID}
+        businessId={businessId}
         reviews={reviews}
         initialAppeals={appeals}
         defaultReviewId={reviewId}

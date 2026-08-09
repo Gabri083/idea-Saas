@@ -1,11 +1,14 @@
 import { WidgetConfigurator } from "@/components/dashboard/widget-configurator";
 import { getReviews, getWidgetConfig } from "@/lib/data";
-import { DEMO_BUSINESS_ID } from "@/lib/demo";
+import { requireBusinessId } from "@/lib/auth";
+import { Card } from "@/components/ui/card";
+import { CopyableLink } from "@/components/dashboard/copyable-link";
 
 export default async function WidgetPage() {
+  const businessId = await requireBusinessId();
   const [config, reviews] = await Promise.all([
-    getWidgetConfig(DEMO_BUSINESS_ID),
-    getReviews(DEMO_BUSINESS_ID),
+    getWidgetConfig(businessId),
+    getReviews(businessId),
   ]);
 
   const publicReviews = reviews.filter((r) => r.status === "published" || r.status === "resolved");
@@ -19,8 +22,18 @@ export default async function WidgetPage() {
         </p>
       </div>
 
+      <Card className="p-5">
+        <p className="text-sm font-medium">Tu link público para recibir reseñas</p>
+        <p className="mt-1 text-xs text-muted">
+          Compártelo con tus clientes (por email, WhatsApp, etc.) para que dejen su reseña.
+        </p>
+        <div className="mt-3">
+          <CopyableLink path={`/review/${businessId}`} />
+        </div>
+      </Card>
+
       <WidgetConfigurator
-        businessId={DEMO_BUSINESS_ID}
+        businessId={businessId}
         initialConfig={config}
         reviews={publicReviews}
       />

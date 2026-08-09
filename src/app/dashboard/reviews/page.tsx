@@ -1,9 +1,10 @@
 import { ReviewsTable } from "@/components/dashboard/reviews-table";
 import { getReviews } from "@/lib/data";
-import { DEMO_BUSINESS_ID } from "@/lib/demo";
+import { requireBusinessId } from "@/lib/auth";
 
 export default async function ReviewsPage() {
-  const reviews = await getReviews(DEMO_BUSINESS_ID);
+  const businessId = await requireBusinessId();
+  const reviews = await getReviews(businessId);
 
   return (
     <div className="flex flex-col gap-6">
