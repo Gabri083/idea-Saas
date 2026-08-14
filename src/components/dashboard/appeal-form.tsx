@@ -5,6 +5,10 @@ import { Paperclip, Loader2, ShieldQuestion, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Review } from "@/lib/types";
 
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
+const MAX_FILES = 5;
+const MAX_SIZE = 10 * 1024 * 1024;
+
 export function AppealForm({
   businessId,
   reviews,
@@ -18,15 +22,50 @@ export function AppealForm({
 }) {
   const [reviewId, setReviewId] = useState(defaultReviewId ?? reviews[0]?.id ?? "");
   const [reason, setReason] = useState("");
-  const [fileNames, setFileNames] = useState<string[]>([]);
-  const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [files, setFiles] = useState<File[]>([]);
+  const [status, setStatus] = useState<"idle" | "uploading" | "submitting" | "done" | "error">("idle");
+  const [error, setError] = useState("");
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = Array.from(e.target.files ?? []);
+    if (picked.length > MAX_FILES) {
+      setError(`Máximo ${MAX_FILES} archivos.`);
+      return;
+    }
+    const tooBig = picked.find((f) => f.size > MAX_SIZE);
+    if (tooBig) {
+      setError(`"${tooBig.name}" supera los 10MB.`);
+      return;
+    }
+    const badType = picked.find((f) => !ALLOWED_TYPES.includes(f.type));
+    if (badType) {
+      setError(`"${badType.name}" debe ser imagen o PDF.`);
+      return;
+    }
+    setError("");
+    setFiles(picked);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!reviewId) return;
-    setStatus("submitting");
+    setError("");
 
     try {
+      let evidence_urls: string[] = [];
+
+      if (files.length > 0) {
+        setStatus("uploading");
+        const formData = new FormData();
+        files.forEach((f) => formData.append("files", f));
+
+        const uploadRes = await fetch("/api/appeals/upload", { method: "POST", body: formData });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error || "No se pudo subir la evidencia.");
+        evidence_urls = uploadData.paths;
+      }
+
+      setStatus("submitting");
       const res = await fetch("/api/appeals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,16 +73,18 @@ export function AppealForm({
           business_id: businessId,
           review_id: reviewId,
           reason,
-          evidence_urls: fileNames,
+          evidence_urls,
         }),
       });
-      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo enviar la apelación.");
 
       setStatus("done");
       onCreated({ reviewId, reason });
       setReason("");
-      setFileNames([]);
-    } catch {
+      setFiles([]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ocurrió un error inesperado.");
       setStatus("error");
     }
   }
@@ -80,13 +121,8 @@ export function AppealForm({
 
       <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted transition-colors hover:bg-surface-2">
         <Paperclip size={16} />
-        {fileNames.length > 0 ? fileNames.join(", ") : "Adjuntar evidencia (comprobantes, capturas de chat)"}
-        <input
-          type="file"
-          multiple
-          className="hidden"
-          onChange={(e) => setFileNames(Array.from(e.target.files ?? []).map((f) => f.name))}
-        />
+        {files.length > 0 ? files.map((f) => f.name).join(", ") : "Adjuntar evidencia (imágenes o PDF, máx. 10MB c/u)"}
+        <input type="file" multiple accept={ALLOWED_TYPES.join(",")} className="hidden" onChange={handleFileChange} />
       </label>
 
       {status === "done" && (
@@ -94,12 +130,18 @@ export function AppealForm({
           <CheckCircle2 size={16} /> Apelación enviada. La reseña quedó marcada como &ldquo;en apelación&rdquo;.
         </div>
       )}
-      {status === "error" && (
-        <p className="text-sm text-rose">No se pudo enviar la apelación. Intenta nuevamente.</p>
-      )}
+      {error && <p className="text-sm text-rose">{error}</p>}
 
-      <Button type="submit" disabled={status === "submitting" || !reviewId} className="w-fit">
-        {status === "submitting" ? (
+      <Button
+        type="submit"
+        disabled={status === "submitting" || status === "uploading" || !reviewId}
+        className="w-fit"
+      >
+        {status === "uploading" ? (
+          <>
+            <Loader2 size={16} className="animate-spin" /> Subiendo evidencia…
+          </>
+        ) : status === "submitting" ? (
           <>
             <Loader2 size={16} className="animate-spin" /> Enviando…
           </>

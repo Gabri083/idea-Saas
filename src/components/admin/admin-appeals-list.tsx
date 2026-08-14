@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, Loader2, SlidersHorizontal } from "lucide-react";
+import { Check, X, Loader2, SlidersHorizontal, Paperclip } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
@@ -95,8 +95,27 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
         {appeal.reason}
       </p>
 
-      {appeal.evidence_urls.length > 0 && (
-        <p className="mt-1 text-xs text-muted">Evidencia: {appeal.evidence_urls.join(", ")}</p>
+      {appeal.evidence_links.length > 0 && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted">Evidencia:</span>
+          {appeal.evidence_links.map((link, i) =>
+            link.url ? (
+              <a
+                key={link.path}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-lg border border-cobalt/30 bg-cobalt/10 px-2 py-1 text-xs text-cobalt hover:bg-cobalt/20"
+              >
+                <Paperclip size={11} /> Archivo {i + 1}
+              </a>
+            ) : (
+              <span key={link.path} className="text-xs text-rose">
+                (enlace no disponible)
+              </span>
+            ),
+          )}
+        </div>
       )}
 
       {status === "pending" ? (

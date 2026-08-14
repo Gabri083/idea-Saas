@@ -1,12 +1,18 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
 
+export interface EvidenceLink {
+  path: string;
+  url: string | null;
+}
+
 export interface AdminAppealRow {
   id: string;
   review_id: string;
   business_id: string;
   reason: string;
   evidence_urls: string[];
+  evidence_links: EvidenceLink[];
   status: "pending" | "approved" | "rejected";
   resolution_notes: string | null;
   created_at: string;
@@ -44,7 +50,28 @@ export async function getAllAppeals(): Promise<AdminAppealRow[]> {
       "*, business:businesses(name), review:reviews(customer_name, review_text, overall_ai_rating, product_score, service_score, delivery_score)",
     )
     .order("created_at", { ascending: false });
-  return (data as AdminAppealRow[]) ?? [];
+
+  const appeals = (data as Omit<AdminAppealRow, "evidence_links">[]) ?? [];
+
+  const allPaths = appeals.flatMap((a) => a.evidence_urls);
+  const signedByPath = new Map<string, string>();
+
+  if (allPaths.length > 0) {
+    const { data: signed } = await admin.storage
+      .from("appeal-evidence")
+      .createSignedUrls(allPaths, 60 * 60); // 1 hour, enough for a review session
+    for (const entry of signed ?? []) {
+      if (entry.signedUrl) signedByPath.set(entry.path ?? "", entry.signedUrl);
+    }
+  }
+
+  return appeals.map((a) => ({
+    ...a,
+    evidence_links: a.evidence_urls.map((path) => ({
+      path,
+      url: signedByPath.get(path) ?? null,
+    })),
+  }));
 }
 
 export async function getAllCalibrationRequests(): Promise<AdminCalibrationRow[]> {
