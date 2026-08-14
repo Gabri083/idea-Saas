@@ -5,6 +5,7 @@ import {
   mockCalibrationRequests,
   mockRecurringIssues,
   mockReviews,
+  mockTeamMembers,
   mockWidgetConfig,
 } from "@/lib/mock-data";
 import type {
@@ -13,6 +14,7 @@ import type {
   CalibrationRequest,
   RecurringIssue,
   Review,
+  TeamMember,
   WidgetConfig,
 } from "@/lib/types";
 
@@ -79,6 +81,34 @@ export async function getCalibrationRequests(businessId: string): Promise<Calibr
     .eq("business_id", businessId)
     .order("requested_at", { ascending: false });
   return (data as CalibrationRequest[]) ?? [];
+}
+
+export async function getTeamMembers(businessId: string): Promise<TeamMember[]> {
+  if (!isSupabaseConfigured()) return mockTeamMembers;
+
+  const admin = createAdminClient();
+  const { data: profiles } = await admin
+    .from("profiles")
+    .select("id, full_name, role, created_at")
+    .eq("business_id", businessId)
+    .order("created_at", { ascending: true });
+
+  if (!profiles) return [];
+
+  const members = await Promise.all(
+    profiles.map(async (p) => {
+      const { data } = await admin.auth.admin.getUserById(p.id);
+      return {
+        id: p.id,
+        full_name: p.full_name,
+        role: p.role,
+        email: data.user?.email ?? "—",
+        created_at: p.created_at,
+      } as TeamMember;
+    }),
+  );
+
+  return members;
 }
 
 export async function getWidgetConfig(businessId: string): Promise<WidgetConfig> {

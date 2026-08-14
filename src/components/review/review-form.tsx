@@ -13,6 +13,7 @@ export function ReviewForm({ businessId }: { businessId: string }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [gutRating, setGutRating] = useState(0);
   const [review, setReview] = useState<Review | null>(null);
+  const [startedAt] = useState(() => Date.now());
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,6 +32,8 @@ export function ReviewForm({ businessId }: { businessId: string }) {
           customer_email: formData.get("customer_email"),
           review_text: formData.get("review_text"),
           customer_star_rating: gutRating || undefined,
+          website: formData.get("website") || "",
+          started_at: startedAt,
         }),
       });
 
@@ -67,6 +70,12 @@ export function ReviewForm({ businessId }: { businessId: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      {/* Honeypot: hidden from real users, bots tend to fill every field. */}
+      <div className="absolute left-[-9999px]" aria-hidden="true">
+        <label htmlFor="website">No llenar este campo</label>
+        <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
+
       <div className="flex flex-col gap-1.5">
         <label htmlFor="customer_name" className="text-sm font-medium">
           Nombre

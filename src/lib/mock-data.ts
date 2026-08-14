@@ -5,6 +5,7 @@ import type {
   CalibrationRequest,
   RecurringIssue,
   Review,
+  TeamMember,
   WidgetConfig,
 } from "@/lib/types";
 
@@ -152,6 +153,16 @@ export const mockAppeals: Appeal[] = [
 ];
 
 export const mockCalibrationRequests: CalibrationRequest[] = [];
+
+export const mockTeamMembers: TeamMember[] = [
+  {
+    id: "demo-owner",
+    full_name: "Dueño de la tienda",
+    role: "owner",
+    email: mockBusiness.contact_email,
+    created_at: daysAgo(120),
+  },
+];
 
 export const mockWidgetConfig: WidgetConfig = {
   business_id: DEMO_BUSINESS_ID,

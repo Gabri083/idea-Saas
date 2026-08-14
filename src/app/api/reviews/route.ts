@@ -11,7 +11,13 @@ const RequestSchema = z.object({
   customer_email: z.string().email(),
   review_text: z.string().min(10).max(4000),
   customer_star_rating: z.number().int().min(1).max(5).optional(),
+  // anti-spam signals, invisible to real users — see ReviewForm
+  website: z.string().max(0).optional().or(z.literal("")),
+  started_at: z.number().optional(),
 });
+
+const MIN_FILL_TIME_MS = 2000;
+const DUPLICATE_WINDOW_MINUTES = 60;
 
 export async function POST(request: NextRequest) {
   const parsed = RequestSchema.safeParse(await request.json());
@@ -22,8 +28,27 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { business_id, customer_name, customer_email, review_text, customer_star_rating } =
-    parsed.data;
+  const {
+    business_id,
+    customer_name,
+    customer_email,
+    review_text,
+    customer_star_rating,
+    website,
+    started_at,
+  } = parsed.data;
+
+  // Honeypot: real users never see or fill this field.
+  if (website) {
+    return NextResponse.json({ error: "Solicitud inválida" }, { status: 400 });
+  }
+  // A form submitted faster than a human could plausibly type it out.
+  if (started_at && Date.now() - started_at < MIN_FILL_TIME_MS) {
+    return NextResponse.json(
+      { error: "Tu reseña se envió demasiado rápido, intenta de nuevo." },
+      { status: 400 },
+    );
+  }
 
   const admin = createAdminClient();
 
@@ -35,6 +60,21 @@ export async function POST(request: NextRequest) {
 
   if (businessError || !business) {
     return NextResponse.json({ error: "Negocio no encontrado." }, { status: 404 });
+  }
+
+  const { data: recentDuplicate } = await admin
+    .from("reviews")
+    .select("id")
+    .eq("business_id", business_id)
+    .eq("customer_email", customer_email)
+    .gte("created_at", new Date(Date.now() - DUPLICATE_WINDOW_MINUTES * 60_000).toISOString())
+    .maybeSingle();
+
+  if (recentDuplicate) {
+    return NextResponse.json(
+      { error: "Ya enviaste una reseña recientemente para este negocio. Intenta más tarde." },
+      { status: 429 },
+    );
   }
 
   // Step 1 — structured, deterministic fact-based analysis via OpenAI JSON mode,

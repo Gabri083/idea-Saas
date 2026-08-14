@@ -108,6 +108,16 @@ export interface WidgetConfig {
   show_breakdown: boolean;
 }
 
+export type TeamRole = "owner" | "staff";
+
+export interface TeamMember {
+  id: string;
+  full_name: string | null;
+  role: TeamRole;
+  email: string;
+  created_at: string;
+}
+
 /** Structured output contract for the OpenAI JSON-mode scoring call. */
 export interface AiReviewAnalysis {
   product_score: number;
