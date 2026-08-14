@@ -6,7 +6,7 @@ export default function TerminosPage() {
       <LegalTitle updated="14 de agosto de 2026">Términos del Servicio</LegalTitle>
 
       <P>
-        Estos Términos del Servicio (&ldquo;Términos&rdquo;) regulan el uso de Veris (la &ldquo;Plataforma&rdquo;),
+        Estos Términos del Servicio (&ldquo;Términos&rdquo;) regulan el uso de Kelsira (la &ldquo;Plataforma&rdquo;),
         un producto que permite a negocios de e-commerce recibir reseñas de clientes y
         calcular una calificación objetiva mediante inteligencia artificial. Al crear una
         cuenta o usar la Plataforma, aceptas estos Términos.
@@ -82,7 +82,7 @@ export default function TerminosPage() {
 
       <H2>9. Contacto</H2>
       <P>
-        Preguntas sobre estos Términos: <a href="mailto:hola@veris.app" className="text-cobalt hover:underline">hola@veris.app</a>.
+        Preguntas sobre estos Términos: <a href="mailto:hola@kelsira.app" className="text-cobalt hover:underline">hola@kelsira.app</a>.
       </P>
     </>
   );

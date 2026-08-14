@@ -1,4 +1,4 @@
-# Veris — Reputación Justa y Reseñas Asistidas por IA
+# Kelsira — Reputación Justa y Reseñas Asistidas por IA
 
 SaaS para e-commerce (Shopify, WooCommerce, marcas independientes) que deja
 que el cliente escriba su reseña sin censura, mientras una IA analiza el

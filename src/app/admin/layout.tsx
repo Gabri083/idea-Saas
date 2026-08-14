@@ -10,7 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="flex items-center justify-between border-b border-amber/30 bg-amber/[0.06] px-6 py-4">
         <div className="flex items-center gap-2">
           <ShieldAlert size={18} className="text-amber" />
-          <span className="text-sm font-semibold">Panel interno de Veris</span>
+          <span className="text-sm font-semibold">Panel interno de Kelsira</span>
           <span className="text-xs text-muted">— no visible para los negocios</span>
         </div>
         <nav className="flex items-center gap-4 text-sm">

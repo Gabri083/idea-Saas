@@ -15,7 +15,7 @@ export function Sidebar() {
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cobalt/15 text-cobalt">
           <ShieldCheck size={18} />
         </span>
-        <span className="font-semibold tracking-tight">Veris</span>
+        <span className="font-semibold tracking-tight">Kelsira</span>
       </div>
 
       <nav className="flex flex-col gap-1 px-3 py-2">

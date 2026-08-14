@@ -1,5 +1,5 @@
 -- ============================================================================
--- Veris — Reputación Justa y Reseñas Asistidas por IA
+-- Kelsira — Reputación Justa y Reseñas Asistidas por IA
 -- Supabase / PostgreSQL schema
 --
 -- Run in the Supabase SQL editor (or `supabase db push`) on a fresh project.

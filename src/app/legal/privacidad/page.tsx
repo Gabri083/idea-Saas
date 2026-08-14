@@ -6,7 +6,7 @@ export default function PrivacidadPage() {
       <LegalTitle updated="14 de agosto de 2026">Política de Privacidad</LegalTitle>
 
       <P>
-        Esta política explica qué datos personales recopila Veris, para qué los usamos, y con
+        Esta política explica qué datos personales recopila Kelsira, para qué los usamos, y con
         quién los compartimos. Aplica tanto a dueños de negocio que usan el dashboard como a
         los clientes finales que dejan una reseña.
       </P>
@@ -57,7 +57,7 @@ export default function PrivacidadPage() {
       <H2>5. Tus derechos</H2>
       <P>
         Puedes solicitar acceso, corrección o eliminación de tus datos personales
-        escribiéndonos a <a href="mailto:hola@veris.app" className="text-cobalt hover:underline">hola@veris.app</a>.
+        escribiéndonos a <a href="mailto:hola@kelsira.app" className="text-cobalt hover:underline">hola@kelsira.app</a>.
         Los dueños de negocio pueden editar la mayoría de sus datos directamente desde
         Configuración.
       </P>

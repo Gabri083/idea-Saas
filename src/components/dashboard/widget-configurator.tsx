@@ -298,7 +298,7 @@ export function WidgetConfigurator({
               </div>
             )}
             <p className="mt-4 text-right text-[10px] opacity-50">
-              Reseñas verificadas por Veris — Puntaje Objetivo IA
+              Reseñas verificadas por Kelsira — Puntaje Objetivo IA
             </p>
           </div>
         </Card>

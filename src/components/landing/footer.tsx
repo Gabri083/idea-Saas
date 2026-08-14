@@ -21,8 +21,8 @@ const columns = [
   {
     title: "Contacto",
     links: [
-      { label: "hola@veris.app", href: "mailto:hola@veris.app" },
-      { label: "Soporte", href: "mailto:soporte@veris.app" },
+      { label: "hola@kelsira.app", href: "mailto:hola@kelsira.app" },
+      { label: "Soporte", href: "mailto:soporte@kelsira.app" },
     ],
   },
 ];
@@ -37,7 +37,7 @@ export function Footer() {
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cobalt/15 text-cobalt">
                 <ShieldCheck size={18} />
               </span>
-              Veris
+              Kelsira
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted">
               Reputación justa y reseñas asistidas por IA para e-commerce.
@@ -61,7 +61,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-8 text-xs text-muted sm:flex-row">
-          <span>© {new Date().getFullYear()} Veris. Todos los derechos reservados.</span>
+          <span>© {new Date().getFullYear()} Kelsira. Todos los derechos reservados.</span>
           <span>Cada calificación IA es auditable y explicable.</span>
         </div>
       </div>

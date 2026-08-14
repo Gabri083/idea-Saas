@@ -17,7 +17,7 @@ export default async function ReviewPage({
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cobalt/15 text-cobalt">
             <ShieldCheck size={16} />
           </span>
-          Veris
+          Kelsira
         </Link>
 
         <div className="mt-8 rounded-2xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-8">

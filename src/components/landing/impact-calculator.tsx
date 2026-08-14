@@ -43,7 +43,7 @@ export function ImpactCalculator() {
         <p className="mt-2 max-w-xl text-muted">
           Ajusta cuántas reseñas de 1 estrella &ldquo;injustas&rdquo; recibe tu
           tienda al mes (buen producto, mala experiencia logística puntual) y
-          mira cuánto promedio recuperarías con Veris.
+          mira cuánto promedio recuperarías con Kelsira.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-2">
@@ -83,7 +83,7 @@ export function ImpactCalculator() {
               <p className="mt-1 text-xs text-muted">Con calificación tradicional</p>
             </div>
             <div className="rounded-xl border border-emerald/30 bg-emerald/[0.06] p-5">
-              <p className="text-xs text-muted">Promedio con Veris</p>
+              <p className="text-xs text-muted">Promedio con Kelsira</p>
               <p className="mt-2 text-3xl font-semibold text-emerald">
                 {averageWith.toFixed(2)}★
               </p>

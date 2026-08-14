@@ -17,7 +17,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cobalt/15 text-cobalt">
               <ShieldCheck size={18} />
             </span>
-            Veris
+            Kelsira
           </Link>
           <nav className="hidden gap-6 text-sm text-muted sm:flex">
             {links.map((l) => (

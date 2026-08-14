@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Veris — Reputación Justa y Reseñas Asistidas por IA",
+  title: "Kelsira — Reputación Justa y Reseñas Asistidas por IA",
   description:
     "La primera plataforma de reseñas imparciales impulsada por IA. Protege a tu marca del sesgo de la ira y convierte críticas injustas en crecimiento operativo.",
 };
