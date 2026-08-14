@@ -3,12 +3,14 @@ import { z } from "zod";
 import type { AiReviewAnalysis, BusinessCategory } from "@/lib/types";
 
 const AiAnalysisSchema = z.object({
-  product_score: z.number().int().min(1).max(5),
-  service_score: z.number().int().min(1).max(5),
-  delivery_score: z.number().int().min(1).max(5),
+  product_score: z.number().min(1).max(5),
+  service_score: z.number().min(1).max(5),
+  delivery_score: z.number().min(1).max(5),
   detected_issues: z.array(z.string()),
   summary: z.string(),
 });
+
+const round1 = (n: number) => Math.round(n * 10) / 10;
 
 const CATEGORY_DIMENSION_HINTS: Record<BusinessCategory, string> = {
   restaurante:
@@ -49,7 +51,12 @@ ignorando por completo el tono emocional, los insultos o el entusiasmo del
 autor. No modificas ni resumes el texto original del cliente en ningún otro
 lugar del sistema; tu única salida es la puntuación estructurada.
 
-Evalúa tres dimensiones de forma independiente, cada una de 1 a 5:
+Evalúa tres dimensiones de forma independiente, cada una de 1.0 a 5.0 CON UN
+DECIMAL de precisión (ej. 4.7, 3.2, 2.8) — evita en lo posible números
+redondos como 4 o 5 en punto; los clientes reales rara vez viven una
+experiencia perfectamente pareja, así que usa el decimal para reflejar
+matices (ej. el producto fue excelente pero no absolutamente perfecto → 4.8,
+no 5.0):
 - product_score
 - service_score
 - delivery_score
@@ -63,14 +70,14 @@ Si el texto no menciona una dimensión explícitamente, INFIÉRELA a partir del
 tono general de la experiencia, no la dejes en un valor neutral por defecto:
 - Si la experiencia general es positiva y el cliente no señala ningún
   problema en absoluto, asume que esa dimensión no mencionada también fue
-  buena (4) — un cliente satisfecho normalmente lo habría dicho si algo
-  hubiera fallado.
+  buena (alrededor de 4.3–4.6) — un cliente satisfecho normalmente lo
+  habría dicho si algo hubiera fallado.
 - Si el cliente sí señala un problema concreto en una dimensión específica,
   esa dimensión debe reflejar ese problema puntual, sin arrastrar a la baja
   las demás dimensiones que no tienen quejas asociadas.
-- Usa un valor neutral (3) solo cuando el tono general sea genuinamente
-  mixto o ambiguo y no puedas inferir razonablemente si esa dimensión
-  fue buena o mala.
+- Usa un valor neutral (alrededor de 3.0) solo cuando el tono general sea
+  genuinamente mixto o ambiguo y no puedas inferir razonablemente si esa
+  dimensión fue buena o mala.
 
 detected_issues: lista corta (0 a 5) de problemas operativos concretos
 mencionados, en minúsculas y normalizados en español (ej. "packaging roto",
@@ -131,7 +138,12 @@ export async function analyzeReviewText(
   if (!raw) throw new Error("El modelo no devolvió contenido.");
 
   const parsed = AiAnalysisSchema.parse(JSON.parse(raw));
-  return parsed;
+  return {
+    ...parsed,
+    product_score: round1(parsed.product_score),
+    service_score: round1(parsed.service_score),
+    delivery_score: round1(parsed.delivery_score),
+  };
 }
 
 /** 40% producto, 30% atención, 30% envíos — ponderación del puntaje final. */

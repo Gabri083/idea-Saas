@@ -7,6 +7,45 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Review, WidgetConfig } from "@/lib/types";
 
+/** Only used to fill the live preview when the business has no real reviews yet. */
+const SAMPLE_REVIEWS: Review[] = [
+  {
+    id: "sample-1",
+    business_id: "sample",
+    customer_name: "Camila R.",
+    customer_email: "",
+    review_text:
+      "Compré hace poco y quedé muy conforme con la calidad, la atención fue excelente. Lo único es que el envío se demoró un poco más de lo esperado.",
+    customer_star_rating: null,
+    product_score: 5,
+    service_score: 5,
+    delivery_score: 3,
+    detected_issues: [],
+    ai_summary: null,
+    overall_ai_rating: 4.4,
+    penalty_applied: 0,
+    status: "published",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "sample-2",
+    business_id: "sample",
+    customer_name: "Diego M.",
+    customer_email: "",
+    review_text: "Todo perfecto, superó mis expectativas. Llegó rápido y bien embalado.",
+    customer_star_rating: null,
+    product_score: 5,
+    service_score: 4,
+    delivery_score: 5,
+    detected_issues: [],
+    ai_summary: null,
+    overall_ai_rating: 4.7,
+    penalty_applied: 0,
+    status: "published",
+    created_at: new Date().toISOString(),
+  },
+];
+
 const accentPresets = ["#4f7cff", "#34d399", "#fbbf24", "#fb7185", "#8b5cf6"];
 const radiusOptions: WidgetConfig["border_radius"][] = ["none", "sm", "md", "lg", "full"];
 const radiusPx: Record<WidgetConfig["border_radius"], string> = {
@@ -14,7 +53,7 @@ const radiusPx: Record<WidgetConfig["border_radius"], string> = {
   sm: "6px",
   md: "10px",
   lg: "16px",
-  full: "999px",
+  full: "28px", // capped: literal 999px pill-rounds badges nicely but mangles multi-line cards
 };
 const fontOptions = ["inter", "system-ui", "georgia", "mono"];
 const fontStack: Record<string, string> = {
@@ -63,9 +102,11 @@ export function WidgetConfigurator({
     setTimeout(() => setCopied(false), 1500);
   }
 
-  const average = reviews.length
-    ? reviews.reduce((s, r) => s + r.overall_ai_rating, 0) / reviews.length
-    : 0;
+  const usingSampleReviews = reviews.length === 0;
+  const previewReviews = usingSampleReviews ? SAMPLE_REVIEWS : reviews;
+
+  const average =
+    previewReviews.reduce((s, r) => s + r.overall_ai_rating, 0) / previewReviews.length;
 
   const isDark = config.theme_mode === "dark";
 
@@ -199,7 +240,14 @@ export function WidgetConfigurator({
 
       <div className="flex min-w-0 flex-col gap-6">
         <Card className="min-w-0 p-6">
-          <p className="mb-4 text-sm font-medium text-muted">Previsualización en vivo</p>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <p className="text-sm font-medium text-muted">Previsualización en vivo</p>
+            {usingSampleReviews && (
+              <span className="rounded-full border border-amber/30 bg-amber/10 px-2 py-0.5 text-xs text-amber">
+                Datos de ejemplo — se reemplaza con tus reseñas reales
+              </span>
+            )}
+          </div>
           <div
             className="rounded-2xl border p-6"
             style={{
@@ -216,7 +264,9 @@ export function WidgetConfigurator({
               >
                 <span style={{ color: config.accent_color }}>{"★".repeat(Math.round(average))}</span>
                 <strong>{average.toFixed(1)}/5</strong>
-                <span className="text-xs opacity-60">({reviews.length} reseñas · Puntaje Objetivo IA)</span>
+                <span className="text-xs opacity-60">
+                  ({previewReviews.length} reseñas · Puntaje Objetivo IA)
+                </span>
               </div>
             ) : (
               <div
@@ -224,10 +274,10 @@ export function WidgetConfigurator({
                   config.layout === "grid" ? "grid grid-cols-2 gap-3" : "flex gap-3 overflow-x-auto",
                 )}
               >
-                {reviews.slice(0, 4).map((r) => (
+                {previewReviews.slice(0, 4).map((r) => (
                   <div
                     key={r.id}
-                    className="min-w-[220px] flex-1 border p-4 text-sm"
+                    className="min-w-[220px] flex-1 overflow-hidden border p-4 text-sm"
                     style={{ borderRadius: radiusPx[config.border_radius], borderColor: isDark ? "#232529" : "#e5e7eb" }}
                   >
                     <span style={{ color: config.accent_color }}>

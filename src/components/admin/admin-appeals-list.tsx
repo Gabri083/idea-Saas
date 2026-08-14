@@ -23,17 +23,18 @@ function ScoreInput({
   return (
     <label className="flex flex-col gap-1 text-xs">
       {label}
-      <select
+      <input
+        type="number"
+        min={1}
+        max={5}
+        step={0.1}
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm outline-none ring-cobalt/40 focus:ring-2"
-      >
-        {[1, 2, 3, 4, 5].map((n) => (
-          <option key={n} value={n}>
-            {n}
-          </option>
-        ))}
-      </select>
+        onChange={(e) => {
+          const n = Number(e.target.value);
+          if (!Number.isNaN(n)) onChange(Math.min(5, Math.max(1, Math.round(n * 10) / 10)));
+        }}
+        className="w-20 rounded-lg border border-border bg-background px-2 py-1.5 text-sm outline-none ring-cobalt/40 focus:ring-2"
+      />
     </label>
   );
 }

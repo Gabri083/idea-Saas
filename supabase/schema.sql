@@ -72,10 +72,11 @@ create table if not exists reviews (
   -- this is what powers the "IA vs Cliente" contrast on the dashboard header.
   customer_star_rating  smallint check (customer_star_rating between 1 and 5),
 
-  -- AI-computed structured analysis (OpenAI JSON mode output)
-  product_score         smallint not null check (product_score between 1 and 5),
-  service_score         smallint not null check (service_score between 1 and 5),
-  delivery_score        smallint not null check (delivery_score between 1 and 5),
+  -- AI-computed structured analysis (OpenAI JSON mode output). One decimal
+  -- of precision (e.g. 4.7) reads as far less "blocky" than whole stars.
+  product_score         numeric(2,1) not null check (product_score between 1 and 5),
+  service_score         numeric(2,1) not null check (service_score between 1 and 5),
+  delivery_score        numeric(2,1) not null check (delivery_score between 1 and 5),
   detected_issues        text[] not null default '{}',
   ai_summary             text,
   ai_raw_response        jsonb, -- full model payload, kept for transparency/audits

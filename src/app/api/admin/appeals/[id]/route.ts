@@ -5,9 +5,9 @@ import { isCurrentUserAdmin } from "@/lib/auth";
 import { computeWeightedRating } from "@/lib/ai/scoring";
 
 const ScoreSchema = z.object({
-  product_score: z.number().int().min(1).max(5),
-  service_score: z.number().int().min(1).max(5),
-  delivery_score: z.number().int().min(1).max(5),
+  product_score: z.number().min(1).max(5),
+  service_score: z.number().min(1).max(5),
+  delivery_score: z.number().min(1).max(5),
 });
 
 const BodySchema = z.object({

@@ -1,7 +1,9 @@
 (function () {
   "use strict";
 
-  var RADIUS_MAP = { none: "0px", sm: "6px", md: "10px", lg: "16px", full: "999px" };
+  // "full" is capped at 28px rather than a true pill (999px): that reads fine on
+  // the short single-line badge, but mangles multi-line review cards.
+  var RADIUS_MAP = { none: "0px", sm: "6px", md: "10px", lg: "16px", full: "28px" };
 
   function starString(value) {
     var full = Math.round(value);
@@ -18,7 +20,7 @@
       ".veris-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1px solid var(--veris-border);border-radius:var(--veris-radius);background:var(--veris-bg);}" +
       ".veris-star{color:#f5a623;font-size:16px;letter-spacing:1px;}" +
       ".veris-carousel{display:flex;gap:12px;overflow-x:auto;padding:4px 2px;}" +
-      ".veris-card{flex:0 0 260px;border:1px solid var(--veris-border);border-radius:var(--veris-radius);padding:16px;background:var(--veris-bg);}" +
+      ".veris-card{flex:0 0 260px;border:1px solid var(--veris-border);border-radius:var(--veris-radius);padding:16px;background:var(--veris-bg);overflow:hidden;}" +
       ".veris-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}" +
       ".veris-name{font-size:12px;opacity:.6;margin-top:8px;}" +
       ".veris-breakdown{display:flex;gap:10px;margin-top:10px;font-size:11px;opacity:.7;}" +
