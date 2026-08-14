@@ -21,6 +21,13 @@ create table if not exists businesses (
   plan               text not null default 'starter'
                        check (plan in ('starter', 'growth', 'enterprise')),
   monthly_review_cap integer, -- null = unlimited (growth/enterprise)
+  category           text check (category in
+                       ('restaurante', 'moda_calzado', 'belleza', 'electronica', 'hogar', 'salud', 'otro')),
+  business_description text, -- short free-text context the AI uses to calibrate scoring
+  lemonsqueezy_customer_id     text,
+  lemonsqueezy_subscription_id text,
+  subscription_status          text, -- e.g. active, on_trial, past_due, cancelled, expired, unpaid
+  customer_portal_url          text, -- Lemon Squeezy hosted "manage billing" link
   created_at         timestamptz not null default now()
 );
 

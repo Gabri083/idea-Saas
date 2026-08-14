@@ -1,14 +1,16 @@
 -- Demo data for local development / product demos.
 -- Safe to re-run: it upserts a single fixed-id demo business.
 
-insert into businesses (id, name, slug, contact_email, plan, monthly_review_cap)
+insert into businesses (id, name, slug, contact_email, plan, monthly_review_cap, category, business_description)
 values (
   '11111111-1111-1111-1111-111111111111',
   'Aurora Studio',
   'aurora-studio',
   'hola@aurorastudio.demo',
   'growth',
-  null
+  null,
+  'moda_calzado',
+  'Tienda online de ropa y accesorios de diseño independiente.'
 )
 on conflict (id) do nothing;
 

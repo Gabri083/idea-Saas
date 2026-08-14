@@ -30,6 +30,10 @@ export interface Business {
   monthly_review_cap: number | null;
   category: BusinessCategory | null;
   business_description: string | null;
+  lemonsqueezy_customer_id: string | null;
+  lemonsqueezy_subscription_id: string | null;
+  subscription_status: string | null;
+  customer_portal_url: string | null;
   created_at: string;
 }
 

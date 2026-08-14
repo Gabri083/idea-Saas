@@ -22,7 +22,11 @@ export default async function SettingsPage() {
         <SettingsForm business={business} />
       </Card>
 
-      <PlanSection currentPlan={business.plan} />
+      <PlanSection
+        currentPlan={business.plan}
+        subscriptionStatus={business.subscription_status}
+        customerPortalUrl={business.customer_portal_url}
+      />
     </div>
   );
 }
