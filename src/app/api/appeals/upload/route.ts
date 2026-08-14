@@ -46,7 +46,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const path = `${businessId}/${crypto.randomUUID()}-${file.name}`;
+    // Build the storage key from a fresh random name + the original
+    // extension only — never the raw filename, which can contain spaces,
+    // parentheses, accents, etc. that break upload on some storage backends.
+    const dotIndex = file.name.lastIndexOf(".");
+    const rawExt = dotIndex >= 0 ? file.name.slice(dotIndex) : "";
+    const safeExt = rawExt.replace(/[^a-zA-Z0-9.]/g, "").slice(0, 10);
+    const path = `${businessId}/${crypto.randomUUID()}${safeExt}`;
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const { error } = await admin.storage
@@ -55,7 +61,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("appeal evidence upload failed", error);
-      return NextResponse.json({ error: `No se pudo subir "${file.name}".` }, { status: 500 });
+      return NextResponse.json(
+        { error: `No se pudo subir "${file.name}": ${error.message}` },
+        { status: 500 },
+      );
     }
 
     paths.push(path);
