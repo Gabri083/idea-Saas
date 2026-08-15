@@ -16,7 +16,7 @@ export default function SignupPage() {
         <div className="mt-8 rounded-2xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-8">
           <h1 className="text-xl font-semibold tracking-tight">Crea tu cuenta</h1>
           <p className="mt-1 text-sm text-muted">
-            Empieza gratis con el plan Starter. Sin tarjeta de crédito.
+            Empieza con el plan Gratis. Sin tarjeta de crédito.
           </p>
 
           <div className="mt-6">

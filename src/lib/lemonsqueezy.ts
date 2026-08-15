@@ -4,6 +4,7 @@ import type { Plan } from "@/lib/types";
 const API_BASE = "https://api.lemonsqueezy.com/v1";
 
 const VARIANT_BY_PLAN: Record<Plan, string | undefined> = {
+  free: undefined, // not purchasable — assigned automatically at signup, never via checkout
   starter: process.env.LEMONSQUEEZY_VARIANT_STARTER,
   growth: process.env.LEMONSQUEEZY_VARIANT_GROWTH,
   enterprise: process.env.LEMONSQUEEZY_VARIANT_ENTERPRISE,

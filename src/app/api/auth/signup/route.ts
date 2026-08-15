@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
+import { PLAN_REVIEW_CAP } from "@/lib/types";
 
 const BodySchema = z.object({
   business_name: z.string().min(2).max(120),
@@ -66,7 +67,8 @@ export async function POST(request: NextRequest) {
       name: business_name,
       slug: slugify(business_name),
       contact_email: email,
-      plan: "starter",
+      plan: "free",
+      monthly_review_cap: PLAN_REVIEW_CAP.free,
       category,
       business_description: business_description || null,
     })

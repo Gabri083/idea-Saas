@@ -5,10 +5,19 @@ import { cn } from "@/lib/utils";
 
 const plans = [
   {
-    name: "Starter",
-    price: "Gratis",
+    name: "Gratis",
+    price: "$0",
     suffix: "",
     trialNote: "Sin tarjeta de crédito.",
+    description: "Para probar Kelsira en serio antes de decidir.",
+    features: ["Hasta 20 reseñas/mes", "Widget estándar", "Puntaje objetivo IA"],
+    highlighted: false,
+  },
+  {
+    name: "Starter",
+    price: "$29",
+    suffix: "/mes",
+    trialNote: "14 días de prueba gratis, requiere tarjeta.",
     description: "Para marcas independientes que están empezando.",
     features: ["Hasta 200 reseñas/mes", "Widget estándar", "Puntaje objetivo IA", "Soporte por email"],
     highlighted: false,
@@ -53,7 +62,7 @@ export function Pricing() {
         <p className="mt-4 text-muted">Sin permanencia. Cancela cuando quieras.</p>
       </div>
 
-      <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => (
           <Card
             key={plan.name}
@@ -89,7 +98,7 @@ export function Pricing() {
               variant={plan.highlighted ? "primary" : "secondary"}
               className="mt-8 w-full"
             >
-              Elegir {plan.name}
+              {plan.name === "Gratis" ? "Empezar gratis" : `Elegir ${plan.name}`}
             </LinkButton>
           </Card>
         ))}

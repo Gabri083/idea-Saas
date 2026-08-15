@@ -18,8 +18,8 @@ create table if not exists businesses (
   name               text not null,
   slug               text not null unique,
   contact_email      text not null,
-  plan               text not null default 'starter'
-                       check (plan in ('starter', 'growth', 'enterprise')),
+  plan               text not null default 'free'
+                       check (plan in ('free', 'starter', 'growth', 'enterprise')),
   monthly_review_cap integer, -- null = unlimited (growth/enterprise)
   category           text check (category in
                        ('restaurante', 'moda_calzado', 'belleza', 'electronica', 'hogar', 'salud', 'otro')),

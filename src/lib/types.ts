@@ -1,4 +1,12 @@
-export type Plan = "starter" | "growth" | "enterprise";
+export type Plan = "free" | "starter" | "growth" | "enterprise";
+
+/** null = unlimited. Single source of truth, used at signup, checkout webhook, and submit-time enforcement. */
+export const PLAN_REVIEW_CAP: Record<Plan, number | null> = {
+  free: 20,
+  starter: 200,
+  growth: null,
+  enterprise: null,
+};
 
 export type ReviewStatus = "published" | "in_appeal" | "resolved" | "archived";
 

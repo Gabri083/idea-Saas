@@ -54,12 +54,31 @@ export async function POST(request: NextRequest) {
 
   const { data: business, error: businessError } = await admin
     .from("businesses")
-    .select("id, category, business_description")
+    .select("id, category, business_description, monthly_review_cap")
     .eq("id", business_id)
     .maybeSingle();
 
   if (businessError || !business) {
     return NextResponse.json({ error: "Negocio no encontrado." }, { status: 404 });
+  }
+
+  if (business.monthly_review_cap != null) {
+    const startOfMonth = new Date();
+    startOfMonth.setUTCDate(1);
+    startOfMonth.setUTCHours(0, 0, 0, 0);
+
+    const { count } = await admin
+      .from("reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", business_id)
+      .gte("created_at", startOfMonth.toISOString());
+
+    if ((count ?? 0) >= business.monthly_review_cap) {
+      return NextResponse.json(
+        { error: "Este negocio alcanzó su límite de reseñas del mes en su plan actual." },
+        { status: 403 },
+      );
+    }
   }
 
   const { data: recentDuplicate } = await admin

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
 import { verifyWebhookSignature, planForVariantId } from "@/lib/lemonsqueezy";
+import { PLAN_REVIEW_CAP } from "@/lib/types";
 
 /**
  * Lemon Squeezy webhook — keeps `businesses.plan` / `subscription_status` in
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
 
   if (plan) {
     update.plan = plan;
-    update.monthly_review_cap = plan === "starter" ? 200 : null;
+    update.monthly_review_cap = PLAN_REVIEW_CAP[plan];
   }
 
   const admin = createAdminClient();

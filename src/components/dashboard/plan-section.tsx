@@ -9,10 +9,17 @@ import type { Plan } from "@/lib/types";
 
 const plans: { id: Plan; name: string; price: string; trialNote: string; features: string[] }[] = [
   {
+    id: "free",
+    name: "Gratis",
+    price: "$0",
+    trialNote: "Incluido siempre, sin tarjeta.",
+    features: ["Hasta 20 reseñas/mes", "Widget estándar"],
+  },
+  {
     id: "starter",
     name: "Starter",
-    price: "Gratis",
-    trialNote: "Incluido siempre, sin tarjeta.",
+    price: "$29/mes",
+    trialNote: "14 días de prueba gratis, requiere tarjeta.",
     features: ["Hasta 200 reseñas/mes", "Widget estándar"],
   },
   {
@@ -94,7 +101,7 @@ export function PlanSection({
 
       {error && <p className="mb-3 text-sm text-rose">{error}</p>}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {plans.map((p) => {
           const isCurrent = p.id === currentPlan;
           return (
@@ -113,7 +120,7 @@ export function PlanSection({
                   </li>
                 ))}
               </ul>
-              {p.id === "starter" ? (
+              {p.id === "free" ? (
                 <div className="mt-4 flex items-center justify-center rounded-lg border border-border px-3 py-2 text-sm text-muted">
                   {isCurrent ? "Plan actual" : "Plan gratuito"}
                 </div>

@@ -3,6 +3,7 @@ import { LogoutButton } from "@/components/dashboard/logout-button";
 import type { Business } from "@/lib/types";
 
 const planLabel: Record<Business["plan"], string> = {
+  free: "Gratis",
   starter: "Starter",
   growth: "Growth",
   enterprise: "Enterprise",
