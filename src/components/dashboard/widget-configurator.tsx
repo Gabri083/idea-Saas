@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PlatformInstructions } from "@/components/dashboard/platform-instructions";
 import { cn } from "@/lib/utils";
 import type { Review, WidgetConfig } from "@/lib/types";
 
@@ -527,9 +528,13 @@ export function WidgetConfigurator({
             </button>
           </div>
           <p className="mt-2 text-xs text-muted">
-            Pega este bloque justo antes de {"</body>"} en tu tema de Shopify, WooCommerce o tu
-            sitio propio.
+            Copia el código de arriba y sigue los pasos según dónde tengas tu tienda:
           </p>
+        </Card>
+
+        <Card className="min-w-0 p-6">
+          <p className="mb-3 text-sm font-medium text-muted">Cómo instalarlo paso a paso</p>
+          <PlatformInstructions />
         </Card>
       </div>
     </div>
