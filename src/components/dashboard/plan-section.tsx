@@ -7,18 +7,26 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Plan } from "@/lib/types";
 
-const plans: { id: Plan; name: string; price: string; features: string[] }[] = [
-  { id: "starter", name: "Starter", price: "$29/mes", features: ["Hasta 200 reseñas/mes", "Widget estándar"] },
+const plans: { id: Plan; name: string; price: string; trialNote: string; features: string[] }[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    price: "Gratis",
+    trialNote: "Incluido siempre, sin tarjeta.",
+    features: ["Hasta 200 reseñas/mes", "Widget estándar"],
+  },
   {
     id: "growth",
     name: "Growth",
     price: "$79/mes",
+    trialNote: "14 días de prueba gratis, requiere tarjeta.",
     features: ["Reseñas ilimitadas", "Consultor de Mejora Operativa IA", "Apelaciones prioritarias"],
   },
   {
     id: "enterprise",
     name: "Enterprise",
     price: "$199/mes",
+    trialNote: "14 días de prueba gratis, requiere tarjeta.",
     features: ["Soporte multi-tienda", "API custom", "Gestor de cuenta dedicado"],
   },
 ];
@@ -96,6 +104,7 @@ export function PlanSection({
                 {isCurrent && <Badge tone="cobalt">Actual</Badge>}
               </div>
               <p className="mt-1 text-2xl font-semibold">{p.price}</p>
+              <p className="mt-1 text-xs text-muted">{p.trialNote}</p>
               <ul className="mt-3 flex flex-1 flex-col gap-1.5">
                 {p.features.map((f) => (
                   <li key={f} className="flex items-start gap-1.5 text-xs text-muted">
@@ -104,26 +113,32 @@ export function PlanSection({
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => subscribe(p.id)}
-                disabled={isCurrent || pendingPlan !== null}
-                className={cn(
-                  "mt-4 flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-50",
-                  isCurrent
-                    ? "border-border text-muted"
-                    : "border-cobalt/40 text-cobalt hover:bg-cobalt/10",
-                )}
-              >
-                {pendingPlan === p.id ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin" /> Redirigiendo…
-                  </>
-                ) : isCurrent ? (
-                  "Plan actual"
-                ) : (
-                  `Suscribirse a ${p.name}`
-                )}
-              </button>
+              {p.id === "starter" ? (
+                <div className="mt-4 flex items-center justify-center rounded-lg border border-border px-3 py-2 text-sm text-muted">
+                  {isCurrent ? "Plan actual" : "Plan gratuito"}
+                </div>
+              ) : (
+                <button
+                  onClick={() => subscribe(p.id)}
+                  disabled={isCurrent || pendingPlan !== null}
+                  className={cn(
+                    "mt-4 flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm transition-colors disabled:opacity-50",
+                    isCurrent
+                      ? "border-border text-muted"
+                      : "border-cobalt/40 text-cobalt hover:bg-cobalt/10",
+                  )}
+                >
+                  {pendingPlan === p.id ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" /> Redirigiendo…
+                    </>
+                  ) : isCurrent ? (
+                    "Plan actual"
+                  ) : (
+                    `Suscribirse a ${p.name}`
+                  )}
+                </button>
+              )}
             </Card>
           );
         })}

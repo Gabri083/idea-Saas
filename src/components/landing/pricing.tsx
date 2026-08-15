@@ -6,7 +6,9 @@ import { cn } from "@/lib/utils";
 const plans = [
   {
     name: "Starter",
-    price: "$29",
+    price: "Gratis",
+    suffix: "",
+    trialNote: "Sin tarjeta de crédito.",
     description: "Para marcas independientes que están empezando.",
     features: ["Hasta 200 reseñas/mes", "Widget estándar", "Puntaje objetivo IA", "Soporte por email"],
     highlighted: false,
@@ -14,6 +16,8 @@ const plans = [
   {
     name: "Growth",
     price: "$79",
+    suffix: "/mes",
+    trialNote: "14 días de prueba gratis, requiere tarjeta.",
     description: "Para e-commerce en crecimiento activo.",
     features: [
       "Reseñas ilimitadas",
@@ -27,6 +31,8 @@ const plans = [
   {
     name: "Enterprise",
     price: "$199",
+    suffix: "/mes",
+    trialNote: "14 días de prueba gratis, requiere tarjeta.",
     description: "Para operaciones multi-tienda a gran escala.",
     features: [
       "Soporte multi-tienda",
@@ -65,8 +71,9 @@ export function Pricing() {
             <p className="mt-1 text-sm text-muted">{plan.description}</p>
             <p className="mt-6 text-4xl font-semibold tracking-tight">
               {plan.price}
-              <span className="text-base font-normal text-muted">/mes</span>
+              <span className="text-base font-normal text-muted">{plan.suffix}</span>
             </p>
+            <p className="mt-1 text-xs text-muted">{plan.trialNote}</p>
 
             <ul className="mt-8 flex flex-1 flex-col gap-3">
               {plan.features.map((feature) => (

@@ -8,6 +8,7 @@ const columns = [
       { label: "Cómo funciona", href: "#como-funciona" },
       { label: "Precios", href: "#precios" },
       { label: "Widget embebible", href: "/dashboard/widget" },
+      { label: "Programa de afiliados", href: "/afiliados" },
     ],
   },
   {
