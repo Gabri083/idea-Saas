@@ -53,7 +53,8 @@ create table if not exists widget_configs (
   accent_color   text not null default '#4f7cff',
   border_radius  text not null default 'lg' check (border_radius in ('none', 'sm', 'md', 'lg', 'full')),
   font_family    text not null default 'inter',
-  layout         text not null default 'carousel' check (layout in ('carousel', 'badge', 'grid')),
+  layout         text not null default 'carousel'
+                   check (layout in ('carousel', 'badge', 'grid', 'wall', 'spotlight')),
   show_breakdown boolean not null default true,
   updated_at     timestamptz not null default now()
 );

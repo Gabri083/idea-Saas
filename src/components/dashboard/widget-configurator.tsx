@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,24 @@ const SAMPLE_REVIEWS: Review[] = [
     overall_ai_rating: 4.7,
     penalty_applied: 0,
     status: "published",
-    created_at: new Date().toISOString(),
+    created_at: new Date(Date.now() - 6 * 86_400_000).toISOString(),
+  },
+  {
+    id: "sample-3",
+    business_id: "sample",
+    customer_name: "Fernanda A.",
+    customer_email: "",
+    review_text: "Buena calidad, pero tuve que escribir dos veces para que me respondieran.",
+    customer_star_rating: null,
+    product_score: 4,
+    service_score: 3,
+    delivery_score: 5,
+    detected_issues: [],
+    ai_summary: null,
+    overall_ai_rating: 4.0,
+    penalty_applied: 0,
+    status: "published",
+    created_at: new Date(Date.now() - 13 * 86_400_000).toISOString(),
   },
 ];
 
@@ -62,6 +79,191 @@ const fontStack: Record<string, string> = {
   georgia: "Georgia, serif",
   mono: "ui-monospace, monospace",
 };
+const layoutOptions: { id: WidgetConfig["layout"]; label: string }[] = [
+  { id: "carousel", label: "Carrusel" },
+  { id: "badge", label: "Badge" },
+  { id: "grid", label: "Grilla" },
+  { id: "wall", label: "Muro" },
+  { id: "spotlight", label: "Destacada" },
+];
+
+const STAR_PATH =
+  "M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z";
+
+function StarIcon({ size, fill }: { size: number; fill: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={fill}>
+      <path d={STAR_PATH} />
+    </svg>
+  );
+}
+
+function Stars({ value, size = 15, accent, bg }: { value: number; size?: number; accent: string; bg: string }) {
+  return (
+    <span className="inline-flex gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => {
+        const pct = Math.max(0, Math.min(100, (value - i) * 100));
+        return (
+          <span key={i} className="relative inline-block" style={{ width: size, height: size }}>
+            <span className="absolute inset-0">
+              <StarIcon size={size} fill={bg} />
+            </span>
+            <span className="absolute inset-0 overflow-hidden" style={{ width: `${pct}%` }}>
+              <StarIcon size={size} fill={accent} />
+            </span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+const AVATAR_HUES = [210, 260, 330, 20, 160, 40, 280, 190];
+function hashStr(str: string) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return h;
+}
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "?";
+}
+function Avatar({ name }: { name: string }) {
+  const hue = AVATAR_HUES[hashStr(name) % AVATAR_HUES.length];
+  return (
+    <span
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-white"
+      style={{ background: `hsl(${hue},65%,50%)` }}
+    >
+      {initials(name)}
+    </span>
+  );
+}
+
+function formatDate(iso: string) {
+  try {
+    return new Intl.DateTimeFormat("es", { day: "numeric", month: "short" }).format(new Date(iso));
+  } catch {
+    return "";
+  }
+}
+
+function Breakdown({ review, pillBg }: { review: Review; pillBg: string }) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-1.5">
+      <span className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
+        Producto {review.product_score}★
+      </span>
+      <span className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
+        Atención {review.service_score}★
+      </span>
+      <span className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
+        Envío {review.delivery_score}★
+      </span>
+    </div>
+  );
+}
+
+function ReviewCard({
+  review,
+  showBreakdown,
+  accent,
+  isDark,
+  radius,
+}: {
+  review: Review;
+  showBreakdown: boolean;
+  accent: string;
+  isDark: boolean;
+  radius: string;
+}) {
+  const borderColor = isDark ? "#232529" : "#e5e7eb";
+  const starBg = isDark ? "#3a3d44" : "#e2e4e8";
+  const pillBg = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
+  return (
+    <div
+      className="min-w-0 border p-4 text-sm shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_24px_-14px_rgba(0,0,0,.16)] transition-transform hover:-translate-y-0.5"
+      style={{ borderRadius: radius, borderColor }}
+    >
+      <div className="flex items-center gap-1.5">
+        <Stars value={review.overall_ai_rating} accent={accent} bg={starBg} />
+        <span className="text-[13px] font-semibold" style={{ color: accent }}>
+          {review.overall_ai_rating.toFixed(1)}
+        </span>
+      </div>
+      <p className="mt-2.5 line-clamp-3 opacity-90">&ldquo;{review.review_text}&rdquo;</p>
+      <div className="mt-3.5 flex items-center gap-2.5">
+        <Avatar name={review.customer_name} />
+        <div className="flex min-w-0 flex-col leading-tight">
+          <span className="truncate text-[12.5px] font-medium">{review.customer_name}</span>
+          <span className="text-[11px] opacity-55">{formatDate(review.created_at)}</span>
+        </div>
+      </div>
+      {showBreakdown && <Breakdown review={review} pillBg={pillBg} />}
+    </div>
+  );
+}
+
+function Spotlight({
+  reviews,
+  showBreakdown,
+  accent,
+  isDark,
+}: {
+  reviews: Review[];
+  showBreakdown: boolean;
+  accent: string;
+  isDark: boolean;
+}) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (reviews.length < 2) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % reviews.length), 5000);
+    return () => clearInterval(id);
+  }, [reviews.length]);
+
+  const review = reviews[Math.min(index, reviews.length - 1)];
+  const starBg = isDark ? "#3a3d44" : "#e2e4e8";
+  const pillBg = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
+
+  return (
+    <div className="text-center">
+      <div className="flex justify-center">
+        <Stars value={review.overall_ai_rating} size={18} accent={accent} bg={starBg} />
+      </div>
+      <p className="mt-3.5 text-base opacity-90">&ldquo;{review.review_text}&rdquo;</p>
+      <div className="mt-4 flex items-center justify-center gap-2.5">
+        <Avatar name={review.customer_name} />
+        <div className="flex flex-col text-left leading-tight">
+          <span className="text-[12.5px] font-medium">{review.customer_name}</span>
+          <span className="text-[11px] opacity-55">{formatDate(review.created_at)}</span>
+        </div>
+      </div>
+      {showBreakdown && (
+        <div className="flex justify-center">
+          <Breakdown review={review} pillBg={pillBg} />
+        </div>
+      )}
+      {reviews.length > 1 && (
+        <div className="mt-4 flex justify-center gap-1.5">
+          {reviews.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              aria-label={`Reseña ${i + 1}`}
+              className="h-1.5 rounded-full transition-all"
+              style={{
+                width: i === index ? 18 : 6,
+                background: i === index ? accent : isDark ? "#232529" : "#e5e7eb",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function WidgetConfigurator({
   businessId,
@@ -109,6 +311,9 @@ export function WidgetConfigurator({
     previewReviews.reduce((s, r) => s + r.overall_ai_rating, 0) / previewReviews.length;
 
   const isDark = config.theme_mode === "dark";
+  const borderColor = isDark ? "#232529" : "#e5e7eb";
+  const starBg = isDark ? "#3a3d44" : "#e2e4e8";
+  const radius = radiusPx[config.border_radius];
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
@@ -195,19 +400,19 @@ export function WidgetConfigurator({
 
         <div>
           <p className="text-sm font-medium">Diseño</p>
-          <div className="mt-2 flex gap-2">
-            {(["carousel", "badge", "grid"] as const).map((layout) => (
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {layoutOptions.map(({ id, label }) => (
               <button
-                key={layout}
-                onClick={() => setConfig((p) => ({ ...p, layout }))}
+                key={id}
+                onClick={() => setConfig((p) => ({ ...p, layout: id }))}
                 className={cn(
-                  "flex-1 rounded-lg border px-2 py-2 text-xs capitalize transition-colors",
-                  config.layout === layout
+                  "rounded-lg border px-2 py-2 text-xs transition-colors",
+                  config.layout === id
                     ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
                     : "border-border text-muted hover:text-foreground",
                 )}
               >
-                {layout === "carousel" ? "Carrusel" : layout === "badge" ? "Badge" : "Grilla"}
+                {label}
               </button>
             ))}
           </div>
@@ -253,46 +458,47 @@ export function WidgetConfigurator({
             style={{
               background: isDark ? "#101114" : "#ffffff",
               color: isDark ? "#f4f5f7" : "#111318",
-              borderColor: isDark ? "#232529" : "#e5e7eb",
+              borderColor,
               fontFamily: fontStack[config.font_family] ?? undefined,
             }}
           >
             {config.layout === "badge" ? (
               <div
-                className="inline-flex items-center gap-2 border px-4 py-2.5"
-                style={{ borderRadius: radiusPx[config.border_radius], borderColor: isDark ? "#232529" : "#e5e7eb" }}
+                className="inline-flex items-center gap-2.5 border px-4 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,.05),0_6px_18px_-10px_rgba(0,0,0,.18)]"
+                style={{ borderRadius: radius, borderColor }}
               >
-                <span style={{ color: config.accent_color }}>{"★".repeat(Math.round(average))}</span>
-                <strong>{average.toFixed(1)}/5</strong>
+                <Stars value={average} accent={config.accent_color} bg={starBg} />
+                <strong style={{ color: config.accent_color }}>{average.toFixed(1)}/5</strong>
                 <span className="text-xs opacity-60">
                   ({previewReviews.length} reseñas · Puntaje Objetivo IA)
                 </span>
               </div>
+            ) : config.layout === "spotlight" ? (
+              <Spotlight
+                reviews={previewReviews}
+                showBreakdown={config.show_breakdown}
+                accent={config.accent_color}
+                isDark={isDark}
+              />
             ) : (
               <div
                 className={cn(
-                  config.layout === "grid" ? "grid grid-cols-2 gap-3" : "flex gap-3 overflow-x-auto",
+                  config.layout === "grid"
+                    ? "grid grid-cols-2 gap-3"
+                    : config.layout === "wall"
+                      ? "flex flex-col gap-3"
+                      : "flex gap-3 overflow-x-auto",
                 )}
               >
-                {previewReviews.slice(0, 4).map((r) => (
-                  <div
-                    key={r.id}
-                    className="min-w-[220px] flex-1 overflow-hidden border p-4 text-sm"
-                    style={{ borderRadius: radiusPx[config.border_radius], borderColor: isDark ? "#232529" : "#e5e7eb" }}
-                  >
-                    <span style={{ color: config.accent_color }}>
-                      {"★".repeat(Math.round(r.overall_ai_rating))}
-                    </span>{" "}
-                    {r.overall_ai_rating.toFixed(1)}/5
-                    <p className="mt-2 line-clamp-3 opacity-90">{r.review_text}</p>
-                    <p className="mt-2 text-xs opacity-60">— {r.customer_name}</p>
-                    {config.show_breakdown && (
-                      <div className="mt-2 flex gap-3 text-[11px] opacity-70">
-                        <span>Producto {r.product_score}★</span>
-                        <span>Atención {r.service_score}★</span>
-                        <span>Envío {r.delivery_score}★</span>
-                      </div>
-                    )}
+                {(config.layout === "wall" ? previewReviews : previewReviews.slice(0, 4)).map((r) => (
+                  <div key={r.id} className={config.layout === "carousel" ? "min-w-[240px] flex-1" : undefined}>
+                    <ReviewCard
+                      review={r}
+                      showBreakdown={config.show_breakdown}
+                      accent={config.accent_color}
+                      isDark={isDark}
+                      radius={radius}
+                    />
                   </div>
                 ))}
               </div>

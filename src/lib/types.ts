@@ -112,7 +112,7 @@ export interface WidgetConfig {
   accent_color: string;
   border_radius: "none" | "sm" | "md" | "lg" | "full";
   font_family: string;
-  layout: "carousel" | "badge" | "grid";
+  layout: "carousel" | "badge" | "grid" | "wall" | "spotlight";
   show_breakdown: boolean;
 }
 
