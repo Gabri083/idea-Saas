@@ -1,19 +1,27 @@
 import Link from "next/link";
 import { Sparkles, Star, MessagesSquare, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/metric-card";
+import { PlanUsageCard } from "@/components/dashboard/plan-usage-card";
 import { StarRating } from "@/components/ui/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { getRecurringIssues, getReviews } from "@/lib/data";
+import { getBusiness, getRecurringIssues, getReviews } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
 import { formatDate, isPastDeadline } from "@/lib/utils";
 
 export default async function DashboardOverviewPage() {
   const businessId = await requireBusinessId();
-  const [reviews, recurringIssues] = await Promise.all([
+  const [business, reviews, recurringIssues] = await Promise.all([
+    getBusiness(businessId),
     getReviews(businessId),
     getRecurringIssues(businessId),
   ]);
+
+  // UTC to match the cap enforcement in /api/reviews.
+  const startOfMonth = new Date();
+  startOfMonth.setUTCDate(1);
+  startOfMonth.setUTCHours(0, 0, 0, 0);
+  const usedThisMonth = reviews.filter((r) => new Date(r.created_at) >= startOfMonth).length;
 
   const avgAi = average(reviews.map((r) => r.overall_ai_rating));
   const customerRated = reviews.filter((r) => r.customer_star_rating != null);
@@ -60,6 +68,8 @@ export default async function DashboardOverviewPage() {
           hint="Problemas recurrentes fuera de plazo"
         />
       </div>
+
+      <PlanUsageCard used={usedThisMonth} cap={business.monthly_review_cap} />
 
       {openAlerts.length > 0 && (
         <Card className="border-amber/30 bg-amber/[0.05] p-5">
