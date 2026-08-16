@@ -10,10 +10,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-w-0 flex-1 overflow-x-hidden">
-      <Sidebar />
+      <Sidebar plan={business.plan} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar business={business} demoMode={!isSupabaseConfigured()} />
-        <MobileNav />
+        <MobileNav plan={business.plan} />
         <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-background px-4 py-6 sm:px-6 sm:py-8">
           {children}
         </main>

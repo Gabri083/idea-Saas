@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/dashboard/nav-items";
+import { hasGrowthAccess, type Plan } from "@/lib/types";
 
-export function MobileNav() {
+export function MobileNav({ plan }: { plan: Plan }) {
   const pathname = usePathname();
+  const unlocked = hasGrowthAccess(plan);
 
   return (
     <nav className="flex gap-1 overflow-x-auto border-b border-border bg-surface/40 px-3 py-2 md:hidden">
-      {navItems.map(({ href, label, icon: Icon }) => {
+      {navItems.map(({ href, label, icon: Icon, growthOnly }) => {
         const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+        const locked = growthOnly && !unlocked;
         return (
           <Link
             key={href}
@@ -23,6 +27,7 @@ export function MobileNav() {
           >
             <Icon size={14} />
             {label}
+            {locked && <Lock size={11} className="opacity-50" />}
           </Link>
         );
       })}

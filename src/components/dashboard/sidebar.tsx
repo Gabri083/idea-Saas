@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/dashboard/nav-items";
+import { hasGrowthAccess, type Plan } from "@/lib/types";
 
-export function Sidebar() {
+export function Sidebar({ plan }: { plan: Plan }) {
   const pathname = usePathname();
+  const unlocked = hasGrowthAccess(plan);
 
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface/40 md:flex">
@@ -19,8 +21,9 @@ export function Sidebar() {
       </div>
 
       <nav className="flex flex-col gap-1 px-3 py-2">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon, growthOnly }) => {
           const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+          const locked = growthOnly && !unlocked;
           return (
             <Link
               key={href}
@@ -33,7 +36,8 @@ export function Sidebar() {
               )}
             >
               <Icon size={17} />
-              {label}
+              <span className="flex-1">{label}</span>
+              {locked && <Lock size={12} className="shrink-0 opacity-50" />}
             </Link>
           );
         })}

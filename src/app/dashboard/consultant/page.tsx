@@ -1,10 +1,12 @@
 import { ConsultantPanel } from "@/components/dashboard/consultant-panel";
-import { getRecurringIssues } from "@/lib/data";
+import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
+import { getBusiness, getRecurringIssues } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
+import { hasGrowthAccess } from "@/lib/types";
 
 export default async function ConsultantPage() {
   const businessId = await requireBusinessId();
-  const issues = await getRecurringIssues(businessId);
+  const business = await getBusiness(businessId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -16,7 +18,14 @@ export default async function ConsultantPage() {
         </p>
       </div>
 
-      <ConsultantPanel issues={issues} />
+      {hasGrowthAccess(business.plan) ? (
+        <ConsultantPanel issues={await getRecurringIssues(businessId)} />
+      ) : (
+        <UpgradeGate
+          feature="El Consultor IA"
+          description="Agrupa automáticamente las fallas operativas recurrentes detectadas en tus reseñas y te avisa antes de que penalicen tu puntaje. Disponible en los planes Growth y Enterprise."
+        />
+      )}
     </div>
   );
 }

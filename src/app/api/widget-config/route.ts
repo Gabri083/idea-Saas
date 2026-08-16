@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isSupabaseConfigured } from "@/lib/data";
+import { getBusiness, isSupabaseConfigured } from "@/lib/data";
 import { getSessionBusinessId } from "@/lib/auth";
+import { hasGrowthAccess } from "@/lib/types";
 
 const BodySchema = z.object({
   theme_mode: z.enum(["light", "dark"]),
@@ -25,6 +26,14 @@ export async function PUT(request: NextRequest) {
   const businessId = await getSessionBusinessId();
   if (!businessId) {
     return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
+  }
+
+  const business = await getBusiness(businessId);
+  if (!hasGrowthAccess(business.plan)) {
+    return NextResponse.json(
+      { error: "Personalizar el widget requiere el plan Growth o superior." },
+      { status: 403 },
+    );
   }
 
   if (!isSupabaseConfigured()) {

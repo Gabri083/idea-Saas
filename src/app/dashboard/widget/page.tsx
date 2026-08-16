@@ -1,12 +1,14 @@
 import { WidgetConfigurator } from "@/components/dashboard/widget-configurator";
-import { getReviews, getWidgetConfig } from "@/lib/data";
+import { getBusiness, getReviews, getWidgetConfig } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
+import { hasGrowthAccess } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { CopyableLink } from "@/components/dashboard/copyable-link";
 
 export default async function WidgetPage() {
   const businessId = await requireBusinessId();
-  const [config, reviews] = await Promise.all([
+  const [business, config, reviews] = await Promise.all([
+    getBusiness(businessId),
     getWidgetConfig(businessId),
     getReviews(businessId),
   ]);
@@ -36,6 +38,7 @@ export default async function WidgetPage() {
         businessId={businessId}
         initialConfig={config}
         reviews={publicReviews}
+        canCustomize={hasGrowthAccess(business.plan)}
       />
     </div>
   );

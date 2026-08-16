@@ -42,7 +42,12 @@ export async function POST(request: NextRequest) {
     customer_portal_url: attrs.urls?.customer_portal ?? null,
   };
 
-  if (plan) {
+  if (attrs.status === "expired") {
+    // Subscription has truly ended (not just cancelled-but-still-active-until-period-end) —
+    // fall back to the free plan instead of leaving the business stuck on its old paid tier.
+    update.plan = "free";
+    update.monthly_review_cap = PLAN_REVIEW_CAP.free;
+  } else if (plan) {
     update.plan = plan;
     update.monthly_review_cap = PLAN_REVIEW_CAP[plan];
   }

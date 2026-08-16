@@ -8,6 +8,11 @@ export const PLAN_REVIEW_CAP: Record<Plan, number | null> = {
   enterprise: null,
 };
 
+/** Consultor IA, Centro de Calibración, and widget personalization are Growth+ per the pricing page. */
+export function hasGrowthAccess(plan: Plan): boolean {
+  return plan === "growth" || plan === "enterprise";
+}
+
 export type ReviewStatus = "published" | "in_appeal" | "resolved" | "archived";
 
 export type BusinessCategory =

@@ -1,6 +1,8 @@
 import { CalibrationCenter } from "@/components/dashboard/calibration-center";
-import { getCalibrationRequests, getRecurringIssues, getReviews } from "@/lib/data";
+import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
+import { getBusiness, getCalibrationRequests, getRecurringIssues, getReviews } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
+import { hasGrowthAccess } from "@/lib/types";
 
 export default async function CalibrationPage({
   searchParams,
@@ -9,11 +11,7 @@ export default async function CalibrationPage({
 }) {
   const { issueId } = await searchParams;
   const businessId = await requireBusinessId();
-  const [issues, reviews, requests] = await Promise.all([
-    getRecurringIssues(businessId),
-    getReviews(businessId),
-    getCalibrationRequests(businessId),
-  ]);
+  const business = await getBusiness(businessId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,13 +23,38 @@ export default async function CalibrationPage({
         </p>
       </div>
 
-      <CalibrationCenter
-        businessId={businessId}
-        issues={issues}
-        reviews={reviews}
-        initialRequests={requests}
-        focusIssueId={issueId}
-      />
+      {hasGrowthAccess(business.plan) ? (
+        <CalibrationCenterLoader businessId={businessId} issueId={issueId} />
+      ) : (
+        <UpgradeGate
+          feature="El Centro de Calibración"
+          description="Solicita que las reseñas históricas asociadas a un problema ya resuelto se recalibren o archiven, con evidencia. Disponible en los planes Growth y Enterprise."
+        />
+      )}
     </div>
+  );
+}
+
+async function CalibrationCenterLoader({
+  businessId,
+  issueId,
+}: {
+  businessId: string;
+  issueId?: string;
+}) {
+  const [issues, reviews, requests] = await Promise.all([
+    getRecurringIssues(businessId),
+    getReviews(businessId),
+    getCalibrationRequests(businessId),
+  ]);
+
+  return (
+    <CalibrationCenter
+      businessId={businessId}
+      issues={issues}
+      reviews={reviews}
+      initialRequests={requests}
+      focusIssueId={issueId}
+    />
   );
 }

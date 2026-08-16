@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlatformInstructions } from "@/components/dashboard/platform-instructions";
@@ -270,10 +270,12 @@ export function WidgetConfigurator({
   businessId,
   initialConfig,
   reviews,
+  canCustomize,
 }: {
   businessId: string;
   initialConfig: WidgetConfig;
   reviews: Review[];
+  canCustomize: boolean;
 }) {
   const [config, setConfig] = useState(initialConfig);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
@@ -319,6 +321,14 @@ export function WidgetConfigurator({
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
       <Card className="flex flex-col gap-6 p-6">
+        {!canCustomize && (
+          <div className="flex items-center gap-2 rounded-lg border border-cobalt/30 bg-cobalt/10 px-3 py-2.5 text-xs text-cobalt">
+            <Sparkles size={14} className="shrink-0" />
+            Personalizar el widget es parte del plan Growth. Mientras tanto se usa el estilo
+            predeterminado.
+          </div>
+        )}
+        <fieldset disabled={!canCustomize} className={cn("contents border-0 p-0 m-0", !canCustomize && "opacity-50")}>
         <div>
           <p className="text-sm font-medium">Color de acento</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -442,6 +452,7 @@ export function WidgetConfigurator({
             "Guardar cambios"
           )}
         </Button>
+        </fieldset>
       </Card>
 
       <div className="flex min-w-0 flex-col gap-6">
