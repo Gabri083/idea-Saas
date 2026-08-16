@@ -12,6 +12,7 @@ const BodySchema = z.object({
   font_family: z.string().min(1).max(60),
   layout: z.enum(["carousel", "badge", "grid", "wall", "spotlight"]),
   show_breakdown: z.boolean(),
+  show_branding: z.boolean(),
 });
 
 export async function PUT(request: NextRequest) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getBusiness, getReviews, getWidgetConfig } from "@/lib/data";
 import { resolveBusinessId } from "@/lib/demo";
+import { hasGrowthAccess } from "@/lib/types";
 
 function withCors(response: NextResponse) {
   response.headers.set("Access-Control-Allow-Origin", "*");
@@ -35,10 +36,15 @@ export async function GET(
       ? publicReviews.reduce((sum, r) => sum + r.overall_ai_rating, 0) / publicReviews.length
       : 0;
 
+    // Free/Starter always carry the "Verificado por Kelsira" branding, no matter what's
+    // stored — e.g. a business that saved show_branding:false while on Growth and later
+    // downgraded shouldn't keep hiding it.
+    const effectiveConfig = hasGrowthAccess(business.plan) ? config : { ...config, show_branding: true };
+
     return withCors(
       NextResponse.json({
         business: { name: business.name },
-        config,
+        config: effectiveConfig,
         average_rating: Math.round(average * 10) / 10,
         total_reviews: publicReviews.length,
         reviews: publicReviews.map((r) => ({

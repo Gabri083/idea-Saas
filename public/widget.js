@@ -332,10 +332,12 @@
           container.appendChild(list);
         }
 
-        var footer = document.createElement("div");
-        footer.className = "kelsira-powered";
-        footer.textContent = "Reseñas verificadas por Kelsira — Puntaje Objetivo IA";
-        container.appendChild(footer);
+        if (data.config.show_branding) {
+          var footer = document.createElement("div");
+          footer.className = "kelsira-powered";
+          footer.textContent = "Reseñas verificadas por Kelsira — Puntaje Objetivo IA";
+          container.appendChild(footer);
+        }
       })
       .catch(function () {
         container.textContent = "";

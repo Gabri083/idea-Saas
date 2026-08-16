@@ -119,6 +119,7 @@ export interface WidgetConfig {
   font_family: string;
   layout: "carousel" | "badge" | "grid" | "wall" | "spotlight";
   show_breakdown: boolean;
+  show_branding: boolean; // "Verificado por Kelsira" footer; forced true on free/starter regardless of this value
 }
 
 export type TeamRole = "owner" | "staff";

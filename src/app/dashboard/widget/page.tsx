@@ -14,6 +14,10 @@ export default async function WidgetPage() {
   ]);
 
   const publicReviews = reviews.filter((r) => r.status === "published" || r.status === "resolved");
+  const canCustomize = hasGrowthAccess(business.plan);
+  // Mirror the public widget API's rule: free/starter always show the Kelsira badge,
+  // no matter what was saved while the business was previously on a higher plan.
+  const effectiveConfig = canCustomize ? config : { ...config, show_branding: true };
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,9 +40,9 @@ export default async function WidgetPage() {
 
       <WidgetConfigurator
         businessId={businessId}
-        initialConfig={config}
+        initialConfig={effectiveConfig}
         reviews={publicReviews}
-        canCustomize={hasGrowthAccess(business.plan)}
+        canCustomize={canCustomize}
       />
     </div>
   );

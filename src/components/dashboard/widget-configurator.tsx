@@ -439,6 +439,16 @@ export function WidgetConfigurator({
           Mostrar desglose por categoría
         </label>
 
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={!config.show_branding}
+            onChange={(e) => setConfig((p) => ({ ...p, show_branding: !e.target.checked }))}
+            className="h-4 w-4 rounded accent-cobalt"
+          />
+          Ocultar marca &ldquo;Verificado por Kelsira&rdquo;
+        </label>
+
         <Button onClick={save} disabled={saveStatus === "saving"} className="w-full">
           {saveStatus === "saving" ? (
             <>
@@ -515,9 +525,11 @@ export function WidgetConfigurator({
                 ))}
               </div>
             )}
-            <p className="mt-4 text-right text-[10px] opacity-50">
-              Reseñas verificadas por Kelsira — Puntaje Objetivo IA
-            </p>
+            {config.show_branding && (
+              <p className="mt-4 text-right text-[10px] opacity-50">
+                Reseñas verificadas por Kelsira — Puntaje Objetivo IA
+              </p>
+            )}
           </div>
         </Card>
 

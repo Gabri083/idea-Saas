@@ -172,4 +172,5 @@ export const mockWidgetConfig: WidgetConfig = {
   font_family: "inter",
   layout: "carousel",
   show_breakdown: true,
+  show_branding: true,
 };

@@ -57,6 +57,7 @@ create table if not exists widget_configs (
   layout         text not null default 'carousel'
                    check (layout in ('carousel', 'badge', 'grid', 'wall', 'spotlight')),
   show_breakdown boolean not null default true,
+  show_branding  boolean not null default true, -- "Verificado por Kelsira" footer; forced true on free/starter regardless of this value
   updated_at     timestamptz not null default now()
 );
 
