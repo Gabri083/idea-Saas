@@ -4,6 +4,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { analyzeReviewText, clampRating, computeWeightedRating } from "@/lib/ai/scoring";
 import { syncRecurringIssuesAndGetPenalty } from "@/lib/ai/recurring-issues";
 import { uuidSchema } from "@/lib/validation";
+import { sendEmail } from "@/lib/email";
+import {
+  recurringIssueAlertEmail,
+  reviewCapReachedEmail,
+  reviewConfirmationEmail,
+} from "@/lib/email-templates";
 
 const RequestSchema = z.object({
   business_id: uuidSchema,
@@ -54,7 +60,9 @@ export async function POST(request: NextRequest) {
 
   const { data: business, error: businessError } = await admin
     .from("businesses")
-    .select("id, category, business_description, monthly_review_cap")
+    .select(
+      "id, name, contact_email, category, business_description, monthly_review_cap, cap_alert_sent_month",
+    )
     .eq("id", business_id)
     .maybeSingle();
 
@@ -66,6 +74,7 @@ export async function POST(request: NextRequest) {
     const startOfMonth = new Date();
     startOfMonth.setUTCDate(1);
     startOfMonth.setUTCHours(0, 0, 0, 0);
+    const currentMonth = startOfMonth.toISOString().slice(0, 7); // "YYYY-MM"
 
     const { count } = await admin
       .from("reviews")
@@ -74,6 +83,15 @@ export async function POST(request: NextRequest) {
       .gte("created_at", startOfMonth.toISOString());
 
     if ((count ?? 0) >= business.monthly_review_cap) {
+      // Fire at most once per calendar month, no matter how many submissions
+      // are rejected after the cap is reached (e.g. a bot retrying the form).
+      if (business.cap_alert_sent_month !== currentMonth) {
+        await admin.from("businesses").update({ cap_alert_sent_month: currentMonth }).eq("id", business_id);
+        await sendEmail({
+          to: business.contact_email,
+          ...reviewCapReachedEmail({ businessName: business.name, cap: business.monthly_review_cap }),
+        });
+      }
       return NextResponse.json(
         { error: "Este negocio alcanzó su límite de reseñas del mes en su plan actual." },
         { status: 403 },
@@ -117,7 +135,7 @@ export async function POST(request: NextRequest) {
 
   // Step 3 — inaction penalty: subtract penalty_factor for any detected issue
   // that matches an `open` recurring_issues row past its 30-day deadline.
-  const { penalty, penalizedIssueLabels } = await syncRecurringIssuesAndGetPenalty(
+  const { penalty, penalizedIssueLabels, newIssues } = await syncRecurringIssuesAndGetPenalty(
     admin,
     business_id,
     analysis.detected_issues,
@@ -149,6 +167,26 @@ export async function POST(request: NextRequest) {
   if (insertError || !review) {
     console.error("Failed to persist review", insertError);
     return NextResponse.json({ error: "No se pudo guardar la reseña." }, { status: 500 });
+  }
+
+  await sendEmail({
+    to: customer_email,
+    ...reviewConfirmationEmail({
+      customerName: customer_name,
+      businessName: business.name,
+      overallRating: overallAiRating,
+    }),
+  });
+
+  for (const issue of newIssues) {
+    await sendEmail({
+      to: business.contact_email,
+      ...recurringIssueAlertEmail({
+        businessName: business.name,
+        issueLabel: issue.label,
+        deadline: issue.deadline,
+      }),
+    });
   }
 
   return NextResponse.json({

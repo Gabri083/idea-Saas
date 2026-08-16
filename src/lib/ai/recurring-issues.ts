@@ -18,6 +18,11 @@ interface RecurringIssueRow {
   penalty_factor: number;
 }
 
+export interface NewRecurringIssue {
+  label: string;
+  deadline: string;
+}
+
 /**
  * For each issue detected by the AI in a new review, look up (or create) the
  * matching recurring_issues row for this business. If a matched issue is
@@ -28,8 +33,8 @@ export async function syncRecurringIssuesAndGetPenalty(
   admin: SupabaseClient,
   businessId: string,
   detectedIssues: string[],
-): Promise<{ penalty: number; penalizedIssueLabels: string[] }> {
-  if (detectedIssues.length === 0) return { penalty: 0, penalizedIssueLabels: [] };
+): Promise<{ penalty: number; penalizedIssueLabels: string[]; newIssues: NewRecurringIssue[] }> {
+  if (detectedIssues.length === 0) return { penalty: 0, penalizedIssueLabels: [], newIssues: [] };
 
   const { data: existing } = await admin
     .from("recurring_issues")
@@ -42,6 +47,7 @@ export async function syncRecurringIssuesAndGetPenalty(
 
   let penalty = 0;
   const penalizedIssueLabels: string[] = [];
+  const newIssues: NewRecurringIssue[] = [];
   const now = Date.now();
 
   for (const rawIssue of detectedIssues) {
@@ -51,12 +57,18 @@ export async function syncRecurringIssuesAndGetPenalty(
     const match = existingByKey.get(issueKey);
 
     if (!match) {
-      await admin.from("recurring_issues").insert({
-        business_id: businessId,
-        issue_key: issueKey,
-        issue_label: rawIssue,
-        occurrences: 1,
-      });
+      const { data: inserted } = await admin
+        .from("recurring_issues")
+        .insert({
+          business_id: businessId,
+          issue_key: issueKey,
+          issue_label: rawIssue,
+          occurrences: 1,
+        })
+        .select("resolution_deadline")
+        .single();
+
+      if (inserted) newIssues.push({ label: rawIssue, deadline: inserted.resolution_deadline });
       continue;
     }
 
@@ -72,5 +84,5 @@ export async function syncRecurringIssuesAndGetPenalty(
     }
   }
 
-  return { penalty: Math.round(penalty * 10) / 10, penalizedIssueLabels };
+  return { penalty: Math.round(penalty * 10) / 10, penalizedIssueLabels, newIssues };
 }

@@ -28,6 +28,7 @@ create table if not exists businesses (
   lemonsqueezy_subscription_id text,
   subscription_status          text, -- e.g. active, on_trial, past_due, cancelled, expired, unpaid
   customer_portal_url          text, -- Lemon Squeezy hosted "manage billing" link
+  cap_alert_sent_month text, -- "YYYY-MM" of the last review-cap-reached email sent, so it fires once/month
   created_at         timestamptz not null default now()
 );
 

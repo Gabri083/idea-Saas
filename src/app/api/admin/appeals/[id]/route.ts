@@ -3,6 +3,8 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isCurrentUserAdmin } from "@/lib/auth";
 import { computeWeightedRating } from "@/lib/ai/scoring";
+import { sendEmail } from "@/lib/email";
+import { appealResolvedEmail } from "@/lib/email-templates";
 
 const ScoreSchema = z.object({
   product_score: z.number().min(1).max(5),
@@ -64,6 +66,23 @@ export async function PATCH(
   } else {
     // No corrected score given — the review itself was false/defamatory, take it down.
     await admin.from("reviews").update({ status: "archived" }).eq("id", appeal.review_id);
+  }
+
+  const { data: business } = await admin
+    .from("businesses")
+    .select("name, contact_email")
+    .eq("id", appeal.business_id)
+    .maybeSingle();
+
+  if (business) {
+    await sendEmail({
+      to: business.contact_email,
+      ...appealResolvedEmail({
+        businessName: business.name,
+        status,
+        resolutionNotes: resolution_notes ?? null,
+      }),
+    });
   }
 
   return NextResponse.json({ ok: true });
