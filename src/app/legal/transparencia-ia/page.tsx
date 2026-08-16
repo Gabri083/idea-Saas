@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { LegalTitle, H2, P, Ul, Li } from "@/components/legal/legal-content";
+
+export const metadata: Metadata = {
+  title: "Transparencia de la IA",
+  description: "Cómo Kelsira calcula el Puntaje Objetivo IA a partir del texto de cada reseña.",
+};
 
 export default function TransparenciaIaPage() {
   return (

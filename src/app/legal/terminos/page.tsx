@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { LegalTitle, H2, P, Ul, Li } from "@/components/legal/legal-content";
+
+export const metadata: Metadata = {
+  title: "Términos del Servicio",
+  description: "Términos del Servicio de Kelsira.",
+};
 
 export default function TerminosPage() {
   return (

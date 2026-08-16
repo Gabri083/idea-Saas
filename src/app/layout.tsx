@@ -12,10 +12,28 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://kelsira.app";
+const TITLE = "Kelsira — Reputación Justa y Reseñas Asistidas por IA";
+const DESCRIPTION =
+  "La primera plataforma de reseñas imparciales impulsada por IA. Protege a tu marca del sesgo de la ira y convierte críticas injustas en crecimiento operativo.";
+
 export const metadata: Metadata = {
-  title: "Kelsira — Reputación Justa y Reseñas Asistidas por IA",
-  description:
-    "La primera plataforma de reseñas imparciales impulsada por IA. Protege a tu marca del sesgo de la ira y convierte críticas injustas en crecimiento operativo.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: TITLE, template: "%s — Kelsira" },
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Kelsira",
+    locale: "es",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

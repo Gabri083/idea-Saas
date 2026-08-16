@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
+
+export const metadata: Metadata = {
+  title: "Iniciar sesión",
+  description: "Entra a tu dashboard de Kelsira.",
+};
 
 export default function LoginPage() {
   return (

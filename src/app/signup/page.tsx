@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { SignupForm } from "@/components/auth/signup-form";
+
+export const metadata: Metadata = {
+  title: "Crea tu cuenta gratis",
+  description: "Empieza gratis con el plan Gratis de Kelsira. Sin tarjeta de crédito.",
+};
 
 export default function SignupPage() {
   return (

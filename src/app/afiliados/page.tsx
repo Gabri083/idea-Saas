@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { Users, Wallet, Rocket, Mail } from "lucide-react";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
 import { Card } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Programa de Afiliados",
+  description: "Gana 50% del primer pago de cada cliente que refieras a Kelsira.",
+};
 
 const steps = [
   {
