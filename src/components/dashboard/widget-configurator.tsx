@@ -80,15 +80,12 @@ const radiusPx: Record<WidgetConfig["border_radius"], string> = {
   lg: "16px",
   full: "28px", // capped: literal 999px pill-rounds badges nicely but mangles multi-line cards
 };
-// El Recibo's signature cut corner scales with the same "Bordes" choice used
-// everywhere else, instead of ignoring it with a fixed cut.
-const ticketCutPx: Record<WidgetConfig["border_radius"], number> = {
-  none: 0,
-  sm: 4,
-  md: 6,
-  lg: 8,
-  full: 12,
-};
+// El Recibo's signature cut corner is a fixed, deliberate 8px — it's part of
+// the style's identity, not a generic "roundness" the Bordes control tunes.
+// Scaling it with Bordes (0–12px) was too subtle to read as working next to
+// every other style's dramatic 0–28px rounding, so it's fixed instead of
+// pretending to be configurable.
+const TICKET_CUT_PX = 8;
 const fontOptions = ["inter", "system-ui", "georgia", "mono"];
 const fontStack: Record<string, string> = {
   inter: "Inter, ui-sans-serif, sans-serif",
@@ -112,6 +109,15 @@ const cardStyleOptions: { id: WidgetConfig["card_style"]; label: string }[] = [
 // grid/wall/carousel repeat one card per review — the other four layouts are
 // single aggregate displays, so the card-style choice doesn't apply to them.
 const CARD_STYLE_LAYOUTS: WidgetConfig["layout"][] = ["carousel", "grid", "wall"];
+
+// "Bordes" doesn't mean anything for El Sello (always a circle) or El Recibo
+// (its cut corner is a fixed part of the style, not a tunable roundness) —
+// show the control only where it actually changes something.
+function radiusApplies(layout: WidgetConfig["layout"], cardStyle: WidgetConfig["card_style"]) {
+  if (layout === "sello") return false;
+  if (CARD_STYLE_LAYOUTS.includes(layout) && cardStyle === "recibo") return false;
+  return true;
+}
 
 
 const STAR_PATH =
@@ -217,25 +223,20 @@ function TicketCard({
   showBreakdown,
   accent,
   isDark,
-  borderRadius,
   businessName,
 }: {
   review: Review;
   showBreakdown: boolean;
   accent: string;
   isDark: boolean;
-  borderRadius: WidgetConfig["border_radius"];
   businessName: string;
 }) {
   const borderColor = isDark ? "#232529" : "#e5e7eb";
   const starBg = isDark ? "#3a3d44" : "#e2e4e8";
   const pillBg = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
   const confirmed = isConfirmed(review);
-  const cut = ticketCutPx[borderRadius];
-  const clipPath =
-    cut === 0
-      ? undefined
-      : `polygon(0 ${cut}px, ${cut}px 0, calc(100% - ${cut}px) 0, 100% ${cut}px, 100% 100%, 0 100%)`;
+  const cut = TICKET_CUT_PX;
+  const clipPath = `polygon(0 ${cut}px, ${cut}px 0, calc(100% - ${cut}px) 0, 100% ${cut}px, 100% 100%, 0 100%)`;
   return (
     <div
       className="min-w-0 overflow-hidden border text-sm shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_24px_-14px_rgba(0,0,0,.16)] transition-transform hover:-translate-y-0.5"
@@ -668,26 +669,28 @@ export function WidgetConfigurator({
           </div>
         </div>
 
-        <div>
-          <p className="text-sm font-medium">Bordes</p>
-          <div className="mt-2 flex gap-2">
-            {radiusOptions.map((r) => (
-              <button
-                key={r}
-                onClick={() => setConfig((p) => ({ ...p, border_radius: r }))}
-                className={cn(
-                  "flex-1 border px-2 py-2 text-xs uppercase transition-colors",
-                  config.border_radius === r
-                    ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
-                    : "border-border text-muted hover:text-foreground",
-                )}
-                style={{ borderRadius: radiusPx[r] }}
-              >
-                {r}
-              </button>
-            ))}
+        {radiusApplies(config.layout, config.card_style) && (
+          <div>
+            <p className="text-sm font-medium">Bordes</p>
+            <div className="mt-2 flex gap-2">
+              {radiusOptions.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setConfig((p) => ({ ...p, border_radius: r }))}
+                  className={cn(
+                    "flex-1 border px-2 py-2 text-xs uppercase transition-colors",
+                    config.border_radius === r
+                      ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
+                      : "border-border text-muted hover:text-foreground",
+                  )}
+                  style={{ borderRadius: radiusPx[r] }}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           <p className="text-sm font-medium">Tipografía</p>
@@ -862,7 +865,6 @@ export function WidgetConfigurator({
                         showBreakdown={config.show_breakdown}
                         accent={config.accent_color}
                         isDark={isDark}
-                        borderRadius={config.border_radius}
                         businessName={businessName}
                       />
                     </div>
