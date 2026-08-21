@@ -26,6 +26,9 @@ const SAMPLE_REVIEWS: Review[] = [
     overall_ai_rating: 4.4,
     penalty_applied: 0,
     status: "published",
+    business_reply:
+      "¡Gracias por tu comentario! Ya estamos trabajando con nuestro courier para mejorar los tiempos de entrega.",
+    business_reply_at: new Date(Date.now() - 1 * 86_400_000).toISOString(),
     created_at: new Date().toISOString(),
   },
   {
@@ -43,6 +46,8 @@ const SAMPLE_REVIEWS: Review[] = [
     overall_ai_rating: 4.7,
     penalty_applied: 0,
     status: "published",
+    business_reply: null,
+    business_reply_at: null,
     created_at: new Date(Date.now() - 6 * 86_400_000).toISOString(),
   },
   {
@@ -60,6 +65,8 @@ const SAMPLE_REVIEWS: Review[] = [
     overall_ai_rating: 4.0,
     penalty_applied: 0,
     status: "published",
+    business_reply: null,
+    business_reply_at: null,
     created_at: new Date(Date.now() - 13 * 86_400_000).toISOString(),
   },
 ];
@@ -176,18 +183,30 @@ function Breakdown({ review, pillBg }: { review: Review; pillBg: string }) {
   );
 }
 
+function Reply({ review, businessName, pillBg }: { review: Review; businessName: string; pillBg: string }) {
+  if (!review.business_reply) return null;
+  return (
+    <div className="mt-3 rounded-lg px-3 py-2.5" style={{ background: pillBg }}>
+      <p className="text-[11px] font-bold opacity-70">Respuesta de {businessName}</p>
+      <p className="mt-0.5 text-[12.5px] leading-relaxed opacity-85">{review.business_reply}</p>
+    </div>
+  );
+}
+
 function ReviewCard({
   review,
   showBreakdown,
   accent,
   isDark,
   radius,
+  businessName,
 }: {
   review: Review;
   showBreakdown: boolean;
   accent: string;
   isDark: boolean;
   radius: string;
+  businessName: string;
 }) {
   const borderColor = isDark ? "#232529" : "#e5e7eb";
   const starBg = isDark ? "#3a3d44" : "#e2e4e8";
@@ -213,6 +232,7 @@ function ReviewCard({
         </div>
       </div>
       {showBreakdown && <Breakdown review={review} pillBg={pillBg} />}
+      <Reply review={review} businessName={businessName} pillBg={pillBg} />
     </div>
   );
 }
@@ -222,11 +242,13 @@ function Spotlight({
   showBreakdown,
   accent,
   isDark,
+  businessName,
 }: {
   reviews: Review[];
   showBreakdown: boolean;
   accent: string;
   isDark: boolean;
+  businessName: string;
 }) {
   const [index, setIndex] = useState(0);
 
@@ -259,6 +281,13 @@ function Spotlight({
           <Breakdown review={review} pillBg={pillBg} />
         </div>
       )}
+      {review.business_reply && (
+        <div className="flex justify-center">
+          <div className="mt-1 max-w-sm">
+            <Reply review={review} businessName={businessName} pillBg={pillBg} />
+          </div>
+        </div>
+      )}
       {reviews.length > 1 && (
         <div className="mt-4 flex justify-center gap-1.5">
           {reviews.map((_, i) => (
@@ -281,11 +310,13 @@ function Spotlight({
 
 export function WidgetConfigurator({
   businessId,
+  businessName,
   initialConfig,
   reviews,
   canCustomize,
 }: {
   businessId: string;
+  businessName: string;
   initialConfig: WidgetConfig;
   reviews: Review[];
   canCustomize: boolean;
@@ -514,6 +545,7 @@ export function WidgetConfigurator({
                 showBreakdown={config.show_breakdown}
                 accent={config.accent_color}
                 isDark={isDark}
+                businessName={businessName}
               />
             ) : (
               <div
@@ -533,6 +565,7 @@ export function WidgetConfigurator({
                       accent={config.accent_color}
                       isDark={isDark}
                       radius={radius}
+                      businessName={businessName}
                     />
                   </div>
                 ))}

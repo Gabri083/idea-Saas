@@ -65,6 +65,8 @@ export interface Review {
   overall_ai_rating: number;
   penalty_applied: number;
   status: ReviewStatus;
+  business_reply: string | null;
+  business_reply_at: string | null;
   created_at: string;
 }
 

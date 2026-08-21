@@ -40,6 +40,7 @@ export default async function WidgetPage() {
 
       <WidgetConfigurator
         businessId={businessId}
+        businessName={business.name}
         initialConfig={effectiveConfig}
         reviews={publicReviews}
         canCustomize={canCustomize}

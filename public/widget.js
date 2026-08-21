@@ -111,7 +111,21 @@
     );
   }
 
-  function cardHtml(review, showBreakdown, accent) {
+  function replyHtml(review, businessName) {
+    if (!review.business_reply) return "";
+    return (
+      '<div class="kelsira-reply">' +
+      '<span class="kelsira-reply-from">Respuesta de ' +
+      escapeHtml(businessName) +
+      "</span>" +
+      '<p class="kelsira-reply-text">' +
+      escapeHtml(truncate(review.business_reply, 280)) +
+      "</p>" +
+      "</div>"
+    );
+  }
+
+  function cardHtml(review, showBreakdown, accent, businessName) {
     return (
       '<div class="kelsira-card">' +
       '<div class="kelsira-card-top">' +
@@ -136,6 +150,7 @@
       "</span></div>" +
       "</div>" +
       (showBreakdown ? breakdownHtml(review) : "") +
+      replyHtml(review, businessName) +
       "</div>"
     );
   }
@@ -172,6 +187,9 @@
       ".kelsira-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}" +
       ".kelsira-date{font-size:11px;opacity:.55;}" +
       ".kelsira-breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}" +
+      ".kelsira-reply{margin-top:12px;padding:10px 12px;border-radius:calc(var(--kelsira-radius) * 0.6);background:var(--kelsira-pill-bg);}" +
+      ".kelsira-reply-from{display:block;font-size:11px;font-weight:700;opacity:.7;margin-bottom:3px;}" +
+      ".kelsira-reply-text{margin:0;font-size:12.5px;line-height:1.5;opacity:.85;}" +
       ".kelsira-pill{font-size:10.5px;padding:3px 9px;border-radius:999px;background:var(--kelsira-pill-bg);opacity:.85;}" +
       ".kelsira-spotlight{border-radius:var(--kelsira-radius);border:1px solid var(--kelsira-border);background:var(--kelsira-bg);padding:28px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 24px -14px rgba(0,0,0,.16);}" +
       ".kelsira-spotlight-inner{transition:opacity .22s ease;text-align:center;}" +
@@ -187,7 +205,7 @@
     document.head.appendChild(style);
   }
 
-  function mountSpotlight(container, reviews, showBreakdown, accent) {
+  function mountSpotlight(container, reviews, showBreakdown, accent, businessName) {
     var wrap = document.createElement("div");
     wrap.className = "kelsira-spotlight";
     var inner = document.createElement("div");
@@ -221,7 +239,8 @@
         formatDate(r.created_at) +
         "</span></div>" +
         "</div>" +
-        (showBreakdown ? breakdownHtml(r) : "");
+        (showBreakdown ? breakdownHtml(r) : "") +
+        replyHtml(r, businessName);
 
       if (dots) {
         dots.innerHTML = "";
@@ -320,7 +339,7 @@
             " reseñas · Puntaje Objetivo IA)</span>";
           container.appendChild(badge);
         } else if (data.config.layout === "spotlight") {
-          mountSpotlight(container, data.reviews, data.config.show_breakdown, accent);
+          mountSpotlight(container, data.reviews, data.config.show_breakdown, accent, data.business.name);
         } else {
           var list = document.createElement("div");
           list.className =
@@ -330,7 +349,10 @@
                 ? "kelsira-wall"
                 : "kelsira-carousel";
           data.reviews.forEach(function (review) {
-            list.insertAdjacentHTML("beforeend", cardHtml(review, data.config.show_breakdown, accent));
+            list.insertAdjacentHTML(
+              "beforeend",
+              cardHtml(review, data.config.show_breakdown, accent, data.business.name),
+            );
           });
           container.appendChild(list);
         }

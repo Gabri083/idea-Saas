@@ -55,6 +55,7 @@ export async function GET(
           product_score: r.product_score,
           service_score: r.service_score,
           delivery_score: r.delivery_score,
+          business_reply: r.business_reply,
           created_at: r.created_at,
         })),
       }),

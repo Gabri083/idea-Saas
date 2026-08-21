@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, ChevronDown, ShieldQuestion } from "lucide-react";
+import { CheckCircle2, ChevronDown, MessageSquareReply, ShieldQuestion } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
 import { formatDate, cn } from "@/lib/utils";
@@ -34,6 +34,9 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
   const [tab, setTab] = useState<"all" | ReviewStatus>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [replyEditingId, setReplyEditingId] = useState<string | null>(null);
+  const [replySavingId, setReplySavingId] = useState<string | null>(null);
 
   const filtered = useMemo(
     () => (tab === "all" ? reviews : reviews.filter((r) => r.status === tab)),
@@ -51,6 +54,29 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
       });
     } finally {
       setPendingId(null);
+    }
+  }
+
+  async function submitReply(id: string) {
+    const text = (replyDrafts[id] ?? "").trim();
+    if (!text) return;
+    setReplySavingId(id);
+    try {
+      const res = await fetch(`/api/reviews/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ business_reply: text }),
+      });
+      if (res.ok) {
+        setReviews((prev) =>
+          prev.map((r) =>
+            r.id === id ? { ...r, business_reply: text, business_reply_at: new Date().toISOString() } : r,
+          ),
+        );
+        setReplyEditingId(null);
+      }
+    } finally {
+      setReplySavingId(null);
     }
   }
 
@@ -135,6 +161,61 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                       >
                         <CheckCircle2 size={14} /> Marcar como resuelto
                       </button>
+                    )}
+                  </div>
+
+                  <div className="mt-4 border-t border-border pt-4">
+                    {review.business_reply && replyEditingId !== review.id ? (
+                      <div className="rounded-lg bg-surface-2 px-4 py-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-semibold text-muted">Tu respuesta pública</p>
+                          <button
+                            onClick={() => {
+                              setReplyDrafts((prev) => ({ ...prev, [review.id]: review.business_reply ?? "" }));
+                              setReplyEditingId(review.id);
+                            }}
+                            className="text-xs font-medium text-cobalt hover:underline"
+                          >
+                            Editar
+                          </button>
+                        </div>
+                        <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground/90">
+                          {review.business_reply}
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted">
+                          <MessageSquareReply size={14} /> Responder públicamente
+                        </p>
+                        <textarea
+                          value={replyDrafts[review.id] ?? ""}
+                          onChange={(e) =>
+                            setReplyDrafts((prev) => ({ ...prev, [review.id]: e.target.value }))
+                          }
+                          maxLength={1000}
+                          rows={3}
+                          placeholder="Esta respuesta será visible para cualquiera que vea la reseña (widget y página de resultado)."
+                          className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-cobalt/50"
+                        />
+                        <div className="mt-2 flex justify-end gap-2">
+                          {review.business_reply && (
+                            <button
+                              onClick={() => setReplyEditingId(null)}
+                              className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground"
+                            >
+                              Cancelar
+                            </button>
+                          )}
+                          <button
+                            disabled={replySavingId === review.id || !(replyDrafts[review.id] ?? "").trim()}
+                            onClick={() => submitReply(review.id)}
+                            className="rounded-lg bg-cobalt px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                          >
+                            Publicar respuesta
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>

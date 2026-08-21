@@ -91,6 +91,12 @@ create table if not exists reviews (
   status                 text not null default 'published'
                             check (status in ('published', 'in_appeal', 'resolved', 'archived')),
 
+  -- optional public reply from the business owner, shown under the review
+  -- itself (result page + widget) — not part of the AI scoring, just a
+  -- public conversation layer on top of it.
+  business_reply         text check (char_length(business_reply) <= 1000),
+  business_reply_at      timestamptz,
+
   created_at             timestamptz not null default now()
 );
 

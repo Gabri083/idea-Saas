@@ -49,6 +49,9 @@ export const mockReviews: Review[] = [
     overall_ai_rating: 3.8,
     penalty_applied: 0,
     status: "published",
+    business_reply:
+      "¡Gracias por tu paciencia, Camila! Hablamos con la empresa de envíos para que esto no se repita y ya ajustamos el proceso de aviso de retrasos.",
+    business_reply_at: daysAgo(1),
     created_at: daysAgo(2),
   },
   {
@@ -67,6 +70,8 @@ export const mockReviews: Review[] = [
     overall_ai_rating: 3.5,
     penalty_applied: 0,
     status: "in_appeal",
+    business_reply: null,
+    business_reply_at: null,
     created_at: daysAgo(6),
   },
   {
@@ -85,6 +90,8 @@ export const mockReviews: Review[] = [
     overall_ai_rating: 5.0,
     penalty_applied: 0,
     status: "published",
+    business_reply: null,
+    business_reply_at: null,
     created_at: daysAgo(10),
   },
   {
@@ -104,6 +111,8 @@ export const mockReviews: Review[] = [
     overall_ai_rating: 2.7,
     penalty_applied: 0.3,
     status: "published",
+    business_reply: null,
+    business_reply_at: null,
     created_at: daysAgo(1),
   },
 ];
