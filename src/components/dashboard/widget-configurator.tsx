@@ -5,7 +5,7 @@ import { AlertTriangle, Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlatformInstructions } from "@/components/dashboard/platform-instructions";
-import { cn, recencyWeightedAverage } from "@/lib/utils";
+import { cn, isConfirmed, recencyWeightedAverage } from "@/lib/utils";
 import type { Review, WidgetConfig } from "@/lib/types";
 
 /** Only used to fill the live preview when the business has no real reviews yet. */
@@ -113,12 +113,6 @@ const cardStyleOptions: { id: WidgetConfig["card_style"]; label: string }[] = [
 // single aggregate displays, so the card-style choice doesn't apply to them.
 const CARD_STYLE_LAYOUTS: WidgetConfig["layout"][] = ["carousel", "grid", "wall"];
 
-function isConfirmed(review: Review) {
-  return (
-    review.customer_star_rating == null ||
-    Math.abs(review.customer_star_rating - review.overall_ai_rating) < 0.15
-  );
-}
 
 const STAR_PATH =
   "M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z";

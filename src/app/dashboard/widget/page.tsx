@@ -38,6 +38,17 @@ export default async function WidgetPage() {
         </div>
       </Card>
 
+      <Card className="p-5">
+        <p className="text-sm font-medium">Tu página pública de reseñas</p>
+        <p className="mt-1 text-xs text-muted">
+          El historial completo, buenas y malas, con paginación — no solo las 12 que caben en el widget.
+          Compártela donde quieras que un comprador pueda revisar todo.
+        </p>
+        <div className="mt-3">
+          <CopyableLink path={`/resenas/${businessId}`} />
+        </div>
+      </Card>
+
       <WidgetConfigurator
         businessId={businessId}
         businessName={business.name}

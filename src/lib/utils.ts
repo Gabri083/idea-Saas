@@ -48,3 +48,15 @@ export function recencyWeightedAverage<T extends { created_at: string }>(
   }
   return totalWeight > 0 ? weightedSum / totalWeight : 0;
 }
+
+/** Below this gap between the customer's own star pick and the AI score, the
+ * two are treated as "the same" — the AI confirmed the customer's take
+ * rather than correcting it, so copy should never read like a correction. */
+const CONFIRM_EPSILON = 0.15;
+
+export function isConfirmed(review: { customer_star_rating: number | null; overall_ai_rating: number }): boolean {
+  return (
+    review.customer_star_rating == null ||
+    Math.abs(review.customer_star_rating - review.overall_ai_rating) < CONFIRM_EPSILON
+  );
+}
