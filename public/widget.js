@@ -14,6 +14,10 @@
     "M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z";
   var AVATAR_HUES = [210, 260, 330, 20, 160, 40, 280, 190];
   var SPOTLIGHT_INTERVAL_MS = 5000;
+  // Below this gap between the customer's own star pick and the AI score, we
+  // treat them as "the same" — the AI confirmed the customer, it didn't correct
+  // them, so the copy shouldn't read like a correction happened.
+  var CONFIRM_EPSILON = 0.15;
 
   function escapeHtml(str) {
     var div = document.createElement("div");
@@ -37,12 +41,14 @@
     return out.toUpperCase() || "?";
   }
 
-  function avatarHtml(name) {
+  function avatarHtml(name, size) {
     var hue = AVATAR_HUES[hashStr(name) % AVATAR_HUES.length];
     return (
       '<span class="kelsira-avatar" style="background:hsl(' +
       hue +
-      ',65%,50%)">' +
+      ',65%,50%);' +
+      (size ? "width:" + size + "px;height:" + size + "px;font-size:" + Math.round(size * 0.37) + "px;" : "") +
+      '">' +
       escapeHtml(initials(name)) +
       "</span>"
     );
@@ -95,6 +101,41 @@
     return html;
   }
 
+  // Is the AI score effectively the same as what the customer picked? If so,
+  // the copy/visuals should read as "confirmed", never as a correction.
+  function isConfirmed(review) {
+    return (
+      review.customer_star_rating == null ||
+      Math.abs(review.customer_star_rating - review.overall_ai_rating) < CONFIRM_EPSILON
+    );
+  }
+
+  function aiTagHtml() {
+    return '<span class="kelsira-ai-tag" title="Puntaje calculado por IA a partir del texto de la reseña">IA</span>';
+  }
+
+  // The signature "correction line" shared by El Recibo and El Medidor: a
+  // struck-through customer pick → the AI's final score, like a discounted
+  // price — or, when they agree, a single confirmed number.
+  function correctionRowHtml(review, accent) {
+    if (isConfirmed(review)) {
+      return {
+        row:
+          '<span class="kelsira-final" style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</span>" +
+          aiTagHtml(),
+        caption: "Confirmado por IA",
+      };
+    }
+    return {
+      row:
+        '<span class="kelsira-raw">' + review.customer_star_rating.toFixed(1) + "★</span>" +
+        '<span class="kelsira-arrow">→</span>' +
+        '<span class="kelsira-final" style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</span>" +
+        aiTagHtml(),
+      caption: "Corrección por hechos, no por enojo",
+    };
+  }
+
   function breakdownHtml(review) {
     return (
       '<div class="kelsira-breakdown">' +
@@ -125,21 +166,22 @@
     );
   }
 
-  function cardHtml(review, showBreakdown, accent, businessName) {
+  // ---------- El Recibo: ticket-shaped card, correction line up top ----------
+  function reciboCardHtml(review, showBreakdown, accent, businessName) {
+    var c = correctionRowHtml(review, accent);
     return (
-      '<div class="kelsira-card">' +
-      '<div class="kelsira-card-top">' +
-      starsHtml(review.overall_ai_rating, 15, accent) +
-      '<span class="kelsira-rating-num" style="color:' +
-      accent +
-      '">' +
-      review.overall_ai_rating.toFixed(1) +
-      "</span>" +
-      '<span class="kelsira-ai-tag" title="Puntaje calculado por IA a partir del texto de la reseña">IA</span>' +
+      '<div class="kelsira-ticket">' +
+      '<div class="kelsira-ticket-head">' +
+      '<div class="kelsira-correction-row">' + c.row + "</div>" +
+      '<div class="kelsira-correction-caption">' + c.caption + "</div>" +
+      starsHtml(review.overall_ai_rating, 14, accent) +
       "</div>" +
+      '<div class="kelsira-perforation"></div>' +
+      '<div class="kelsira-ticket-body">' +
       '<p class="kelsira-quote">' +
-      escapeHtml(truncate(review.review_text, 140)) +
+      escapeHtml(truncate(review.review_text, 160)) +
       "</p>" +
+      (showBreakdown ? breakdownHtml(review) : "") +
       '<div class="kelsira-card-foot">' +
       avatarHtml(review.customer_name) +
       '<div class="kelsira-name-col"><span class="kelsira-name">' +
@@ -149,62 +191,61 @@
       formatDate(review.created_at) +
       "</span></div>" +
       "</div>" +
-      (showBreakdown ? breakdownHtml(review) : "") +
+      "</div>" +
       replyHtml(review, businessName) +
       "</div>"
     );
   }
 
-  function injectStyles(id) {
-    if (document.getElementById(id)) return;
-    var style = document.createElement("style");
-    style.id = id;
-    style.textContent =
-      ".kelsira-widget{font-family:var(--kelsira-font,inherit);color:var(--kelsira-fg);}" +
-      ".kelsira-widget *{box-sizing:border-box;}" +
-      ".kelsira-stars{display:inline-flex;gap:2px;color:var(--kelsira-star-bg);}" +
-      ".kelsira-star-slot{position:relative;display:inline-block;}" +
-      ".kelsira-star-bg{position:absolute;inset:0;}" +
-      ".kelsira-star-fg{position:absolute;inset:0;overflow:hidden;}" +
-      ".kelsira-avatar{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;color:#fff;font-size:12.5px;font-weight:600;flex-shrink:0;letter-spacing:.02em;}" +
-      ".kelsira-badge{display:inline-flex;align-items:center;gap:10px;padding:11px 18px;border:1px solid var(--kelsira-border);border-radius:var(--kelsira-radius);background:var(--kelsira-bg);box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px -10px rgba(0,0,0,.18);}" +
-      ".kelsira-badge-rating{font-weight:700;font-size:15px;}" +
-      ".kelsira-badge-sub{font-size:12px;opacity:.6;}" +
-      ".kelsira-carousel{display:flex;gap:14px;overflow-x:auto;padding:6px 2px 14px;scroll-snap-type:x proximity;}" +
-      ".kelsira-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}" +
-      ".kelsira-wall{display:flex;flex-direction:column;gap:12px;}" +
-      ".kelsira-card{position:relative;border-radius:var(--kelsira-radius);padding:18px;background:var(--kelsira-bg);border:1px solid var(--kelsira-border);box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 24px -14px rgba(0,0,0,.16);transition:transform .18s ease,box-shadow .18s ease;overflow:hidden;}" +
-      ".kelsira-card:hover{transform:translateY(-3px);box-shadow:0 4px 10px rgba(0,0,0,.06),0 18px 32px -12px rgba(0,0,0,.22);}" +
-      ".kelsira-carousel .kelsira-card{flex:0 0 270px;scroll-snap-align:start;}" +
-      ".kelsira-card-top{display:flex;align-items:center;gap:6px;margin-bottom:10px;}" +
-      ".kelsira-rating-num{font-weight:700;font-size:13.5px;}" +
-      ".kelsira-ai-tag{font-size:9px;font-weight:700;letter-spacing:.03em;opacity:.45;border:1px solid currentColor;border-radius:4px;padding:1px 4px;line-height:1.4;cursor:default;}" +
-      ".kelsira-quote{font-size:13.5px;line-height:1.55;margin:0;opacity:.92;}" +
-      ".kelsira-quote:before{content:'\\201C';}" +
-      ".kelsira-quote:after{content:'\\201D';}" +
-      ".kelsira-card-foot{display:flex;align-items:center;gap:10px;margin-top:14px;}" +
-      ".kelsira-name-col{display:flex;flex-direction:column;line-height:1.25;min-width:0;}" +
-      ".kelsira-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}" +
-      ".kelsira-date{font-size:11px;opacity:.55;}" +
-      ".kelsira-breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}" +
-      ".kelsira-reply{margin-top:12px;padding:10px 12px;border-radius:calc(var(--kelsira-radius) * 0.6);background:var(--kelsira-pill-bg);}" +
-      ".kelsira-reply-from{display:block;font-size:11px;font-weight:700;opacity:.7;margin-bottom:3px;}" +
-      ".kelsira-reply-text{margin:0;font-size:12.5px;line-height:1.5;opacity:.85;}" +
-      ".kelsira-pill{font-size:10.5px;padding:3px 9px;border-radius:999px;background:var(--kelsira-pill-bg);opacity:.85;}" +
-      ".kelsira-spotlight{border-radius:var(--kelsira-radius);border:1px solid var(--kelsira-border);background:var(--kelsira-bg);padding:28px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 24px -14px rgba(0,0,0,.16);}" +
-      ".kelsira-spotlight-inner{transition:opacity .22s ease;text-align:center;}" +
-      ".kelsira-spotlight .kelsira-stars{justify-content:center;}" +
-      ".kelsira-spotlight .kelsira-quote{font-size:16px;margin-top:14px;}" +
-      ".kelsira-spotlight .kelsira-card-foot{justify-content:center;margin-top:18px;text-align:left;}" +
-      ".kelsira-spotlight .kelsira-breakdown{justify-content:center;}" +
-      ".kelsira-dots{display:flex;justify-content:center;gap:6px;margin-top:18px;}" +
-      ".kelsira-dot{width:6px;height:6px;border-radius:50%;background:var(--kelsira-border);border:none;padding:0;cursor:pointer;transition:width .2s ease,background .2s ease;}" +
-      ".kelsira-dot--active{width:18px;border-radius:3px;background:var(--kelsira-accent);}" +
-      ".kelsira-empty{font-size:13px;opacity:.7;}" +
-      ".kelsira-powered{font-size:10px;opacity:.5;margin-top:12px;text-align:right;}";
-    document.head.appendChild(style);
+  // ---------- El Medidor: comparative gauge, no strikethrough text ----------
+  function medidorCardHtml(review, showBreakdown, accent, businessName) {
+    var confirmed = isConfirmed(review);
+    var rawPct = confirmed ? null : Math.max(0, Math.min(100, ((review.customer_star_rating - 1) / 4) * 100));
+    var finalPct = Math.max(0, Math.min(100, ((review.overall_ai_rating - 1) / 4) * 100));
+    var fillPct = confirmed ? finalPct : Math.min(rawPct, finalPct);
+    var fillWidth = confirmed ? finalPct : Math.abs(finalPct - rawPct);
+    return (
+      '<div class="kelsira-gauge-card">' +
+      '<div class="kelsira-gauge-head">' +
+      starsHtml(review.overall_ai_rating, 14, accent) +
+      aiTagHtml() +
+      "</div>" +
+      '<p class="kelsira-quote kelsira-gauge-quote">' +
+      escapeHtml(truncate(review.review_text, 130)) +
+      "</p>" +
+      '<div class="kelsira-gauge-track">' +
+      '<div class="kelsira-gauge-fill" style="left:' + fillPct + '%;width:' + fillWidth + '%"></div>' +
+      (confirmed ? "" : '<div class="kelsira-gauge-dot" style="left:' + rawPct + '%"></div>') +
+      '<div class="kelsira-gauge-pin" style="left:' + finalPct + '%;background:' + accent + '"></div>' +
+      "</div>" +
+      '<div class="kelsira-gauge-legend">' +
+      (confirmed
+        ? '<span>Cliente e IA: <b style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</b></span>"
+        : '<span>Cliente <b>' + review.customer_star_rating.toFixed(1) + "</b></span>" +
+          '<span style="color:' + accent + '">IA <b style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</b></span>") +
+      "</div>" +
+      (showBreakdown ? breakdownHtml(review) : "") +
+      '<div class="kelsira-card-foot">' +
+      avatarHtml(review.customer_name) +
+      '<div class="kelsira-name-col"><span class="kelsira-name">' +
+      escapeHtml(review.customer_name) +
+      "</span>" +
+      '<span class="kelsira-date">' +
+      formatDate(review.created_at) +
+      "</span></div>" +
+      "</div>" +
+      replyHtml(review, businessName) +
+      "</div>"
+    );
   }
 
+  function cardHtml(review, showBreakdown, accent, businessName, cardStyle) {
+    return cardStyle === "medidor"
+      ? medidorCardHtml(review, showBreakdown, accent, businessName)
+      : reciboCardHtml(review, showBreakdown, accent, businessName);
+  }
+
+  // ---------- La Cita: oversized spotlight quote ----------
   function mountSpotlight(container, reviews, showBreakdown, accent, businessName) {
     var wrap = document.createElement("div");
     wrap.className = "kelsira-spotlight";
@@ -224,20 +265,24 @@
 
     function render() {
       var r = reviews[index];
+      var confirmed = isConfirmed(r);
       inner.innerHTML =
-        starsHtml(r.overall_ai_rating, 18, accent) +
-        '<span class="kelsira-ai-tag" title="Puntaje calculado por IA a partir del texto de la reseña">IA</span>' +
-        '<p class="kelsira-quote">' +
-        escapeHtml(truncate(r.review_text, 220)) +
-        "</p>" +
-        '<div class="kelsira-card-foot">' +
+        '<p class="kelsira-big-quote">' + escapeHtml(truncate(r.review_text, 220)) + "</p>" +
+        '<div class="kelsira-spotlight-foot">' +
         avatarHtml(r.customer_name) +
-        '<div class="kelsira-name-col"><span class="kelsira-name">' +
+        '<div class="kelsira-name-col" style="text-align:left"><span class="kelsira-name">' +
         escapeHtml(r.customer_name) +
         "</span>" +
-        '<span class="kelsira-date">' +
-        formatDate(r.created_at) +
-        "</span></div>" +
+        starsHtml(r.overall_ai_rating, 12, accent) +
+        "</div>" +
+        '<span class="kelsira-quote-chip">' +
+        (confirmed
+          ? '<span class="kelsira-final" style="color:' + accent + '">' + r.overall_ai_rating.toFixed(1) + "</span>"
+          : '<span class="kelsira-raw">' + r.customer_star_rating.toFixed(1) + "★</span>" +
+            '<span class="kelsira-arrow">→</span>' +
+            '<span class="kelsira-final" style="color:' + accent + '">' + r.overall_ai_rating.toFixed(1) + "</span>") +
+        aiTagHtml() +
+        "</span>" +
         "</div>" +
         (showBreakdown ? breakdownHtml(r) : "") +
         replyHtml(r, businessName);
@@ -289,6 +334,163 @@
     container.appendChild(wrap);
   }
 
+  // ---------- El Clásico: minimal single-line badge ----------
+  function mountBadge(container, data, accent, origin) {
+    var badge = document.createElement("div");
+    badge.className = "kelsira-badge";
+    badge.innerHTML =
+      '<img class="kelsira-badge-logo" src="' + origin + '/logo-mark.png" alt="" width="22" height="22">' +
+      '<div class="kelsira-badge-main">' +
+      '<div class="kelsira-badge-top">' +
+      starsHtml(data.average_rating, 16, accent) +
+      '<span class="kelsira-badge-rating" style="color:' + accent + '">' + data.average_rating.toFixed(1) + "</span>" +
+      aiTagHtml() +
+      "</div>" +
+      '<span class="kelsira-badge-sub">' + data.total_reviews + " reseñas verificadas · Kelsira</span>" +
+      "</div>";
+    container.appendChild(badge);
+  }
+
+  // ---------- El Sello: circular seal ----------
+  function mountSello(container, data, accent, origin) {
+    var wrap = document.createElement("div");
+    wrap.className = "kelsira-seal-wrap";
+    wrap.innerHTML =
+      '<div class="kelsira-seal" style="--kelsira-seal-accent:' + accent + '">' +
+      '<span class="kelsira-seal-num">' + data.average_rating.toFixed(1) + "</span>" +
+      starsHtml(data.average_rating, 12, accent) +
+      '<span class="kelsira-seal-sub">' + data.total_reviews + " reseñas · IA</span>" +
+      "</div>" +
+      '<div class="kelsira-seal-caption">' +
+      '<img src="' + origin + '/logo-mark.png" alt="" width="16" height="16">' +
+      "<span>Verificado por Kelsira</span>" +
+      "</div>";
+    container.appendChild(wrap);
+  }
+
+  // ---------- El Mosaico: dense rows, one disclosure line for the whole block ----------
+  function mountMosaico(container, reviews, accent) {
+    var wrap = document.createElement("div");
+    wrap.className = "kelsira-mosaic-wrap";
+    var header = document.createElement("div");
+    header.className = "kelsira-mosaic-header";
+    header.textContent = "Puntajes objetivo IA";
+    wrap.appendChild(header);
+
+    var list = document.createElement("div");
+    list.className = "kelsira-mosaic";
+    reviews.forEach(function (r) {
+      list.insertAdjacentHTML(
+        "beforeend",
+        '<div class="kelsira-mosaic-row">' +
+          avatarHtml(r.customer_name, 26) +
+          '<div class="kelsira-mosaic-who"><span class="kelsira-name">' + escapeHtml(r.customer_name) + "</span>" +
+          '<span class="kelsira-date">' + formatDate(r.created_at) + "</span></div>" +
+          '<span class="kelsira-mosaic-num" style="color:' + accent + '">' + r.overall_ai_rating.toFixed(1) + "</span>" +
+          '<span class="kelsira-mosaic-quote">' + escapeHtml(truncate(r.review_text, 70)) + "</span>" +
+          "</div>",
+      );
+    });
+    wrap.appendChild(list);
+    container.appendChild(wrap);
+  }
+
+  function injectStyles(id) {
+    if (document.getElementById(id)) return;
+    var style = document.createElement("style");
+    style.id = id;
+    style.textContent =
+      ".kelsira-widget{font-family:var(--kelsira-font,inherit);color:var(--kelsira-fg);}" +
+      ".kelsira-widget *{box-sizing:border-box;}" +
+      ".kelsira-stars{display:inline-flex;gap:2px;color:var(--kelsira-star-bg);}" +
+      ".kelsira-star-slot{position:relative;display:inline-block;}" +
+      ".kelsira-star-bg{position:absolute;inset:0;}" +
+      ".kelsira-star-fg{position:absolute;inset:0;overflow:hidden;}" +
+      ".kelsira-avatar{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;color:#fff;font-size:12.5px;font-weight:600;flex-shrink:0;letter-spacing:.02em;}" +
+      ".kelsira-ai-tag{font-size:9px;font-weight:700;letter-spacing:.03em;opacity:.5;border:1px solid currentColor;border-radius:4px;padding:1px 4px;line-height:1.4;cursor:default;}" +
+      ".kelsira-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}" +
+      ".kelsira-date{font-size:11px;opacity:.55;}" +
+      ".kelsira-name-col{display:flex;flex-direction:column;line-height:1.25;min-width:0;}" +
+      ".kelsira-quote{font-size:13.5px;line-height:1.55;margin:0;opacity:.92;}" +
+      ".kelsira-quote:before{content:'\\201C';}" +
+      ".kelsira-quote:after{content:'\\201D';}" +
+      ".kelsira-breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}" +
+      ".kelsira-pill{font-size:10.5px;padding:3px 9px;border-radius:999px;background:var(--kelsira-pill-bg);opacity:.85;}" +
+      ".kelsira-reply{margin-top:12px;padding:10px 12px;border-radius:calc(var(--kelsira-radius) * 0.6);background:var(--kelsira-pill-bg);}" +
+      ".kelsira-reply-from{display:block;font-size:11px;font-weight:700;opacity:.7;margin-bottom:3px;}" +
+      ".kelsira-reply-text{margin:0;font-size:12.5px;line-height:1.5;opacity:.85;}" +
+      ".kelsira-card-foot{display:flex;align-items:center;gap:10px;margin-top:14px;}" +
+      ".kelsira-carousel{display:flex;gap:14px;overflow-x:auto;padding:6px 2px 14px;scroll-snap-type:x proximity;}" +
+      ".kelsira-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}" +
+      ".kelsira-wall{display:flex;flex-direction:column;gap:12px;}" +
+      ".kelsira-empty{font-size:13px;opacity:.7;}" +
+      ".kelsira-powered{font-size:10px;opacity:.5;margin-top:12px;text-align:right;}" +
+      // El Recibo — ticket shape: dashed cut corners + a perforation rule.
+      ".kelsira-ticket{position:relative;background:var(--kelsira-bg);border:1px solid var(--kelsira-border);box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 24px -14px rgba(0,0,0,.16);clip-path:polygon(0 8px,8px 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);transition:transform .18s ease;overflow:hidden;}" +
+      ".kelsira-ticket:hover{transform:translateY(-3px);}" +
+      ".kelsira-carousel .kelsira-ticket{flex:0 0 270px;scroll-snap-align:start;}" +
+      ".kelsira-ticket-head{padding:16px 18px 13px;}" +
+      ".kelsira-correction-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}" +
+      ".kelsira-raw{font-size:13px;opacity:.5;text-decoration:line-through;}" +
+      ".kelsira-arrow{font-size:12px;opacity:.4;}" +
+      ".kelsira-final{font-weight:700;font-size:19px;}" +
+      ".kelsira-correction-caption{margin:5px 0 10px;font-size:10px;letter-spacing:.03em;text-transform:uppercase;opacity:.45;}" +
+      ".kelsira-perforation{height:0;border-top:1.5px dashed var(--kelsira-border);margin:0 18px;}" +
+      ".kelsira-ticket-body{padding:14px 18px 16px;}" +
+      // El Medidor — comparative gauge.
+      ".kelsira-gauge-card{background:var(--kelsira-bg);border:1px solid var(--kelsira-border);border-radius:var(--kelsira-radius);box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 24px -14px rgba(0,0,0,.16);padding:16px 18px;transition:transform .18s ease;}" +
+      ".kelsira-gauge-card:hover{transform:translateY(-3px);}" +
+      ".kelsira-carousel .kelsira-gauge-card{flex:0 0 270px;scroll-snap-align:start;}" +
+      ".kelsira-gauge-head{display:flex;align-items:center;gap:8px;margin-bottom:11px;}" +
+      ".kelsira-gauge-quote{margin-bottom:14px;}" +
+      ".kelsira-gauge-track{position:relative;height:4px;background:var(--kelsira-pill-bg);border-radius:999px;margin:16px 4px 9px;}" +
+      ".kelsira-gauge-fill{position:absolute;top:0;bottom:0;background:currentColor;opacity:.35;border-radius:999px;}" +
+      ".kelsira-gauge-dot{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;background:var(--kelsira-fg);opacity:.4;transform:translate(-50%,-50%);border:2px solid var(--kelsira-bg);}" +
+      ".kelsira-gauge-pin{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;transform:translate(-50%,-50%);border:2px solid var(--kelsira-bg);}" +
+      ".kelsira-gauge-legend{display:flex;justify-content:space-between;font-size:11px;opacity:.7;margin-bottom:2px;}" +
+      // La Cita — big spotlight quote.
+      ".kelsira-spotlight{border-radius:var(--kelsira-radius);border:1px solid var(--kelsira-border);background:var(--kelsira-bg);padding:26px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 24px -14px rgba(0,0,0,.16);}" +
+      ".kelsira-spotlight-inner{transition:opacity .22s ease;text-align:center;}" +
+      ".kelsira-big-quote{margin:0;font-size:18px;font-weight:500;line-height:1.5;}" +
+      ".kelsira-big-quote:before{content:'\\201C';}" +
+      ".kelsira-big-quote:after{content:'\\201D';}" +
+      ".kelsira-spotlight-foot{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;}" +
+      ".kelsira-quote-chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;margin-left:6px;}" +
+      ".kelsira-spotlight .kelsira-breakdown{justify-content:center;margin-top:14px;}" +
+      ".kelsira-spotlight .kelsira-reply{text-align:left;max-width:360px;margin-left:auto;margin-right:auto;}" +
+      ".kelsira-dots{display:flex;justify-content:center;gap:6px;margin-top:18px;}" +
+      ".kelsira-dot{width:6px;height:6px;border-radius:50%;background:var(--kelsira-border);border:none;padding:0;cursor:pointer;transition:width .2s ease,background .2s ease;}" +
+      ".kelsira-dot--active{width:18px;border-radius:3px;background:var(--kelsira-accent);}" +
+      // El Clásico — minimal single-line badge.
+      ".kelsira-badge{display:inline-flex;align-items:center;gap:12px;padding:12px 18px;border:1px solid var(--kelsira-border);border-radius:var(--kelsira-radius);background:var(--kelsira-bg);box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px -10px rgba(0,0,0,.18);}" +
+      ".kelsira-badge-logo{border-radius:6px;flex-shrink:0;}" +
+      ".kelsira-badge-main{display:flex;flex-direction:column;gap:3px;}" +
+      ".kelsira-badge-top{display:flex;align-items:center;gap:7px;}" +
+      ".kelsira-badge-rating{font-weight:700;font-size:16px;}" +
+      ".kelsira-badge-sub{font-size:11.5px;opacity:.6;}" +
+      // El Sello — circular seal.
+      ".kelsira-seal-wrap{display:inline-flex;flex-direction:column;align-items:center;gap:12px;}" +
+      ".kelsira-seal{width:140px;height:140px;border-radius:50%;background:var(--kelsira-bg);border:1.5px solid var(--kelsira-seal-accent,var(--kelsira-accent));display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.05),0 10px 24px -14px rgba(0,0,0,.2);}" +
+      ".kelsira-seal-num{font-weight:700;font-size:28px;line-height:1;}" +
+      ".kelsira-seal .kelsira-stars{margin-top:7px;}" +
+      ".kelsira-seal-sub{margin-top:6px;font-size:9px;letter-spacing:.05em;text-transform:uppercase;opacity:.5;}" +
+      ".kelsira-seal-caption{display:flex;align-items:center;gap:7px;}" +
+      ".kelsira-seal-caption img{border-radius:5px;}" +
+      ".kelsira-seal-caption span{font-size:11.5px;opacity:.7;}" +
+      // El Mosaico — dense rows.
+      ".kelsira-mosaic-wrap{border:1px solid var(--kelsira-border);border-radius:var(--kelsira-radius);overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 24px -14px rgba(0,0,0,.16);}" +
+      ".kelsira-mosaic-header{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.45;padding:10px 13px 0;background:var(--kelsira-bg);}" +
+      ".kelsira-mosaic{display:flex;flex-direction:column;background:var(--kelsira-bg);}" +
+      ".kelsira-mosaic-row{display:flex;align-items:center;gap:9px;padding:9px 13px;}" +
+      ".kelsira-mosaic-row+.kelsira-mosaic-row{border-top:1px solid var(--kelsira-border);}" +
+      ".kelsira-mosaic-who{display:flex;flex-direction:column;width:78px;flex-shrink:0;line-height:1.25;}" +
+      ".kelsira-mosaic-who .kelsira-name{font-size:11.5px;}" +
+      ".kelsira-mosaic-who .kelsira-date{font-size:9.5px;}" +
+      ".kelsira-mosaic-num{font-weight:700;font-size:12.5px;width:28px;flex-shrink:0;}" +
+      ".kelsira-mosaic-quote{font-size:11.5px;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}";
+    document.head.appendChild(style);
+  }
+
   function mount(script) {
     var businessId = script.getAttribute("data-business-id");
     if (!businessId) return;
@@ -307,6 +509,7 @@
 
         var isDark = data.config.theme_mode === "dark";
         var accent = data.config.accent_color || "#4f7cff";
+        var cardStyle = data.config.card_style || "recibo";
         container.style.setProperty("--kelsira-bg", isDark ? "#101114" : "#ffffff");
         container.style.setProperty("--kelsira-fg", isDark ? "#f4f5f7" : "#111318");
         container.style.setProperty("--kelsira-border", isDark ? "#232529" : "#e5e7eb");
@@ -324,34 +527,23 @@
           return;
         }
 
-        if (data.config.layout === "badge") {
-          var badge = document.createElement("div");
-          badge.className = "kelsira-badge";
-          badge.innerHTML =
-            starsHtml(data.average_rating, 16, accent) +
-            '<span class="kelsira-badge-rating" style="color:' +
-            accent +
-            '">' +
-            data.average_rating.toFixed(1) +
-            "/5</span>" +
-            '<span class="kelsira-badge-sub">(' +
-            data.total_reviews +
-            " reseñas · Puntaje Objetivo IA)</span>";
-          container.appendChild(badge);
-        } else if (data.config.layout === "spotlight") {
+        var layout = data.config.layout;
+        if (layout === "badge") {
+          mountBadge(container, data, accent, origin);
+        } else if (layout === "sello") {
+          mountSello(container, data, accent, origin);
+        } else if (layout === "mosaico") {
+          mountMosaico(container, data.reviews, accent);
+        } else if (layout === "spotlight") {
           mountSpotlight(container, data.reviews, data.config.show_breakdown, accent, data.business.name);
         } else {
           var list = document.createElement("div");
           list.className =
-            data.config.layout === "grid"
-              ? "kelsira-grid"
-              : data.config.layout === "wall"
-                ? "kelsira-wall"
-                : "kelsira-carousel";
+            layout === "grid" ? "kelsira-grid" : layout === "wall" ? "kelsira-wall" : "kelsira-carousel";
           data.reviews.forEach(function (review) {
             list.insertAdjacentHTML(
               "beforeend",
-              cardHtml(review, data.config.show_breakdown, accent, data.business.name),
+              cardHtml(review, data.config.show_breakdown, accent, data.business.name, cardStyle),
             );
           });
           container.appendChild(list);

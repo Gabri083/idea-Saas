@@ -17,7 +17,7 @@ const SAMPLE_REVIEWS: Review[] = [
     customer_email: "",
     review_text:
       "Compré hace poco y quedé muy conforme con la calidad, la atención fue excelente. Lo único es que el envío se demoró un poco más de lo esperado.",
-    customer_star_rating: null,
+    customer_star_rating: 1,
     product_score: 5,
     service_score: 5,
     delivery_score: 3,
@@ -37,7 +37,7 @@ const SAMPLE_REVIEWS: Review[] = [
     customer_name: "Diego M.",
     customer_email: "",
     review_text: "Todo perfecto, superó mis expectativas. Llegó rápido y bien embalado.",
-    customer_star_rating: null,
+    customer_star_rating: 5,
     product_score: 5,
     service_score: 4,
     delivery_score: 5,
@@ -56,7 +56,7 @@ const SAMPLE_REVIEWS: Review[] = [
     customer_name: "Fernanda A.",
     customer_email: "",
     review_text: "Buena calidad, pero tuve que escribir dos veces para que me respondieran.",
-    customer_star_rating: null,
+    customer_star_rating: 3,
     product_score: 4,
     service_score: 3,
     delivery_score: 5,
@@ -89,11 +89,27 @@ const fontStack: Record<string, string> = {
 };
 const layoutOptions: { id: WidgetConfig["layout"]; label: string }[] = [
   { id: "carousel", label: "Carrusel" },
-  { id: "badge", label: "Badge" },
   { id: "grid", label: "Grilla" },
   { id: "wall", label: "Muro" },
-  { id: "spotlight", label: "Destacada" },
+  { id: "spotlight", label: "Cita" },
+  { id: "badge", label: "Clásico" },
+  { id: "sello", label: "Sello" },
+  { id: "mosaico", label: "Mosaico" },
 ];
+const cardStyleOptions: { id: WidgetConfig["card_style"]; label: string }[] = [
+  { id: "recibo", label: "Recibo" },
+  { id: "medidor", label: "Medidor" },
+];
+// grid/wall/carousel repeat one card per review — the other four layouts are
+// single aggregate displays, so the card-style choice doesn't apply to them.
+const CARD_STYLE_LAYOUTS: WidgetConfig["layout"][] = ["carousel", "grid", "wall"];
+
+function isConfirmed(review: Review) {
+  return (
+    review.customer_star_rating == null ||
+    Math.abs(review.customer_star_rating - review.overall_ai_rating) < 0.15
+  );
+}
 
 const STAR_PATH =
   "M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z";
@@ -193,7 +209,68 @@ function Reply({ review, businessName, pillBg }: { review: Review; businessName:
   );
 }
 
-function ReviewCard({
+function TicketCard({
+  review,
+  showBreakdown,
+  accent,
+  isDark,
+  businessName,
+}: {
+  review: Review;
+  showBreakdown: boolean;
+  accent: string;
+  isDark: boolean;
+  businessName: string;
+}) {
+  const borderColor = isDark ? "#232529" : "#e5e7eb";
+  const starBg = isDark ? "#3a3d44" : "#e2e4e8";
+  const pillBg = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
+  const confirmed = isConfirmed(review);
+  return (
+    <div
+      className="min-w-0 overflow-hidden border text-sm shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_24px_-14px_rgba(0,0,0,.16)] transition-transform hover:-translate-y-0.5"
+      style={{ borderColor, clipPath: "polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)" }}
+    >
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex flex-wrap items-baseline gap-2">
+          {confirmed ? (
+            <span className="text-lg font-bold" style={{ color: accent }}>
+              {review.overall_ai_rating.toFixed(1)}
+            </span>
+          ) : (
+            <>
+              <span className="text-[13px] opacity-50 line-through">{review.customer_star_rating!.toFixed(1)}★</span>
+              <span className="text-xs opacity-40">→</span>
+              <span className="text-lg font-bold" style={{ color: accent }}>
+                {review.overall_ai_rating.toFixed(1)}
+              </span>
+            </>
+          )}
+          <AiTag />
+        </div>
+        <p className="mt-1 mb-2.5 text-[10px] uppercase tracking-wide opacity-45">
+          {confirmed ? "Confirmado por IA" : "Corrección por hechos, no por enojo"}
+        </p>
+        <Stars value={review.overall_ai_rating} size={14} accent={accent} bg={starBg} />
+      </div>
+      <div style={{ margin: "0 16px", borderTop: `1.5px dashed ${borderColor}` }} />
+      <div className="px-4 pt-3.5 pb-4">
+        <p className="line-clamp-3 opacity-90">&ldquo;{review.review_text}&rdquo;</p>
+        {showBreakdown && <Breakdown review={review} pillBg={pillBg} />}
+        <div className="mt-3.5 flex items-center gap-2.5">
+          <Avatar name={review.customer_name} />
+          <div className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-[12.5px] font-medium">{review.customer_name}</span>
+            <span className="text-[11px] opacity-55">{formatDate(review.created_at)}</span>
+          </div>
+        </div>
+        <Reply review={review} businessName={businessName} pillBg={pillBg} />
+      </div>
+    </div>
+  );
+}
+
+function GaugeCard({
   review,
   showBreakdown,
   accent,
@@ -211,19 +288,54 @@ function ReviewCard({
   const borderColor = isDark ? "#232529" : "#e5e7eb";
   const starBg = isDark ? "#3a3d44" : "#e2e4e8";
   const pillBg = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
+  const confirmed = isConfirmed(review);
+  const rawPct = confirmed ? null : Math.max(0, Math.min(100, ((review.customer_star_rating! - 1) / 4) * 100));
+  const finalPct = Math.max(0, Math.min(100, ((review.overall_ai_rating - 1) / 4) * 100));
+  const fillLeft = confirmed ? 0 : Math.min(rawPct!, finalPct);
+  const fillWidth = confirmed ? finalPct : Math.abs(finalPct - rawPct!);
   return (
     <div
       className="min-w-0 border p-4 text-sm shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_24px_-14px_rgba(0,0,0,.16)] transition-transform hover:-translate-y-0.5"
       style={{ borderRadius: radius, borderColor }}
     >
-      <div className="flex items-center gap-1.5">
-        <Stars value={review.overall_ai_rating} accent={accent} bg={starBg} />
-        <span className="text-[13px] font-semibold" style={{ color: accent }}>
-          {review.overall_ai_rating.toFixed(1)}
-        </span>
+      <div className="flex items-center gap-2">
+        <Stars value={review.overall_ai_rating} size={14} accent={accent} bg={starBg} />
         <AiTag />
       </div>
-      <p className="mt-2.5 line-clamp-3 opacity-90">&ldquo;{review.review_text}&rdquo;</p>
+      <p className="mt-2.5 line-clamp-2 text-[13.5px] opacity-90">&ldquo;{review.review_text}&rdquo;</p>
+      <div className="relative mx-0.5 mt-4 mb-2 h-1 rounded-full" style={{ background: pillBg }}>
+        <div
+          className="absolute top-0 bottom-0 rounded-full opacity-30"
+          style={{ left: `${fillLeft}%`, width: `${fillWidth}%`, background: isDark ? "#fff" : "#000" }}
+        />
+        {!confirmed && (
+          <div
+            className="absolute top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{ left: `${rawPct}%`, background: isDark ? "#6d707a" : "#9a9da5", border: `2px solid ${isDark ? "#101114" : "#fff"}` }}
+          />
+        )}
+        <div
+          className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ left: `${finalPct}%`, background: accent, border: `2px solid ${isDark ? "#101114" : "#fff"}` }}
+        />
+      </div>
+      <div className="mb-1 flex justify-between text-[11px] opacity-70">
+        {confirmed ? (
+          <span>
+            Cliente e IA: <b style={{ color: accent }}>{review.overall_ai_rating.toFixed(1)}</b>
+          </span>
+        ) : (
+          <>
+            <span>
+              Cliente <b>{review.customer_star_rating!.toFixed(1)}</b>
+            </span>
+            <span style={{ color: accent }}>
+              IA <b style={{ color: accent }}>{review.overall_ai_rating.toFixed(1)}</b>
+            </span>
+          </>
+        )}
+      </div>
+      {showBreakdown && <Breakdown review={review} pillBg={pillBg} />}
       <div className="mt-3.5 flex items-center gap-2.5">
         <Avatar name={review.customer_name} />
         <div className="flex min-w-0 flex-col leading-tight">
@@ -231,8 +343,90 @@ function ReviewCard({
           <span className="text-[11px] opacity-55">{formatDate(review.created_at)}</span>
         </div>
       </div>
-      {showBreakdown && <Breakdown review={review} pillBg={pillBg} />}
       <Reply review={review} businessName={businessName} pillBg={pillBg} />
+    </div>
+  );
+}
+
+function ClassicBadge({
+  average,
+  count,
+  accent,
+  borderColor,
+  starBg,
+  radius,
+}: {
+  average: number;
+  count: number;
+  accent: string;
+  borderColor: string;
+  starBg: string;
+  radius: string;
+}) {
+  return (
+    <div
+      className="inline-flex items-center gap-3 border px-4 py-3 shadow-[0_1px_2px_rgba(0,0,0,.05),0_6px_18px_-10px_rgba(0,0,0,.18)]"
+      style={{ borderRadius: radius, borderColor }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logo-mark.png" width={22} height={22} alt="" className="shrink-0 rounded-md" />
+      <div className="flex flex-col gap-0.5">
+        <div className="flex items-center gap-1.5">
+          <Stars value={average} size={16} accent={accent} bg={starBg} />
+          <strong style={{ color: accent }}>{average.toFixed(1)}</strong>
+          <AiTag />
+        </div>
+        <span className="text-[11.5px] opacity-60">{count} reseñas verificadas · Kelsira</span>
+      </div>
+    </div>
+  );
+}
+
+function SealBadge({ average, count, accent, starBg }: { average: number; count: number; accent: string; starBg: string }) {
+  return (
+    <div className="inline-flex flex-col items-center gap-3">
+      <div
+        className="flex flex-col items-center justify-center rounded-full border shadow-[0_1px_2px_rgba(0,0,0,.05),0_10px_24px_-14px_rgba(0,0,0,.2)]"
+        style={{ width: 140, height: 140, borderColor: accent, borderWidth: 1.5 }}
+      >
+        <span className="text-[28px] font-bold leading-none">{average.toFixed(1)}</span>
+        <div className="mt-1.5">
+          <Stars value={average} size={12} accent={accent} bg={starBg} />
+        </div>
+        <span className="mt-1.5 text-[9px] uppercase tracking-wide opacity-50">{count} reseñas · IA</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-mark.png" width={16} height={16} alt="" className="rounded" />
+        <span className="text-[11.5px] opacity-70">Verificado por Kelsira</span>
+      </div>
+    </div>
+  );
+}
+
+function MosaicList({ reviews, accent, borderColor }: { reviews: Review[]; accent: string; borderColor: string }) {
+  return (
+    <div className="overflow-hidden rounded-xl border shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_24px_-14px_rgba(0,0,0,.16)]" style={{ borderColor }}>
+      <div className="px-3.5 pt-2.5 text-[9.5px] uppercase tracking-wide opacity-45">Puntajes objetivo IA</div>
+      <div className="flex flex-col">
+        {reviews.map((r, i) => (
+          <div
+            key={r.id}
+            className="flex items-center gap-2.5 px-3.5 py-2.5"
+            style={i > 0 ? { borderTop: `1px solid ${borderColor}` } : undefined}
+          >
+            <Avatar name={r.customer_name} />
+            <div className="flex w-20 shrink-0 flex-col leading-tight">
+              <span className="truncate text-[11.5px] font-semibold">{r.customer_name}</span>
+              <span className="text-[9.5px] opacity-55">{formatDate(r.created_at)}</span>
+            </div>
+            <span className="w-7 shrink-0 text-[12.5px] font-bold" style={{ color: accent }}>
+              {r.overall_ai_rating.toFixed(1)}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-[11.5px] opacity-70">{r.review_text}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -261,20 +455,33 @@ function Spotlight({
   const review = reviews[Math.min(index, reviews.length - 1)];
   const starBg = isDark ? "#3a3d44" : "#e2e4e8";
   const pillBg = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
+  const confirmed = isConfirmed(review);
 
   return (
     <div className="text-center">
-      <div className="flex items-center justify-center gap-1.5">
-        <Stars value={review.overall_ai_rating} size={18} accent={accent} bg={starBg} />
-        <AiTag />
-      </div>
-      <p className="mt-3.5 text-base opacity-90">&ldquo;{review.review_text}&rdquo;</p>
+      <p className="text-lg font-medium leading-snug opacity-95">&ldquo;{review.review_text}&rdquo;</p>
       <div className="mt-4 flex items-center justify-center gap-2.5">
         <Avatar name={review.customer_name} />
         <div className="flex flex-col text-left leading-tight">
           <span className="text-[12.5px] font-medium">{review.customer_name}</span>
-          <span className="text-[11px] opacity-55">{formatDate(review.created_at)}</span>
+          <Stars value={review.overall_ai_rating} size={12} accent={accent} bg={starBg} />
         </div>
+        <span className="ml-1.5 inline-flex items-center gap-1.5 text-[13px]">
+          {confirmed ? (
+            <span className="font-bold" style={{ color: accent }}>
+              {review.overall_ai_rating.toFixed(1)}
+            </span>
+          ) : (
+            <>
+              <span className="opacity-50 line-through">{review.customer_star_rating!.toFixed(1)}★</span>
+              <span className="opacity-40">→</span>
+              <span className="font-bold" style={{ color: accent }}>
+                {review.overall_ai_rating.toFixed(1)}
+              </span>
+            </>
+          )}
+          <AiTag />
+        </span>
       </div>
       {showBreakdown && (
         <div className="flex justify-center">
@@ -473,6 +680,28 @@ export function WidgetConfigurator({
           </div>
         </div>
 
+        {CARD_STYLE_LAYOUTS.includes(config.layout) && (
+          <div>
+            <p className="text-sm font-medium">Estilo de tarjeta</p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {cardStyleOptions.map(({ id, label }) => (
+                <button
+                  key={id}
+                  onClick={() => setConfig((p) => ({ ...p, card_style: id }))}
+                  className={cn(
+                    "rounded-lg border px-2 py-2 text-xs transition-colors",
+                    config.card_style === id
+                      ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
+                      : "border-border text-muted hover:text-foreground",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -529,16 +758,18 @@ export function WidgetConfigurator({
             }}
           >
             {config.layout === "badge" ? (
-              <div
-                className="inline-flex items-center gap-2.5 border px-4 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,.05),0_6px_18px_-10px_rgba(0,0,0,.18)]"
-                style={{ borderRadius: radius, borderColor }}
-              >
-                <Stars value={average} accent={config.accent_color} bg={starBg} />
-                <strong style={{ color: config.accent_color }}>{average.toFixed(1)}/5</strong>
-                <span className="text-xs opacity-60">
-                  ({previewReviews.length} reseñas · Puntaje Objetivo IA)
-                </span>
-              </div>
+              <ClassicBadge
+                average={average}
+                count={previewReviews.length}
+                accent={config.accent_color}
+                borderColor={borderColor}
+                starBg={starBg}
+                radius={radius}
+              />
+            ) : config.layout === "sello" ? (
+              <SealBadge average={average} count={previewReviews.length} accent={config.accent_color} starBg={starBg} />
+            ) : config.layout === "mosaico" ? (
+              <MosaicList reviews={previewReviews.slice(0, 6)} accent={config.accent_color} borderColor={borderColor} />
             ) : config.layout === "spotlight" ? (
               <Spotlight
                 reviews={previewReviews}
@@ -557,18 +788,30 @@ export function WidgetConfigurator({
                       : "flex gap-3 overflow-x-auto",
                 )}
               >
-                {(config.layout === "wall" ? previewReviews : previewReviews.slice(0, 4)).map((r) => (
-                  <div key={r.id} className={config.layout === "carousel" ? "min-w-[240px] flex-1" : undefined}>
-                    <ReviewCard
-                      review={r}
-                      showBreakdown={config.show_breakdown}
-                      accent={config.accent_color}
-                      isDark={isDark}
-                      radius={radius}
-                      businessName={businessName}
-                    />
-                  </div>
-                ))}
+                {(config.layout === "wall" ? previewReviews : previewReviews.slice(0, 4)).map((r) =>
+                  config.card_style === "medidor" ? (
+                    <div key={r.id} className={config.layout === "carousel" ? "min-w-[240px] flex-1" : undefined}>
+                      <GaugeCard
+                        review={r}
+                        showBreakdown={config.show_breakdown}
+                        accent={config.accent_color}
+                        isDark={isDark}
+                        radius={radius}
+                        businessName={businessName}
+                      />
+                    </div>
+                  ) : (
+                    <div key={r.id} className={config.layout === "carousel" ? "min-w-[240px] flex-1" : undefined}>
+                      <TicketCard
+                        review={r}
+                        showBreakdown={config.show_breakdown}
+                        accent={config.accent_color}
+                        isDark={isDark}
+                        businessName={businessName}
+                      />
+                    </div>
+                  ),
+                )}
               </div>
             )}
             {config.show_branding && (

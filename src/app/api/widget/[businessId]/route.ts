@@ -51,6 +51,7 @@ export async function GET(
           id: r.id,
           customer_name: r.customer_name,
           review_text: r.review_text,
+          customer_star_rating: r.customer_star_rating,
           overall_ai_rating: r.overall_ai_rating,
           product_score: r.product_score,
           service_score: r.service_score,

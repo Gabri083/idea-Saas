@@ -119,7 +119,8 @@ export interface WidgetConfig {
   accent_color: string;
   border_radius: "none" | "sm" | "md" | "lg" | "full";
   font_family: string;
-  layout: "carousel" | "badge" | "grid" | "wall" | "spotlight";
+  layout: "carousel" | "badge" | "grid" | "wall" | "spotlight" | "sello" | "mosaico";
+  card_style: "recibo" | "medidor"; // per-review card look, used by grid/wall/carousel
   show_breakdown: boolean;
   show_branding: boolean; // "Verificado por Kelsira" footer; forced true on free/starter regardless of this value
 }

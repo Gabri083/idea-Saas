@@ -180,6 +180,7 @@ export const mockWidgetConfig: WidgetConfig = {
   border_radius: "lg",
   font_family: "inter",
   layout: "carousel",
+  card_style: "recibo",
   show_breakdown: true,
   show_branding: true,
 };

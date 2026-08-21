@@ -10,7 +10,8 @@ const BodySchema = z.object({
   accent_color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   border_radius: z.enum(["none", "sm", "md", "lg", "full"]),
   font_family: z.string().min(1).max(60),
-  layout: z.enum(["carousel", "badge", "grid", "wall", "spotlight"]),
+  layout: z.enum(["carousel", "badge", "grid", "wall", "spotlight", "sello", "mosaico"]),
+  card_style: z.enum(["recibo", "medidor"]),
   show_breakdown: z.boolean(),
   show_branding: z.boolean(),
 });
