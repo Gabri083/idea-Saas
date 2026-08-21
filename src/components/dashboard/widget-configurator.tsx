@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Copy, Loader2, Sparkles } from "lucide-react";
+import { AlertTriangle, Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlatformInstructions } from "@/components/dashboard/platform-instructions";
@@ -79,6 +79,15 @@ const radiusPx: Record<WidgetConfig["border_radius"], string> = {
   md: "10px",
   lg: "16px",
   full: "28px", // capped: literal 999px pill-rounds badges nicely but mangles multi-line cards
+};
+// El Recibo's signature cut corner scales with the same "Bordes" choice used
+// everywhere else, instead of ignoring it with a fixed cut.
+const ticketCutPx: Record<WidgetConfig["border_radius"], number> = {
+  none: 0,
+  sm: 4,
+  md: 6,
+  lg: 8,
+  full: 12,
 };
 const fontOptions = ["inter", "system-ui", "georgia", "mono"];
 const fontStack: Record<string, string> = {
@@ -214,22 +223,29 @@ function TicketCard({
   showBreakdown,
   accent,
   isDark,
+  borderRadius,
   businessName,
 }: {
   review: Review;
   showBreakdown: boolean;
   accent: string;
   isDark: boolean;
+  borderRadius: WidgetConfig["border_radius"];
   businessName: string;
 }) {
   const borderColor = isDark ? "#232529" : "#e5e7eb";
   const starBg = isDark ? "#3a3d44" : "#e2e4e8";
   const pillBg = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
   const confirmed = isConfirmed(review);
+  const cut = ticketCutPx[borderRadius];
+  const clipPath =
+    cut === 0
+      ? undefined
+      : `polygon(0 ${cut}px, ${cut}px 0, calc(100% - ${cut}px) 0, 100% ${cut}px, 100% 100%, 0 100%)`;
   return (
     <div
       className="min-w-0 overflow-hidden border text-sm shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_24px_-14px_rgba(0,0,0,.16)] transition-transform hover:-translate-y-0.5"
-      style={{ borderColor, clipPath: "polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)" }}
+      style={{ borderColor, clipPath }}
     >
       <div className="px-4 pt-4 pb-3">
         <div className="flex flex-wrap items-baseline gap-2">
@@ -404,9 +420,22 @@ function SealBadge({ average, count, accent, starBg }: { average: number; count:
   );
 }
 
-function MosaicList({ reviews, accent, borderColor }: { reviews: Review[]; accent: string; borderColor: string }) {
+function MosaicList({
+  reviews,
+  accent,
+  borderColor,
+  radius,
+}: {
+  reviews: Review[];
+  accent: string;
+  borderColor: string;
+  radius: string;
+}) {
   return (
-    <div className="overflow-hidden rounded-xl border shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_24px_-14px_rgba(0,0,0,.16)]" style={{ borderColor }}>
+    <div
+      className="overflow-hidden border shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_24px_-14px_rgba(0,0,0,.16)]"
+      style={{ borderColor, borderRadius: radius }}
+    >
       <div className="px-3.5 pt-2.5 text-[9.5px] uppercase tracking-wide opacity-45">Puntajes objetivo IA</div>
       <div className="flex flex-col">
         {reviews.map((r, i) => (
@@ -529,7 +558,7 @@ export function WidgetConfigurator({
   canCustomize: boolean;
 }) {
   const [config, setConfig] = useState(initialConfig);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [copied, setCopied] = useState(false);
   const [origin] = useState(() =>
     typeof window !== "undefined" ? window.location.origin : "https://cdn.tusaas.com",
@@ -540,15 +569,17 @@ export function WidgetConfigurator({
   async function save() {
     setSaveStatus("saving");
     try {
-      await fetch("/api/widget-config", {
+      const res = await fetch("/api/widget-config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...config, business_id: businessId }),
       });
+      if (!res.ok) throw new Error("save failed");
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch {
-      setSaveStatus("idle");
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 4000);
     }
   }
 
@@ -731,6 +762,10 @@ export function WidgetConfigurator({
             <>
               <Check size={16} /> Guardado
             </>
+          ) : saveStatus === "error" ? (
+            <>
+              <AlertTriangle size={16} /> No se pudo guardar, intenta de nuevo
+            </>
           ) : (
             "Guardar cambios"
           )}
@@ -769,7 +804,7 @@ export function WidgetConfigurator({
             ) : config.layout === "sello" ? (
               <SealBadge average={average} count={previewReviews.length} accent={config.accent_color} starBg={starBg} />
             ) : config.layout === "mosaico" ? (
-              <MosaicList reviews={previewReviews.slice(0, 6)} accent={config.accent_color} borderColor={borderColor} />
+              <MosaicList reviews={previewReviews.slice(0, 6)} accent={config.accent_color} borderColor={borderColor} radius={radius} />
             ) : config.layout === "spotlight" ? (
               <Spotlight
                 reviews={previewReviews}
@@ -807,6 +842,7 @@ export function WidgetConfigurator({
                         showBreakdown={config.show_breakdown}
                         accent={config.accent_color}
                         isDark={isDark}
+                        borderRadius={config.border_radius}
                         businessName={businessName}
                       />
                     </div>

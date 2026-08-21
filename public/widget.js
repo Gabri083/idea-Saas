@@ -4,6 +4,9 @@
   // "full" is capped at 28px rather than a true pill (999px): that reads fine on
   // the short single-line badge, but mangles multi-line review cards.
   var RADIUS_MAP = { none: "0px", sm: "6px", md: "10px", lg: "16px", full: "28px" };
+  // El Recibo's cut corner scales with the same "Bordes" choice as everything
+  // else, instead of ignoring it with a fixed cut.
+  var TICKET_CUT_MAP = { none: "0px", sm: "4px", md: "6px", lg: "8px", full: "12px" };
   var FONT_MAP = {
     inter: "Inter, ui-sans-serif, sans-serif",
     "system-ui": "system-ui, sans-serif",
@@ -426,7 +429,7 @@
       ".kelsira-empty{font-size:13px;opacity:.7;}" +
       ".kelsira-powered{font-size:10px;opacity:.5;margin-top:12px;text-align:right;}" +
       // El Recibo — ticket shape: dashed cut corners + a perforation rule.
-      ".kelsira-ticket{position:relative;background:var(--kelsira-bg);border:1px solid var(--kelsira-border);box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 24px -14px rgba(0,0,0,.16);clip-path:polygon(0 8px,8px 0,calc(100% - 8px) 0,100% 8px,100% 100%,0 100%);transition:transform .18s ease;overflow:hidden;}" +
+      ".kelsira-ticket{position:relative;background:var(--kelsira-bg);border:1px solid var(--kelsira-border);box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 24px -14px rgba(0,0,0,.16);clip-path:polygon(0 var(--kelsira-cut,8px),var(--kelsira-cut,8px) 0,calc(100% - var(--kelsira-cut,8px)) 0,100% var(--kelsira-cut,8px),100% 100%,0 100%);transition:transform .18s ease;overflow:hidden;}" +
       ".kelsira-ticket:hover{transform:translateY(-3px);}" +
       ".kelsira-carousel .kelsira-ticket{flex:0 0 270px;scroll-snap-align:start;}" +
       ".kelsira-ticket-head{padding:16px 18px 13px;}" +
@@ -517,6 +520,7 @@
         container.style.setProperty("--kelsira-pill-bg", isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)");
         container.style.setProperty("--kelsira-accent", accent);
         container.style.setProperty("--kelsira-radius", RADIUS_MAP[data.config.border_radius] || "10px");
+        container.style.setProperty("--kelsira-cut", TICKET_CUT_MAP[data.config.border_radius] || "8px");
         container.style.setProperty("--kelsira-font", FONT_MAP[data.config.font_family] || "inherit");
 
         if (data.total_reviews === 0) {
