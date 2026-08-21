@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShieldCheck, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/dashboard/nav-items";
 import { hasGrowthAccess, type Plan } from "@/lib/types";
+import { LogoMark } from "@/components/brand/logo-mark";
 
 export function Sidebar({ plan }: { plan: Plan }) {
   const pathname = usePathname();
@@ -14,9 +15,7 @@ export function Sidebar({ plan }: { plan: Plan }) {
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface/40 md:flex">
       <div className="flex items-center gap-2 px-6 py-5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cobalt/15 text-cobalt">
-          <ShieldCheck size={18} />
-        </span>
+        <LogoMark size={32} />
         <span className="font-semibold tracking-tight">Kelsira</span>
       </div>
 

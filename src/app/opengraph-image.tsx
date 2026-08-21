@@ -1,10 +1,15 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 export const alt = "Kelsira — Reputación Justa y Reseñas Asistidas por IA";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function Image() {
+export default async function Image() {
+  const logo = await readFile(join(process.cwd(), "public/logo-mark.png"));
+  const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
+
   return new ImageResponse(
     (
       <div
@@ -24,25 +29,10 @@ export default function Image() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 20,
+            gap: 24,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              width: 88,
-              height: 88,
-              borderRadius: 22,
-              background: "rgba(79,124,255,0.18)",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 52,
-              color: "#4f7cff",
-              fontWeight: 700,
-            }}
-          >
-            K
-          </div>
+          <img src={logoSrc} width={96} height={96} alt="" />
           <div style={{ display: "flex", fontSize: 96, fontWeight: 700, color: "#f4f5f7" }}>
             Kelsira
           </div>

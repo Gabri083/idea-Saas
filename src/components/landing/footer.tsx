@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { LogoMark } from "@/components/brand/logo-mark";
 
 const columns = [
   {
@@ -34,9 +34,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div className="col-span-2 sm:col-span-1">
             <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cobalt/15 text-cobalt">
-                <ShieldCheck size={18} />
-              </span>
+              <LogoMark size={32} />
               Kelsira
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted">

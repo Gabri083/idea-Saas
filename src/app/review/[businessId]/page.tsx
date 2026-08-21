@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
 import { ReviewForm } from "@/components/review/review-form";
 import { resolveBusinessId } from "@/lib/demo";
+import { LogoMark } from "@/components/brand/logo-mark";
 
 export default async function ReviewPage({
   params,
@@ -14,9 +14,7 @@ export default async function ReviewPage({
     <main className="flex flex-1 flex-col items-center bg-grid px-4 py-12 sm:py-20">
       <div className="w-full max-w-lg">
         <Link href="/" className="flex items-center justify-center gap-2 text-sm font-semibold">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cobalt/15 text-cobalt">
-            <ShieldCheck size={16} />
-          </span>
+          <LogoMark size={28} />
           Kelsira
         </Link>
 

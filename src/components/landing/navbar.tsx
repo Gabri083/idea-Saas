@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
+import { LogoMark } from "@/components/brand/logo-mark";
 
 const links = [
   { href: "#problema-solucion", label: "Producto" },
@@ -13,9 +13,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cobalt/15 text-cobalt">
-            <ShieldCheck size={18} />
-          </span>
+          <LogoMark size={32} />
           Kelsira
         </Link>
 
