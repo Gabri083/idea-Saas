@@ -50,7 +50,7 @@ export function Hero() {
           className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
         >
           <LinkButton href="/signup" size="lg">
-            Comenzar Prueba Gratuita de 14 Días <ArrowRight size={18} />
+            Empezar gratis <ArrowRight size={18} />
           </LinkButton>
           <LinkButton href="/review/demo" variant="secondary" size="lg">
             <PlayCircle size={18} /> Ver Demo Interactiva

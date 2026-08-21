@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { AiReviewAnalysis, BusinessCategory } from "@/lib/types";
 
 const AiAnalysisSchema = z.object({
+  is_valid_review: z.boolean(),
+  rejection_reason: z.string().nullable(),
   product_score: z.number().min(1).max(5),
   service_score: z.number().min(1).max(5),
   delivery_score: z.number().min(1).max(5),
@@ -50,6 +52,26 @@ censura, y extraer una evaluación objetiva de los HECHOS que describe —
 ignorando por completo el tono emocional, los insultos o el entusiasmo del
 autor. No modificas ni resumes el texto original del cliente en ningún otro
 lugar del sistema; tu única salida es la puntuación estructurada.
+
+PRIMER PASO — validez del contenido:
+Determina is_valid_review. Debe ser false SOLO cuando el texto no contiene
+ninguna información real y verificable sobre una experiencia con el negocio
+— es decir, cuando no hay NADA que un dueño de negocio pueda usar para
+entender qué pasó. Ejemplos de texto inválido: "lol", "jaja", "asdasd",
+teclado aleatorio, una sola palabra sin contexto ("malo", "pésimo", "bien"),
+insultos sin ningún hecho concreto, o texto que claramente no describe una
+experiencia de compra/servicio real. Si es inválido, pon rejection_reason
+con una frase breve en español explicando por qué (ej. "El texto no describe
+ninguna experiencia concreta con el negocio"), y devuelve product_score,
+service_score y delivery_score como 3.0, detected_issues como [] y summary
+como "".
+Si el texto SÍ describe algo real, aunque sea breve o esté mal escrito (ej.
+"la pizza llegó fría pero el repartidor fue amable"), is_valid_review debe
+ser true y rejection_reason debe ser null — un texto corto pero con
+contenido verificable NUNCA se rechaza. La brevedad, la mala ortografía o el
+enojo del cliente NO son motivo de rechazo por sí solos.
+
+Si is_valid_review es true, continúa con la evaluación normal descrita abajo.
 
 Evalúa tres dimensiones de forma independiente, cada una de 1.0 a 5.0 CON UN
 DECIMAL de precisión (ej. 4.7, 3.2, 2.8) — evita en lo posible números

@@ -134,6 +134,8 @@ export interface TeamMember {
 
 /** Structured output contract for the OpenAI JSON-mode scoring call. */
 export interface AiReviewAnalysis {
+  is_valid_review: boolean;
+  rejection_reason: string | null;
   product_score: number;
   service_score: number;
   delivery_score: number;

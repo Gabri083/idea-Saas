@@ -130,6 +130,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (!analysis.is_valid_review) {
+    return NextResponse.json(
+      {
+        error:
+          analysis.rejection_reason ??
+          "Tu reseña no contiene información suficiente sobre tu experiencia. Cuéntanos más detalles.",
+      },
+      { status: 422 },
+    );
+  }
+
   // Step 2 — 40/30/30 weighted rating.
   const weighted = computeWeightedRating(analysis);
 

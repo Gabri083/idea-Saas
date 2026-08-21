@@ -30,7 +30,7 @@ export function Navbar() {
             Iniciar sesión
           </Link>
           <LinkButton href="/signup" size="sm">
-            Prueba gratuita
+            Empezar gratis
           </LinkButton>
         </div>
       </div>
