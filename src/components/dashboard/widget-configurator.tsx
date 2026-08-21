@@ -371,6 +371,7 @@ function ClassicBadge({
   borderColor,
   starBg,
   radius,
+  showBranding,
 }: {
   average: number;
   count: number;
@@ -378,27 +379,44 @@ function ClassicBadge({
   borderColor: string;
   starBg: string;
   radius: string;
+  showBranding: boolean;
 }) {
   return (
     <div
       className="inline-flex items-center gap-3 border px-4 py-3 shadow-[0_1px_2px_rgba(0,0,0,.05),0_6px_18px_-10px_rgba(0,0,0,.18)]"
       style={{ borderRadius: radius, borderColor }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo-mark.png" width={22} height={22} alt="" className="shrink-0 rounded-md" />
+      {showBranding && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src="/logo-mark.png" width={22} height={22} alt="" className="shrink-0 rounded-md" />
+      )}
       <div className="flex flex-col gap-0.5">
         <div className="flex items-center gap-1.5">
           <Stars value={average} size={16} accent={accent} bg={starBg} />
           <strong style={{ color: accent }}>{average.toFixed(1)}</strong>
           <AiTag />
         </div>
-        <span className="text-[11.5px] opacity-60">{count} reseñas verificadas · Kelsira</span>
+        <span className="text-[11.5px] opacity-60">
+          {count} reseñas verificadas{showBranding ? " · Kelsira" : ""}
+        </span>
       </div>
     </div>
   );
 }
 
-function SealBadge({ average, count, accent, starBg }: { average: number; count: number; accent: string; starBg: string }) {
+function SealBadge({
+  average,
+  count,
+  accent,
+  starBg,
+  showBranding,
+}: {
+  average: number;
+  count: number;
+  accent: string;
+  starBg: string;
+  showBranding: boolean;
+}) {
   return (
     <div className="inline-flex flex-col items-center gap-3">
       <div
@@ -411,11 +429,13 @@ function SealBadge({ average, count, accent, starBg }: { average: number; count:
         </div>
         <span className="mt-1.5 text-[9px] uppercase tracking-wide opacity-50">{count} reseñas · IA</span>
       </div>
-      <div className="flex items-center gap-1.5">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-mark.png" width={16} height={16} alt="" className="rounded" />
-        <span className="text-[11.5px] opacity-70">Verificado por Kelsira</span>
-      </div>
+      {showBranding && (
+        <div className="flex items-center gap-1.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-mark.png" width={16} height={16} alt="" className="rounded" />
+          <span className="text-[11.5px] opacity-70">Verificado por Kelsira</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -800,9 +820,16 @@ export function WidgetConfigurator({
                 borderColor={borderColor}
                 starBg={starBg}
                 radius={radius}
+                showBranding={config.show_branding}
               />
             ) : config.layout === "sello" ? (
-              <SealBadge average={average} count={previewReviews.length} accent={config.accent_color} starBg={starBg} />
+              <SealBadge
+                average={average}
+                count={previewReviews.length}
+                accent={config.accent_color}
+                starBg={starBg}
+                showBranding={config.show_branding}
+              />
             ) : config.layout === "mosaico" ? (
               <MosaicList reviews={previewReviews.slice(0, 6)} accent={config.accent_color} borderColor={borderColor} radius={radius} />
             ) : config.layout === "spotlight" ? (
@@ -850,7 +877,7 @@ export function WidgetConfigurator({
                 )}
               </div>
             )}
-            {config.show_branding && (
+            {config.show_branding && config.layout !== "badge" && config.layout !== "sello" && (
               <p className="mt-4 text-right text-[10px] opacity-50">
                 Reseñas verificadas por Kelsira — Puntaje Objetivo IA
               </p>

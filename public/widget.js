@@ -339,23 +339,31 @@
 
   // ---------- El Clásico: minimal single-line badge ----------
   function mountBadge(container, data, accent, origin) {
+    var showBranding = data.config.show_branding;
     var badge = document.createElement("div");
     badge.className = "kelsira-badge";
     badge.innerHTML =
-      '<img class="kelsira-badge-logo" src="' + origin + '/logo-mark.png" alt="" width="22" height="22">' +
+      (showBranding
+        ? '<img class="kelsira-badge-logo" src="' + origin + '/logo-mark.png" alt="" width="22" height="22">'
+        : "") +
       '<div class="kelsira-badge-main">' +
       '<div class="kelsira-badge-top">' +
       starsHtml(data.average_rating, 16, accent) +
       '<span class="kelsira-badge-rating" style="color:' + accent + '">' + data.average_rating.toFixed(1) + "</span>" +
       aiTagHtml() +
       "</div>" +
-      '<span class="kelsira-badge-sub">' + data.total_reviews + " reseñas verificadas · Kelsira</span>" +
+      '<span class="kelsira-badge-sub">' +
+      data.total_reviews +
+      " reseñas verificadas" +
+      (showBranding ? " · Kelsira" : "") +
+      "</span>" +
       "</div>";
     container.appendChild(badge);
   }
 
   // ---------- El Sello: circular seal ----------
   function mountSello(container, data, accent, origin) {
+    var showBranding = data.config.show_branding;
     var wrap = document.createElement("div");
     wrap.className = "kelsira-seal-wrap";
     wrap.innerHTML =
@@ -364,10 +372,12 @@
       starsHtml(data.average_rating, 12, accent) +
       '<span class="kelsira-seal-sub">' + data.total_reviews + " reseñas · IA</span>" +
       "</div>" +
-      '<div class="kelsira-seal-caption">' +
-      '<img src="' + origin + '/logo-mark.png" alt="" width="16" height="16">' +
-      "<span>Verificado por Kelsira</span>" +
-      "</div>";
+      (showBranding
+        ? '<div class="kelsira-seal-caption">' +
+          '<img src="' + origin + '/logo-mark.png" alt="" width="16" height="16">' +
+          "<span>Verificado por Kelsira</span>" +
+          "</div>"
+        : "");
     container.appendChild(wrap);
   }
 
@@ -553,7 +563,9 @@
           container.appendChild(list);
         }
 
-        if (data.config.show_branding) {
+        // El Clásico and El Sello already fold the Kelsira mark into the card
+        // itself, so the separate footer line would just repeat it below.
+        if (data.config.show_branding && layout !== "badge" && layout !== "sello") {
           var footer = document.createElement("div");
           footer.className = "kelsira-powered";
           footer.textContent = "Reseñas verificadas por Kelsira — Puntaje Objetivo IA";
