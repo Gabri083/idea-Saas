@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getBusiness, getRecurringIssues, getReviews } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
-import { formatDate, isPastDeadline } from "@/lib/utils";
+import { formatDate, isPastDeadline, recencyWeightedAverage } from "@/lib/utils";
 
 export default async function DashboardOverviewPage() {
   const businessId = await requireBusinessId();
@@ -23,9 +23,9 @@ export default async function DashboardOverviewPage() {
   startOfMonth.setUTCHours(0, 0, 0, 0);
   const usedThisMonth = reviews.filter((r) => new Date(r.created_at) >= startOfMonth).length;
 
-  const avgAi = average(reviews.map((r) => r.overall_ai_rating));
+  const avgAi = recencyWeightedAverage(reviews, (r) => r.overall_ai_rating);
   const customerRated = reviews.filter((r) => r.customer_star_rating != null);
-  const avgCustomer = average(customerRated.map((r) => r.customer_star_rating!));
+  const avgCustomer = recencyWeightedAverage(customerRated, (r) => r.customer_star_rating!);
   const openAlerts = recurringIssues.filter(
     (i) => i.status === "open" && isPastDeadline(i.resolution_deadline),
   );
@@ -45,7 +45,7 @@ export default async function DashboardOverviewPage() {
           tone="cobalt"
           label="Promedio IA"
           value={`${avgAi.toFixed(1)}★`}
-          hint="Calculado por hechos, sin sesgo emocional"
+          hint="Por hechos, con más peso a lo reciente"
         />
         <MetricCard
           icon={Star}
@@ -124,9 +124,4 @@ export default async function DashboardOverviewPage() {
       </div>
     </div>
   );
-}
-
-function average(values: number[]): number {
-  if (values.length === 0) return 0;
-  return values.reduce((sum, v) => sum + v, 0) / values.length;
 }

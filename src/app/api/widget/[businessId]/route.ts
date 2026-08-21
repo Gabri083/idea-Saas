@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getBusiness, getReviews, getWidgetConfig } from "@/lib/data";
 import { resolveBusinessId } from "@/lib/demo";
 import { hasGrowthAccess } from "@/lib/types";
+import { recencyWeightedAverage } from "@/lib/utils";
 
 function withCors(response: NextResponse) {
   response.headers.set("Access-Control-Allow-Origin", "*");
@@ -28,13 +29,13 @@ export async function GET(
       getWidgetConfig(businessId),
     ]);
 
-    const publicReviews = reviews
-      .filter((r) => r.status === "published" || r.status === "resolved")
-      .slice(0, 12);
+    // The full public history — never trimmed, never hidden — is what the
+    // count and the headline average are computed from. Only the list of
+    // cards actually rendered is capped, further down.
+    const allPublicReviews = reviews.filter((r) => r.status === "published" || r.status === "resolved");
+    const displayReviews = allPublicReviews.slice(0, 12);
 
-    const average = publicReviews.length
-      ? publicReviews.reduce((sum, r) => sum + r.overall_ai_rating, 0) / publicReviews.length
-      : 0;
+    const average = recencyWeightedAverage(allPublicReviews, (r) => r.overall_ai_rating);
 
     // Free/Starter always carry the "Verificado por Kelsira" branding, no matter what's
     // stored — e.g. a business that saved show_branding:false while on Growth and later
@@ -46,8 +47,8 @@ export async function GET(
         business: { name: business.name },
         config: effectiveConfig,
         average_rating: Math.round(average * 10) / 10,
-        total_reviews: publicReviews.length,
-        reviews: publicReviews.map((r) => ({
+        total_reviews: allPublicReviews.length,
+        reviews: displayReviews.map((r) => ({
           id: r.id,
           customer_name: r.customer_name,
           review_text: r.review_text,

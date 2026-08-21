@@ -5,7 +5,7 @@ import { AlertTriangle, Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlatformInstructions } from "@/components/dashboard/platform-instructions";
-import { cn } from "@/lib/utils";
+import { cn, recencyWeightedAverage } from "@/lib/utils";
 import type { Review, WidgetConfig } from "@/lib/types";
 
 /** Only used to fill the live preview when the business has no real reviews yet. */
@@ -612,8 +612,7 @@ export function WidgetConfigurator({
   const usingSampleReviews = reviews.length === 0;
   const previewReviews = usingSampleReviews ? SAMPLE_REVIEWS : reviews;
 
-  const average =
-    previewReviews.reduce((s, r) => s + r.overall_ai_rating, 0) / previewReviews.length;
+  const average = recencyWeightedAverage(previewReviews, (r) => r.overall_ai_rating);
 
   const isDark = config.theme_mode === "dark";
   const borderColor = isDark ? "#232529" : "#e5e7eb";

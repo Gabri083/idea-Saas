@@ -20,3 +20,31 @@ export function daysUntil(iso: string): number {
 export function isPastDeadline(iso: string): boolean {
   return new Date(iso).getTime() < Date.now();
 }
+
+/** ~6 months: old enough that a review from last year barely moves the
+ * needle, without needing a hard cutoff that makes the score jump. */
+const RATING_HALF_LIFE_DAYS = 180;
+
+/**
+ * Weights each review by how recent it is (exponential decay) so the
+ * headline rating reflects how a business is doing lately rather than
+ * treating a review from years ago the same as one from yesterday. No
+ * review is ever hidden, penalized in isolation, or deleted for this —
+ * the full history stays public; only this aggregate number decays.
+ */
+export function recencyWeightedAverage<T extends { created_at: string }>(
+  items: T[],
+  getValue: (item: T) => number,
+): number {
+  if (items.length === 0) return 0;
+  const now = Date.now();
+  let weightedSum = 0;
+  let totalWeight = 0;
+  for (const item of items) {
+    const ageDays = (now - new Date(item.created_at).getTime()) / 86_400_000;
+    const weight = Math.pow(0.5, ageDays / RATING_HALF_LIFE_DAYS);
+    weightedSum += getValue(item) * weight;
+    totalWeight += weight;
+  }
+  return totalWeight > 0 ? weightedSum / totalWeight : 0;
+}
