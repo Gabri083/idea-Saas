@@ -121,6 +121,7 @@
       '">' +
       review.overall_ai_rating.toFixed(1) +
       "</span>" +
+      '<span class="kelsira-ai-tag" title="Puntaje calculado por IA a partir del texto de la reseña">IA</span>' +
       "</div>" +
       '<p class="kelsira-quote">' +
       escapeHtml(truncate(review.review_text, 140)) +
@@ -162,6 +163,7 @@
       ".kelsira-carousel .kelsira-card{flex:0 0 270px;scroll-snap-align:start;}" +
       ".kelsira-card-top{display:flex;align-items:center;gap:6px;margin-bottom:10px;}" +
       ".kelsira-rating-num{font-weight:700;font-size:13.5px;}" +
+      ".kelsira-ai-tag{font-size:9px;font-weight:700;letter-spacing:.03em;opacity:.45;border:1px solid currentColor;border-radius:4px;padding:1px 4px;line-height:1.4;cursor:default;}" +
       ".kelsira-quote{font-size:13.5px;line-height:1.55;margin:0;opacity:.92;}" +
       ".kelsira-quote:before{content:'\\201C';}" +
       ".kelsira-quote:after{content:'\\201D';}" +
@@ -206,6 +208,7 @@
       var r = reviews[index];
       inner.innerHTML =
         starsHtml(r.overall_ai_rating, 18, accent) +
+        '<span class="kelsira-ai-tag" title="Puntaje calculado por IA a partir del texto de la reseña">IA</span>' +
         '<p class="kelsira-quote">' +
         escapeHtml(truncate(r.review_text, 220)) +
         "</p>" +

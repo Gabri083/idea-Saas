@@ -119,6 +119,17 @@ function Stars({ value, size = 15, accent, bg }: { value: number; size?: number;
   );
 }
 
+function AiTag() {
+  return (
+    <span
+      className="rounded border border-current px-1 py-px text-[9px] font-bold leading-tight tracking-wide opacity-45"
+      title="Puntaje calculado por IA a partir del texto de la reseña"
+    >
+      IA
+    </span>
+  );
+}
+
 const AVATAR_HUES = [210, 260, 330, 20, 160, 40, 280, 190];
 function hashStr(str: string) {
   let h = 0;
@@ -191,6 +202,7 @@ function ReviewCard({
         <span className="text-[13px] font-semibold" style={{ color: accent }}>
           {review.overall_ai_rating.toFixed(1)}
         </span>
+        <AiTag />
       </div>
       <p className="mt-2.5 line-clamp-3 opacity-90">&ldquo;{review.review_text}&rdquo;</p>
       <div className="mt-3.5 flex items-center gap-2.5">
@@ -230,8 +242,9 @@ function Spotlight({
 
   return (
     <div className="text-center">
-      <div className="flex justify-center">
+      <div className="flex items-center justify-center gap-1.5">
         <Stars value={review.overall_ai_rating} size={18} accent={accent} bg={starBg} />
+        <AiTag />
       </div>
       <p className="mt-3.5 text-base opacity-90">&ldquo;{review.review_text}&rdquo;</p>
       <div className="mt-4 flex items-center justify-center gap-2.5">
