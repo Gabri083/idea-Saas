@@ -661,6 +661,50 @@
     document.head.appendChild(style);
   }
 
+  // Structured data (JSON-LD) for the host page's own Google rich-snippet
+  // eligibility — not a Kelsira branding element, so it's injected regardless
+  // of show_branding and regardless of plan. This does not, by itself,
+  // guarantee Google shows review stars in search (that also depends on
+  // Google's own policies for the page), but it's the correct, honest,
+  // self-service groundwork — the same mechanism other review platforms use.
+  function injectStructuredData(data, businessName) {
+    var id = "kelsira-widget-jsonld";
+    if (document.getElementById(id) || !data.reviews.length) return;
+
+    var jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      name: businessName,
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: data.average_rating.toFixed(1),
+        reviewCount: data.total_reviews,
+        bestRating: "5",
+        worstRating: "1",
+      },
+      review: data.reviews.slice(0, 20).map(function (r) {
+        return {
+          "@type": "Review",
+          author: { "@type": "Person", name: r.customer_name },
+          datePublished: r.created_at,
+          reviewBody: r.review_text,
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: r.overall_ai_rating.toFixed(1),
+            bestRating: "5",
+            worstRating: "1",
+          },
+        };
+      }),
+    };
+
+    var script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = id;
+    script.textContent = JSON.stringify(jsonLd);
+    document.head.appendChild(script);
+  }
+
   function mount(script) {
     var businessId = script.getAttribute("data-business-id");
     if (!businessId) return;
@@ -688,6 +732,8 @@
         container.style.setProperty("--kelsira-accent", accent);
         container.style.setProperty("--kelsira-radius", RADIUS_MAP[data.config.border_radius] || "10px");
         container.style.setProperty("--kelsira-font", FONT_MAP[data.config.font_family] || "inherit");
+
+        injectStructuredData(data, data.business.name);
 
         if (data.total_reviews === 0) {
           var empty = document.createElement("div");

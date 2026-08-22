@@ -1,24 +1,29 @@
 import Link from "next/link";
-import { Sparkles, Star, MessagesSquare, AlertTriangle, ArrowUpRight } from "lucide-react";
+import { ArrowDown, ArrowUp, Minus, Sparkles, Star, MessagesSquare, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { PlanUsageCard } from "@/components/dashboard/plan-usage-card";
 import { StarRating } from "@/components/ui/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { getBusiness, getRecurringIssues, getReviews } from "@/lib/data";
+import { getBusiness, getCategoryBenchmark, getRecurringIssues, getReviews } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
 import { formatDate, isPastDeadline, recencyWeightedAverage } from "@/lib/utils";
-import { getDictionary } from "@/lib/i18n/get-locale";
+import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
+import { getCategoryLabels, hasGrowthAccess } from "@/lib/types";
 
 export default async function DashboardOverviewPage() {
   const businessId = await requireBusinessId();
-  const [business, reviews, recurringIssues, dict] = await Promise.all([
+  const [business, reviews, recurringIssues, dict, locale] = await Promise.all([
     getBusiness(businessId),
     getReviews(businessId),
     getRecurringIssues(businessId),
     getDictionary(),
+    getLocale(),
   ]);
   const t = dict.dashboard.overview;
+  const benchmark = hasGrowthAccess(business.plan)
+    ? await getCategoryBenchmark(business.category, businessId)
+    : { available: false as const };
 
   // UTC to match the cap enforcement in /api/reviews.
   const startOfMonth = new Date();
@@ -71,6 +76,40 @@ export default async function DashboardOverviewPage() {
       </div>
 
       <PlanUsageCard used={usedThisMonth} cap={business.monthly_review_cap} dict={dict.dashboard.planUsage} />
+
+      {benchmark.available && business.category && (
+        <Card className="p-5">
+          <p className="text-sm font-medium">{t.benchmarkTitle}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-6">
+            <div>
+              <p className="text-xs text-muted">{t.yourAverage}</p>
+              <p className="text-2xl font-semibold tracking-tight">{avgAi.toFixed(1)}★</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted">{t.categoryAverage}</p>
+              <p className="text-2xl font-semibold tracking-tight text-muted">{benchmark.average.toFixed(1)}★</p>
+            </div>
+            {(() => {
+              const delta = avgAi - benchmark.average;
+              const toneClass = delta > 0.05 ? "text-emerald" : delta < -0.05 ? "text-rose" : "text-muted";
+              const Icon = delta > 0.05 ? ArrowUp : delta < -0.05 ? ArrowDown : Minus;
+              const label = delta > 0.05 ? t.aboveAverage : delta < -0.05 ? t.belowAverage : t.onAverage;
+              return (
+                <div className={`flex items-center gap-1.5 text-sm ${toneClass}`}>
+                  <Icon size={15} />
+                  {Math.abs(delta) >= 0.05 && <span className="font-semibold">{Math.abs(delta).toFixed(1)}</span>}
+                  {label}
+                </div>
+              );
+            })()}
+          </div>
+          <p className="mt-3 text-xs text-muted">
+            {t.benchmarkSample
+              .replace("{n}", String(benchmark.businessCount))
+              .replace("{category}", getCategoryLabels(locale)[business.category].toLowerCase())}
+          </p>
+        </Card>
+      )}
 
       {openAlerts.length > 0 && (
         <Card className="border-amber/30 bg-amber/[0.05] p-5">

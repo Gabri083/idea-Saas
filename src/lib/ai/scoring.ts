@@ -111,7 +111,7 @@ adjetivos emocionales.
 Responde ÚNICAMENTE con el JSON estructurado solicitado.`;
 
 let client: OpenAI | null = null;
-function getClient() {
+export function getClient() {
   if (!client) {
     client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }

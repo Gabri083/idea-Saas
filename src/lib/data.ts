@@ -11,12 +11,14 @@ import {
 import type {
   Appeal,
   Business,
+  BusinessCategory,
   CalibrationRequest,
   RecurringIssue,
   Review,
   TeamMember,
   WidgetConfig,
 } from "@/lib/types";
+import { recencyWeightedAverage } from "@/lib/utils";
 
 /** True once real Supabase credentials are wired up; until then every getter
  * below falls back to the demo dataset in lib/mock-data.ts so the dashboard
@@ -109,6 +111,58 @@ export async function getTeamMembers(businessId: string): Promise<TeamMember[]> 
   );
 
   return members;
+}
+
+export type CategoryBenchmark =
+  | { available: false }
+  | { available: true; average: number; businessCount: number };
+
+/** Below this many qualifying peer businesses, an "industry average" would
+ * really just be naming one or two specific competitors — not a benchmark. */
+const MIN_PEER_BUSINESSES = 3;
+/** A business with only a couple of reviews shouldn't be able to swing the
+ * category average as much as one with a real track record. */
+const MIN_REVIEWS_PER_PEER = 5;
+
+/**
+ * Compares a business against others in the same category, using each peer's
+ * own recency-weighted AI average (never raw stars — that would be comparing
+ * apples to oranges across businesses with different moderation policies).
+ * Every peer counts equally regardless of review volume, so one very active
+ * competitor can't dominate the category number.
+ */
+export async function getCategoryBenchmark(
+  category: BusinessCategory | null,
+  excludeBusinessId: string,
+): Promise<CategoryBenchmark> {
+  if (!category || !isSupabaseConfigured()) return { available: false };
+
+  const admin = createAdminClient();
+  const { data: peers } = await admin
+    .from("businesses")
+    .select("id")
+    .eq("category", category)
+    .neq("id", excludeBusinessId);
+
+  if (!peers || peers.length < MIN_PEER_BUSINESSES) return { available: false };
+
+  const averages: number[] = [];
+  for (const peer of peers) {
+    const { data: reviews } = await admin
+      .from("reviews")
+      .select("overall_ai_rating, created_at")
+      .eq("business_id", peer.id)
+      .in("status", ["published", "resolved"]);
+    if (!reviews || reviews.length < MIN_REVIEWS_PER_PEER) continue;
+    averages.push(
+      recencyWeightedAverage(reviews as { overall_ai_rating: number; created_at: string }[], (r) => r.overall_ai_rating),
+    );
+  }
+
+  if (averages.length < MIN_PEER_BUSINESSES) return { available: false };
+
+  const average = averages.reduce((sum, a) => sum + a, 0) / averages.length;
+  return { available: true, average, businessCount: averages.length };
 }
 
 export async function getWidgetConfig(businessId: string): Promise<WidgetConfig> {

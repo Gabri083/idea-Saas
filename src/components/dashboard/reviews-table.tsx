@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, ChevronDown, MessageSquareReply, ShieldQuestion } from "lucide-react";
+import { CheckCircle2, ChevronDown, Loader2, MessageSquareReply, ShieldQuestion, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
 import { formatDate, cn } from "@/lib/utils";
@@ -19,9 +19,11 @@ const statusTone: Record<ReviewStatus, "neutral" | "emerald" | "amber" | "cobalt
 export function ReviewsTable({
   initialReviews,
   dict,
+  canSuggestReply,
 }: {
   initialReviews: Review[];
   dict: Dictionary["dashboard"]["reviews"];
+  canSuggestReply: boolean;
 }) {
   const tabs: { key: "all" | ReviewStatus; label: string }[] = [
     { key: "all", label: dict.tabs.all },
@@ -36,6 +38,8 @@ export function ReviewsTable({
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [replyEditingId, setReplyEditingId] = useState<string | null>(null);
   const [replySavingId, setReplySavingId] = useState<string | null>(null);
+  const [suggestingId, setSuggestingId] = useState<string | null>(null);
+  const [suggestErrors, setSuggestErrors] = useState<Record<string, string>>({});
 
   const filtered = useMemo(
     () => (tab === "all" ? reviews : reviews.filter((r) => r.status === tab)),
@@ -76,6 +80,24 @@ export function ReviewsTable({
       }
     } finally {
       setReplySavingId(null);
+    }
+  }
+
+  async function suggestReply(id: string) {
+    setSuggestingId(id);
+    setSuggestErrors((prev) => ({ ...prev, [id]: "" }));
+    try {
+      const res = await fetch(`/api/reviews/${id}/suggest-reply`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || dict.suggestError);
+      setReplyDrafts((prev) => ({ ...prev, [id]: data.reply }));
+    } catch (err) {
+      setSuggestErrors((prev) => ({
+        ...prev,
+        [id]: err instanceof Error ? err.message : dict.suggestError,
+      }));
+    } finally {
+      setSuggestingId(null);
     }
   }
 
@@ -184,9 +206,29 @@ export function ReviewsTable({
                       </div>
                     ) : (
                       <div>
-                        <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted">
-                          <MessageSquareReply size={14} /> {dict.replyPublicly}
-                        </p>
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                          <p className="flex items-center gap-1.5 text-xs font-semibold text-muted">
+                            <MessageSquareReply size={14} /> {dict.replyPublicly}
+                          </p>
+                          {canSuggestReply && (
+                            <button
+                              type="button"
+                              disabled={suggestingId === review.id}
+                              onClick={() => suggestReply(review.id)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-cobalt/30 bg-cobalt/10 px-2.5 py-1 text-xs font-medium text-cobalt transition-colors hover:bg-cobalt/20 disabled:opacity-50"
+                            >
+                              {suggestingId === review.id ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <Sparkles size={12} />
+                              )}
+                              {suggestingId === review.id ? dict.suggesting : dict.suggestReply}
+                            </button>
+                          )}
+                        </div>
+                        {suggestErrors[review.id] && (
+                          <p className="mb-2 text-xs text-rose">{suggestErrors[review.id]}</p>
+                        )}
                         <textarea
                           value={replyDrafts[review.id] ?? ""}
                           onChange={(e) =>

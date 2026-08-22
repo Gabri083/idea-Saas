@@ -1,12 +1,17 @@
 import { Download } from "lucide-react";
 import { ReviewsTable } from "@/components/dashboard/reviews-table";
-import { getReviews } from "@/lib/data";
+import { getBusiness, getReviews } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n/get-locale";
+import { hasGrowthAccess } from "@/lib/types";
 
 export default async function ReviewsPage() {
   const businessId = await requireBusinessId();
-  const [reviews, dict] = await Promise.all([getReviews(businessId), getDictionary()]);
+  const [reviews, business, dict] = await Promise.all([
+    getReviews(businessId),
+    getBusiness(businessId),
+    getDictionary(),
+  ]);
   const t = dict.dashboard.reviews;
 
   return (
@@ -25,7 +30,7 @@ export default async function ReviewsPage() {
         </a>
       </div>
 
-      <ReviewsTable initialReviews={reviews} dict={t} />
+      <ReviewsTable initialReviews={reviews} dict={t} canSuggestReply={hasGrowthAccess(business.plan)} />
     </div>
   );
 }

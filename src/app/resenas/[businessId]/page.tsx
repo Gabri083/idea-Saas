@@ -12,6 +12,29 @@ import { LogoMark } from "@/components/brand/logo-mark";
 
 const PAGE_SIZE = 10;
 
+type Attribute = "producto" | "atencion" | "envio";
+
+const ATTRIBUTE_LABELS: Record<Attribute, string> = {
+  producto: "Producto",
+  atencion: "Atención",
+  envio: "Envío",
+};
+
+const ATTRIBUTE_SCORE: Record<Attribute, (r: Review) => number> = {
+  producto: (r) => r.product_score,
+  atencion: (r) => r.service_score,
+  envio: (r) => r.delivery_score,
+};
+
+// A shopper picking an attribute wants to know if this business has fallen
+// short there specifically — so this filters to actual complaints (score ≤ 3)
+// and sorts worst-first, instead of just re-sorting the full list.
+const ATTRIBUTE_COMPLAINT_THRESHOLD = 3;
+
+function isAttribute(value: string | undefined): value is Attribute {
+  return value === "producto" || value === "atencion" || value === "envio";
+}
+
 async function loadData(businessIdParam: string) {
   const businessId = resolveBusinessId(businessIdParam);
   const [business, reviews] = await Promise.all([getBusiness(businessId), getReviews(businessId)]);
@@ -37,16 +60,29 @@ export default async function PublicReviewsPage({
   searchParams,
 }: {
   params: Promise<{ businessId: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; filter?: string }>;
 }) {
   const { businessId } = await params;
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, filter: filterParam } = await searchParams;
   const { business, publicReviews } = await loadData(businessId);
 
   const average = recencyWeightedAverage(publicReviews, (r) => r.overall_ai_rating);
-  const totalPages = Math.max(1, Math.ceil(publicReviews.length / PAGE_SIZE));
+
+  const activeAttribute = isAttribute(filterParam) ? filterParam : null;
+  const attributeCounts: Record<Attribute, number> = {
+    producto: publicReviews.filter((r) => r.product_score <= ATTRIBUTE_COMPLAINT_THRESHOLD).length,
+    atencion: publicReviews.filter((r) => r.service_score <= ATTRIBUTE_COMPLAINT_THRESHOLD).length,
+    envio: publicReviews.filter((r) => r.delivery_score <= ATTRIBUTE_COMPLAINT_THRESHOLD).length,
+  };
+  const visibleReviews = activeAttribute
+    ? publicReviews
+        .filter((r) => ATTRIBUTE_SCORE[activeAttribute](r) <= ATTRIBUTE_COMPLAINT_THRESHOLD)
+        .sort((a, b) => ATTRIBUTE_SCORE[activeAttribute](a) - ATTRIBUTE_SCORE[activeAttribute](b))
+    : publicReviews;
+
+  const totalPages = Math.max(1, Math.ceil(visibleReviews.length / PAGE_SIZE));
   const page = Math.min(Math.max(1, Number(pageParam) || 1), totalPages);
-  const pageReviews = publicReviews.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pageReviews = visibleReviews.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -116,21 +152,53 @@ export default async function PublicReviewsPage({
           )}
         </div>
 
-        <div className="mt-6 flex flex-col gap-4">
-          {pageReviews.map((review) => (
-            <ReviewEntry key={review.id} review={review} businessName={business.name} />
-          ))}
+        {publicReviews.length > 0 && (
+          <div className="mt-6">
+            <p className="mb-2 text-xs font-medium text-muted">Filtra por lo que te importa:</p>
+            <div className="flex flex-wrap gap-2">
+              <AttributeChip active={!activeAttribute} href="?">
+                Todas ({publicReviews.length})
+              </AttributeChip>
+              {(Object.keys(ATTRIBUTE_LABELS) as Attribute[]).map((attr) => (
+                <AttributeChip key={attr} active={activeAttribute === attr} href={`?filter=${attr}`}>
+                  {ATTRIBUTE_LABELS[attr]} ({attributeCounts[attr]})
+                </AttributeChip>
+              ))}
+            </div>
+            {activeAttribute && (
+              <p className="mt-2 text-xs text-muted">
+                Mostrando reseñas con problemas de {ATTRIBUTE_LABELS[activeAttribute].toLowerCase()}, ordenadas de
+                peor a mejor.
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="mt-4 flex flex-col gap-4">
+          {activeAttribute && visibleReviews.length === 0 ? (
+            <Card className="p-6 text-center text-sm text-muted">
+              Ningún cliente reportó problemas de {ATTRIBUTE_LABELS[activeAttribute].toLowerCase()} —{" "}
+              <Link href="?" className="text-cobalt hover:underline">
+                ver todas las reseñas
+              </Link>
+              .
+            </Card>
+          ) : (
+            pageReviews.map((review) => (
+              <ReviewEntry key={review.id} review={review} businessName={business.name} />
+            ))
+          )}
         </div>
 
         {totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between text-sm">
-            <PageLink page={page - 1} disabled={page <= 1}>
+            <PageLink page={page - 1} disabled={page <= 1} filter={activeAttribute}>
               <ChevronLeft size={15} /> Anteriores
             </PageLink>
             <span className="text-xs text-muted">
               Página {page} de {totalPages}
             </span>
-            <PageLink page={page + 1} disabled={page >= totalPages}>
+            <PageLink page={page + 1} disabled={page >= totalPages} filter={activeAttribute}>
               Siguientes <ChevronRight size={15} />
             </PageLink>
           </div>
@@ -140,12 +208,38 @@ export default async function PublicReviewsPage({
   );
 }
 
-function PageLink({ page, disabled, children }: { page: number; disabled: boolean; children: React.ReactNode }) {
+function AttributeChip({ active, href, children }: { active: boolean; href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className={
+        active
+          ? "rounded-full bg-cobalt/15 px-3 py-1.5 text-xs font-medium text-cobalt"
+          : "rounded-full border border-border px-3 py-1.5 text-xs text-muted transition-colors hover:text-foreground"
+      }
+    >
+      {children}
+    </Link>
+  );
+}
+
+function PageLink({
+  page,
+  disabled,
+  filter,
+  children,
+}: {
+  page: number;
+  disabled: boolean;
+  filter: Attribute | null;
+  children: React.ReactNode;
+}) {
   if (disabled) {
     return <span className="flex items-center gap-1 text-muted/40">{children}</span>;
   }
+  const query = filter ? `?page=${page}&filter=${filter}` : `?page=${page}`;
   return (
-    <Link href={`?page=${page}`} className="flex items-center gap-1 text-foreground/80 hover:text-cobalt">
+    <Link href={query} className="flex items-center gap-1 text-foreground/80 hover:text-cobalt">
       {children}
     </Link>
   );
