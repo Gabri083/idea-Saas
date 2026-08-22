@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, Loader2, SlidersHorizontal, Paperclip } from "lucide-react";
+import { Check, X, Loader2, SlidersHorizontal, Paperclip, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
 import { formatDate } from "@/lib/utils";
 import type { AdminAppealRow } from "@/lib/admin-data";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+import type { AppealTriageResult } from "@/lib/ai/appeal-triage";
 
 type AdminDict = Dictionary["admin"];
+
+const triageTone = { archive: "rose", correct: "cobalt", reject: "neutral", uncertain: "amber" } as const;
 
 const statusTone = { pending: "amber", approved: "emerald", rejected: "rose" } as const;
 
@@ -52,6 +55,23 @@ function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict 
     service_score: appeal.review?.service_score ?? 3,
     delivery_score: appeal.review?.delivery_score ?? 3,
   });
+  const [triage, setTriage] = useState<AppealTriageResult | null>(null);
+  const [triageLoading, setTriageLoading] = useState(false);
+  const [triageError, setTriageError] = useState(false);
+
+  async function runTriage() {
+    setTriageLoading(true);
+    setTriageError(false);
+    try {
+      const res = await fetch(`/api/admin/appeals/${appeal.id}/triage`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      setTriage(await res.json());
+    } catch {
+      setTriageError(true);
+    } finally {
+      setTriageLoading(false);
+    }
+  }
 
   async function resolve(nextStatus: "approved" | "rejected", withCorrection = false) {
     setPending(nextStatus);
@@ -123,6 +143,32 @@ function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict 
 
       {status === "pending" ? (
         <div className="mt-4 flex flex-col gap-3">
+          {triage ? (
+            <div className="rounded-lg border border-cobalt/30 bg-cobalt/[0.05] p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone={triageTone[triage.recommendation]}>
+                  <Sparkles size={11} /> {t.triageRecommendation[triage.recommendation]}
+                </Badge>
+                <span className="text-xs text-muted">{t.triageConfidence[triage.confidence]}</span>
+              </div>
+              <p className="mt-2 text-xs text-foreground/80">
+                {t.triageReasoningLabel}
+                {triage.reasoning}
+              </p>
+              <p className="mt-1 text-[11px] italic text-muted">{t.triageDisclaimer}</p>
+            </div>
+          ) : (
+            <button
+              onClick={runTriage}
+              disabled={triageLoading}
+              className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-cobalt/30 bg-cobalt/10 px-3 py-1.5 text-xs font-medium text-cobalt transition-colors hover:bg-cobalt/20 disabled:opacity-50"
+            >
+              {triageLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+              {triageLoading ? t.triageLoading : t.triageButton}
+            </button>
+          )}
+          {triageError && <p className="text-xs text-rose">{t.triageError}</p>}
+
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -163,7 +209,12 @@ function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict 
             <button
               onClick={() => resolve("approved", false)}
               disabled={pending !== null}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-rose/30 bg-rose/10 px-3 py-1.5 text-xs font-medium text-rose transition-colors hover:bg-rose/20 disabled:opacity-50"
+              className={
+                "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 " +
+                (triage?.recommendation === "archive"
+                  ? "border-rose bg-rose/20 text-rose ring-2 ring-rose/40"
+                  : "border-rose/30 bg-rose/10 text-rose hover:bg-rose/20")
+              }
             >
               {pending === "approved" && !correcting ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -175,7 +226,12 @@ function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict 
             <button
               onClick={() => setCorrecting((v) => !v)}
               disabled={pending !== null}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-cobalt/30 bg-cobalt/10 px-3 py-1.5 text-xs font-medium text-cobalt transition-colors hover:bg-cobalt/20 disabled:opacity-50"
+              className={
+                "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 " +
+                (triage?.recommendation === "correct"
+                  ? "border-cobalt bg-cobalt/20 text-cobalt ring-2 ring-cobalt/40"
+                  : "border-cobalt/30 bg-cobalt/10 text-cobalt hover:bg-cobalt/20")
+              }
             >
               <SlidersHorizontal size={14} />
               {t.approveMisrated}
@@ -183,7 +239,12 @@ function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict 
             <button
               onClick={() => resolve("rejected")}
               disabled={pending !== null}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
+              className={
+                "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 " +
+                (triage?.recommendation === "reject"
+                  ? "border-foreground/40 bg-surface-2 text-foreground ring-2 ring-foreground/20"
+                  : "border-border text-muted hover:bg-surface-2")
+              }
             >
               {pending === "rejected" ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
               {t.reject}

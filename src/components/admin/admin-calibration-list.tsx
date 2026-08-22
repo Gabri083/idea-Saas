@@ -45,7 +45,8 @@ function CalibrationCard({ request, dict }: { request: AdminCalibrationRow; dict
       {request.recurring_issue && (
         <p className="mt-2 text-sm">
           <span className="font-medium">{t.issueLabel}</span>
-          {request.recurring_issue.issue_label} {t.occurrencesLabel(request.recurring_issue.occurrences)}
+          {request.recurring_issue.issue_label}{" "}
+          {t.occurrencesLabel.replace("{n}", String(request.recurring_issue.occurrences))}
         </p>
       )}
 
@@ -54,7 +55,9 @@ function CalibrationCard({ request, dict }: { request: AdminCalibrationRow; dict
         {request.evidence}
       </p>
 
-      <p className="mt-1 text-xs text-muted">{t.affectedReviews(request.affected_review_ids.length)}</p>
+      <p className="mt-1 text-xs text-muted">
+        {t.affectedReviews.replace("{n}", String(request.affected_review_ids.length))}
+      </p>
 
       {status === "pending" && (
         <div className="mt-4 flex gap-2">
