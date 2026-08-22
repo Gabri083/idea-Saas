@@ -305,6 +305,8 @@ const es = {
       pageTitle: "Configuración",
       pageSubtitle: "Datos de tu negocio, el contexto que usa la IA, tu equipo, y tu plan.",
       businessInfoTitle: "Información del negocio",
+      languageTitle: "Idioma",
+      languageSubtitle: "Cambia el idioma del panel y del sitio para tu cuenta.",
       form: {
         nameLabel: "Nombre del negocio",
         contactEmailLabel: "Correo de contacto",
@@ -865,6 +867,8 @@ const en: typeof es = {
       pageTitle: "Settings",
       pageSubtitle: "Your business info, the context the AI uses, your team, and your plan.",
       businessInfoTitle: "Business information",
+      languageTitle: "Language",
+      languageSubtitle: "Change the language of the dashboard and site for your account.",
       form: {
         nameLabel: "Business name",
         contactEmailLabel: "Contact email",

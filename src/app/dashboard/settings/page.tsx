@@ -2,36 +2,48 @@ import { Card } from "@/components/ui/card";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { PlanSection } from "@/components/dashboard/plan-section";
 import { TeamSection } from "@/components/dashboard/team-section";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { getBusiness, getTeamMembers } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
+import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 
 export default async function SettingsPage() {
   const businessId = await requireBusinessId();
-  const [business, teamMembers] = await Promise.all([
+  const [business, teamMembers, dict, locale] = await Promise.all([
     getBusiness(businessId),
     getTeamMembers(businessId),
+    getDictionary(),
+    getLocale(),
   ]);
+  const t = dict.dashboard.settings;
 
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Configuración</h1>
-        <p className="mt-1 text-sm text-muted">
-          Datos de tu negocio, el contexto que usa la IA, tu equipo, y tu plan.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.pageTitle}</h1>
+        <p className="mt-1 text-sm text-muted">{t.pageSubtitle}</p>
       </div>
 
       <Card className="max-w-xl p-6">
-        <h2 className="mb-4 text-lg font-medium">Información del negocio</h2>
-        <SettingsForm business={business} />
+        <h2 className="mb-4 text-lg font-medium">{t.businessInfoTitle}</h2>
+        <SettingsForm business={business} dict={t.form} locale={locale} />
       </Card>
 
-      <TeamSection initialMembers={teamMembers} />
+      <Card className="max-w-xl p-6">
+        <h2 className="text-lg font-medium">{t.languageTitle}</h2>
+        <p className="mt-1 text-sm text-muted">{t.languageSubtitle}</p>
+        <div className="mt-4">
+          <LanguageSwitcher locale={locale} />
+        </div>
+      </Card>
+
+      <TeamSection initialMembers={teamMembers} dict={dict.dashboard.team} />
 
       <PlanSection
         currentPlan={business.plan}
         subscriptionStatus={business.subscription_status}
         customerPortalUrl={business.customer_portal_url}
+        dict={dict.dashboard.planSection}
       />
     </div>
   );
