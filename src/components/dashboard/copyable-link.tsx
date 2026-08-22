@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 
-export function CopyableLink({ path }: { path: string }) {
+export function CopyableLink({ path, copyAria }: { path: string; copyAria: string }) {
   const [copied, setCopied] = useState(false);
   const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
   const url = `${origin}${path}`;
@@ -22,7 +22,7 @@ export function CopyableLink({ path }: { path: string }) {
       <button
         onClick={copy}
         className="shrink-0 rounded-lg border border-border p-2 transition-colors hover:bg-surface-2"
-        aria-label="Copiar link"
+        aria-label={copyAria}
       >
         {copied ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
       </button>

@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { PlatformInstructions } from "@/components/dashboard/platform-instructions";
 import { cn, isConfirmed, recencyWeightedAverage } from "@/lib/utils";
 import type { Review, WidgetConfig } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
+
+type WidgetDict = Dictionary["dashboard"]["widget"];
 
 /** Only used to fill the live preview when the business has no real reviews yet. */
 const SAMPLE_REVIEWS: Review[] = [
@@ -93,19 +96,8 @@ const fontStack: Record<string, string> = {
   georgia: "Georgia, serif",
   mono: "ui-monospace, monospace",
 };
-const layoutOptions: { id: WidgetConfig["layout"]; label: string }[] = [
-  { id: "carousel", label: "Carrusel" },
-  { id: "grid", label: "Grilla" },
-  { id: "wall", label: "Muro" },
-  { id: "spotlight", label: "Cita" },
-  { id: "badge", label: "Clásico" },
-  { id: "sello", label: "Sello" },
-  { id: "mosaico", label: "Mosaico" },
-];
-const cardStyleOptions: { id: WidgetConfig["card_style"]; label: string }[] = [
-  { id: "recibo", label: "Recibo" },
-  { id: "medidor", label: "Medidor" },
-];
+const layoutIds: WidgetConfig["layout"][] = ["carousel", "grid", "wall", "spotlight", "badge", "sello", "mosaico"];
+const cardStyleIds: WidgetConfig["card_style"][] = ["recibo", "medidor"];
 // grid/wall/carousel repeat one card per review — the other four layouts are
 // single aggregate displays, so the card-style choice doesn't apply to them.
 const CARD_STYLE_LAYOUTS: WidgetConfig["layout"][] = ["carousel", "grid", "wall"];
@@ -151,13 +143,13 @@ function Stars({ value, size = 15, accent, bg }: { value: number; size?: number;
   );
 }
 
-function AiTag() {
+function AiTag({ dict }: { dict: WidgetDict }) {
   return (
     <span
       className="rounded border border-current px-1 py-px text-[9px] font-bold leading-tight tracking-wide opacity-45"
-      title="Puntaje calculado por IA a partir del texto de la reseña"
+      title={dict.aiTagTitle}
     >
-      IA
+      {dict.aiLabel}
     </span>
   );
 }
@@ -192,27 +184,37 @@ function formatDate(iso: string) {
   }
 }
 
-function Breakdown({ review, pillBg }: { review: Review; pillBg: string }) {
+function Breakdown({ review, pillBg, dict }: { review: Review; pillBg: string; dict: WidgetDict }) {
   return (
     <div className="mt-3 flex flex-wrap gap-1.5">
       <span className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
-        Producto {review.product_score}★
+        {dict.breakdownProduct} {review.product_score}★
       </span>
       <span className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
-        Atención {review.service_score}★
+        {dict.breakdownService} {review.service_score}★
       </span>
       <span className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
-        Envío {review.delivery_score}★
+        {dict.breakdownDelivery} {review.delivery_score}★
       </span>
     </div>
   );
 }
 
-function Reply({ review, businessName, pillBg }: { review: Review; businessName: string; pillBg: string }) {
+function Reply({
+  review,
+  businessName,
+  pillBg,
+  dict,
+}: {
+  review: Review;
+  businessName: string;
+  pillBg: string;
+  dict: WidgetDict;
+}) {
   if (!review.business_reply) return null;
   return (
     <div className="mt-3 rounded-lg px-3 py-2.5" style={{ background: pillBg }}>
-      <p className="text-[11px] font-bold opacity-70">Respuesta de {businessName}</p>
+      <p className="text-[11px] font-bold opacity-70">{dict.replyFrom.replace("{name}", businessName)}</p>
       <p className="mt-0.5 text-[12.5px] leading-relaxed opacity-85">{review.business_reply}</p>
     </div>
   );
@@ -224,12 +226,14 @@ function TicketCard({
   accent,
   isDark,
   businessName,
+  dict,
 }: {
   review: Review;
   showBreakdown: boolean;
   accent: string;
   isDark: boolean;
   businessName: string;
+  dict: WidgetDict;
 }) {
   const borderColor = isDark ? "#232529" : "#e5e7eb";
   const starBg = isDark ? "#3a3d44" : "#e2e4e8";
@@ -257,17 +261,17 @@ function TicketCard({
               </span>
             </>
           )}
-          <AiTag />
+          <AiTag dict={dict} />
         </div>
         <p className="mt-1 mb-2.5 text-[10px] uppercase tracking-wide opacity-45">
-          {confirmed ? "Confirmado por IA" : "Corrección por hechos, no por enojo"}
+          {confirmed ? dict.confirmedByAi : dict.correctionByFacts}
         </p>
         <Stars value={review.overall_ai_rating} size={14} accent={accent} bg={starBg} />
       </div>
       <div style={{ margin: "0 16px", borderTop: `1.5px dashed ${borderColor}` }} />
       <div className="px-4 pt-3.5 pb-4">
         <p className="line-clamp-3 opacity-90">&ldquo;{review.review_text}&rdquo;</p>
-        {showBreakdown && <Breakdown review={review} pillBg={pillBg} />}
+        {showBreakdown && <Breakdown review={review} pillBg={pillBg} dict={dict} />}
         <div className="mt-3.5 flex items-center gap-2.5">
           <Avatar name={review.customer_name} />
           <div className="flex min-w-0 flex-col leading-tight">
@@ -275,7 +279,7 @@ function TicketCard({
             <span className="text-[11px] opacity-55">{formatDate(review.created_at)}</span>
           </div>
         </div>
-        <Reply review={review} businessName={businessName} pillBg={pillBg} />
+        <Reply review={review} businessName={businessName} pillBg={pillBg} dict={dict} />
       </div>
     </div>
   );
@@ -288,6 +292,7 @@ function GaugeCard({
   isDark,
   radius,
   businessName,
+  dict,
 }: {
   review: Review;
   showBreakdown: boolean;
@@ -295,6 +300,7 @@ function GaugeCard({
   isDark: boolean;
   radius: string;
   businessName: string;
+  dict: WidgetDict;
 }) {
   const borderColor = isDark ? "#232529" : "#e5e7eb";
   const starBg = isDark ? "#3a3d44" : "#e2e4e8";
@@ -311,7 +317,7 @@ function GaugeCard({
     >
       <div className="flex items-center gap-2">
         <Stars value={review.overall_ai_rating} size={14} accent={accent} bg={starBg} />
-        <AiTag />
+        <AiTag dict={dict} />
       </div>
       <p className="mt-2.5 line-clamp-2 text-[13.5px] opacity-90">&ldquo;{review.review_text}&rdquo;</p>
       <div className="relative mx-0.5 mt-4 mb-2 h-1 rounded-full" style={{ background: pillBg }}>
@@ -333,20 +339,20 @@ function GaugeCard({
       <div className="mb-1 flex justify-between text-[11px] opacity-70">
         {confirmed ? (
           <span>
-            Cliente e IA: <b style={{ color: accent }}>{review.overall_ai_rating.toFixed(1)}</b>
+            {dict.clientAndAi} <b style={{ color: accent }}>{review.overall_ai_rating.toFixed(1)}</b>
           </span>
         ) : (
           <>
             <span>
-              Cliente <b>{review.customer_star_rating!.toFixed(1)}</b>
+              {dict.clientLabel} <b>{review.customer_star_rating!.toFixed(1)}</b>
             </span>
             <span style={{ color: accent }}>
-              IA <b style={{ color: accent }}>{review.overall_ai_rating.toFixed(1)}</b>
+              {dict.aiLabel} <b style={{ color: accent }}>{review.overall_ai_rating.toFixed(1)}</b>
             </span>
           </>
         )}
       </div>
-      {showBreakdown && <Breakdown review={review} pillBg={pillBg} />}
+      {showBreakdown && <Breakdown review={review} pillBg={pillBg} dict={dict} />}
       <div className="mt-3.5 flex items-center gap-2.5">
         <Avatar name={review.customer_name} />
         <div className="flex min-w-0 flex-col leading-tight">
@@ -354,7 +360,7 @@ function GaugeCard({
           <span className="text-[11px] opacity-55">{formatDate(review.created_at)}</span>
         </div>
       </div>
-      <Reply review={review} businessName={businessName} pillBg={pillBg} />
+      <Reply review={review} businessName={businessName} pillBg={pillBg} dict={dict} />
     </div>
   );
 }
@@ -367,6 +373,7 @@ function ClassicBadge({
   starBg,
   radius,
   showBranding,
+  dict,
 }: {
   average: number;
   count: number;
@@ -375,6 +382,7 @@ function ClassicBadge({
   starBg: string;
   radius: string;
   showBranding: boolean;
+  dict: WidgetDict;
 }) {
   return (
     <div
@@ -389,10 +397,11 @@ function ClassicBadge({
         <div className="flex items-center gap-1.5">
           <Stars value={average} size={16} accent={accent} bg={starBg} />
           <strong style={{ color: accent }}>{average.toFixed(1)}</strong>
-          <AiTag />
+          <AiTag dict={dict} />
         </div>
         <span className="text-[11.5px] opacity-60">
-          {count} reseñas verificadas{showBranding ? " · Kelsira" : ""}
+          {dict.reviewsVerifiedCount.replace("{n}", String(count))}
+          {showBranding ? " · Kelsira" : ""}
         </span>
       </div>
     </div>
@@ -405,12 +414,14 @@ function SealBadge({
   accent,
   starBg,
   showBranding,
+  dict,
 }: {
   average: number;
   count: number;
   accent: string;
   starBg: string;
   showBranding: boolean;
+  dict: WidgetDict;
 }) {
   return (
     <div className="inline-flex flex-col items-center gap-3">
@@ -422,13 +433,15 @@ function SealBadge({
         <div className="mt-1.5">
           <Stars value={average} size={12} accent={accent} bg={starBg} />
         </div>
-        <span className="mt-1.5 text-[9px] uppercase tracking-wide opacity-50">{count} reseñas · IA</span>
+        <span className="mt-1.5 text-[9px] uppercase tracking-wide opacity-50">
+          {dict.reviewsCountAi.replace("{n}", String(count))}
+        </span>
       </div>
       {showBranding && (
         <div className="flex items-center gap-1.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-mark.png" width={16} height={16} alt="" className="rounded" />
-          <span className="text-[11.5px] opacity-70">Verificado por Kelsira</span>
+          <span className="text-[11.5px] opacity-70">{dict.verifiedByKelsira}</span>
         </div>
       )}
     </div>
@@ -440,18 +453,20 @@ function MosaicList({
   accent,
   borderColor,
   radius,
+  dict,
 }: {
   reviews: Review[];
   accent: string;
   borderColor: string;
   radius: string;
+  dict: WidgetDict;
 }) {
   return (
     <div
       className="overflow-hidden border shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_24px_-14px_rgba(0,0,0,.16)]"
       style={{ borderColor, borderRadius: radius }}
     >
-      <div className="px-3.5 pt-2.5 text-[9.5px] uppercase tracking-wide opacity-45">Puntajes objetivo IA</div>
+      <div className="px-3.5 pt-2.5 text-[9.5px] uppercase tracking-wide opacity-45">{dict.mosaicHeader}</div>
       <div className="flex flex-col">
         {reviews.map((r, i) => (
           <div
@@ -481,12 +496,14 @@ function Spotlight({
   accent,
   isDark,
   businessName,
+  dict,
 }: {
   reviews: Review[];
   showBreakdown: boolean;
   accent: string;
   isDark: boolean;
   businessName: string;
+  dict: WidgetDict;
 }) {
   const [index, setIndex] = useState(0);
 
@@ -524,18 +541,18 @@ function Spotlight({
               </span>
             </>
           )}
-          <AiTag />
+          <AiTag dict={dict} />
         </span>
       </div>
       {showBreakdown && (
         <div className="flex justify-center">
-          <Breakdown review={review} pillBg={pillBg} />
+          <Breakdown review={review} pillBg={pillBg} dict={dict} />
         </div>
       )}
       {review.business_reply && (
         <div className="flex justify-center">
           <div className="mt-1 max-w-sm">
-            <Reply review={review} businessName={businessName} pillBg={pillBg} />
+            <Reply review={review} businessName={businessName} pillBg={pillBg} dict={dict} />
           </div>
         </div>
       )}
@@ -545,7 +562,7 @@ function Spotlight({
             <button
               key={i}
               onClick={() => setIndex(i)}
-              aria-label={`Reseña ${i + 1}`}
+              aria-label={dict.reviewAriaLabel.replace("{n}", String(i + 1))}
               className="h-1.5 rounded-full transition-all"
               style={{
                 width: i === index ? 18 : 6,
@@ -565,12 +582,14 @@ export function WidgetConfigurator({
   initialConfig,
   reviews,
   canCustomize,
+  dict,
 }: {
   businessId: string;
   businessName: string;
   initialConfig: WidgetConfig;
   reviews: Review[];
   canCustomize: boolean;
+  dict: WidgetDict;
 }) {
   const [config, setConfig] = useState(initialConfig);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -620,13 +639,12 @@ export function WidgetConfigurator({
         {!canCustomize && (
           <div className="flex items-center gap-2 rounded-lg border border-cobalt/30 bg-cobalt/10 px-3 py-2.5 text-xs text-cobalt">
             <Sparkles size={14} className="shrink-0" />
-            Personalizar el widget es parte del plan Growth. Mientras tanto se usa el estilo
-            predeterminado.
+            {dict.gateBanner}
           </div>
         )}
         <fieldset disabled={!canCustomize} className={cn("contents border-0 p-0 m-0", !canCustomize && "opacity-50")}>
         <div>
-          <p className="text-sm font-medium">Color de acento</p>
+          <p className="text-sm font-medium">{dict.accentColorLabel}</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {accentPresets.map((c) => (
               <button
@@ -650,7 +668,7 @@ export function WidgetConfigurator({
         </div>
 
         <div>
-          <p className="text-sm font-medium">Modo</p>
+          <p className="text-sm font-medium">{dict.modeLabel}</p>
           <div className="mt-2 flex gap-2">
             {(["light", "dark"] as const).map((mode) => (
               <button
@@ -663,7 +681,7 @@ export function WidgetConfigurator({
                     : "border-border text-muted hover:text-foreground",
                 )}
               >
-                {mode === "light" ? "Claro" : "Oscuro"}
+                {mode === "light" ? dict.modeLight : dict.modeDark}
               </button>
             ))}
           </div>
@@ -671,7 +689,7 @@ export function WidgetConfigurator({
 
         {radiusApplies(config.layout, config.card_style) && (
           <div>
-            <p className="text-sm font-medium">Bordes</p>
+            <p className="text-sm font-medium">{dict.bordersLabel}</p>
             <div className="mt-2 flex gap-2">
               {radiusOptions.map((r) => (
                 <button
@@ -693,7 +711,7 @@ export function WidgetConfigurator({
         )}
 
         <div>
-          <p className="text-sm font-medium">Tipografía</p>
+          <p className="text-sm font-medium">{dict.fontLabel}</p>
           <select
             value={config.font_family}
             onChange={(e) => setConfig((p) => ({ ...p, font_family: e.target.value }))}
@@ -708,9 +726,9 @@ export function WidgetConfigurator({
         </div>
 
         <div>
-          <p className="text-sm font-medium">Diseño</p>
+          <p className="text-sm font-medium">{dict.layoutLabel}</p>
           <div className="mt-2 grid grid-cols-3 gap-2">
-            {layoutOptions.map(({ id, label }) => (
+            {layoutIds.map((id) => (
               <button
                 key={id}
                 onClick={() => setConfig((p) => ({ ...p, layout: id }))}
@@ -721,7 +739,7 @@ export function WidgetConfigurator({
                     : "border-border text-muted hover:text-foreground",
                 )}
               >
-                {label}
+                {dict.layoutOptions[id]}
               </button>
             ))}
           </div>
@@ -729,9 +747,9 @@ export function WidgetConfigurator({
 
         {CARD_STYLE_LAYOUTS.includes(config.layout) && (
           <div>
-            <p className="text-sm font-medium">Estilo de tarjeta</p>
+            <p className="text-sm font-medium">{dict.cardStyleLabel}</p>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              {cardStyleOptions.map(({ id, label }) => (
+              {cardStyleIds.map((id) => (
                 <button
                   key={id}
                   onClick={() => setConfig((p) => ({ ...p, card_style: id }))}
@@ -742,7 +760,7 @@ export function WidgetConfigurator({
                       : "border-border text-muted hover:text-foreground",
                   )}
                 >
-                  {label}
+                  {dict.cardStyleOptions[id]}
                 </button>
               ))}
             </div>
@@ -756,7 +774,7 @@ export function WidgetConfigurator({
             onChange={(e) => setConfig((p) => ({ ...p, show_breakdown: e.target.checked }))}
             className="h-4 w-4 rounded accent-cobalt"
           />
-          Mostrar desglose por categoría
+          {dict.showBreakdownLabel}
         </label>
 
         <label className="flex items-center gap-2 text-sm">
@@ -766,24 +784,24 @@ export function WidgetConfigurator({
             onChange={(e) => setConfig((p) => ({ ...p, show_branding: !e.target.checked }))}
             className="h-4 w-4 rounded accent-cobalt"
           />
-          Ocultar marca &ldquo;Verificado por Kelsira&rdquo;
+          {dict.hideBrandingLabel}
         </label>
 
         <Button onClick={save} disabled={saveStatus === "saving"} className="w-full">
           {saveStatus === "saving" ? (
             <>
-              <Loader2 size={16} className="animate-spin" /> Guardando…
+              <Loader2 size={16} className="animate-spin" /> {dict.saving}
             </>
           ) : saveStatus === "saved" ? (
             <>
-              <Check size={16} /> Guardado
+              <Check size={16} /> {dict.saved}
             </>
           ) : saveStatus === "error" ? (
             <>
-              <AlertTriangle size={16} /> No se pudo guardar, intenta de nuevo
+              <AlertTriangle size={16} /> {dict.saveError}
             </>
           ) : (
-            "Guardar cambios"
+            dict.saveIdle
           )}
         </Button>
         </fieldset>
@@ -792,10 +810,10 @@ export function WidgetConfigurator({
       <div className="flex min-w-0 flex-col gap-6">
         <Card className="min-w-0 p-6">
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <p className="text-sm font-medium text-muted">Previsualización en vivo</p>
+            <p className="text-sm font-medium text-muted">{dict.livePreviewLabel}</p>
             {usingSampleReviews && (
               <span className="rounded-full border border-amber/30 bg-amber/10 px-2 py-0.5 text-xs text-amber">
-                Datos de ejemplo — se reemplaza con tus reseñas reales
+                {dict.sampleDataBadge}
               </span>
             )}
           </div>
@@ -817,6 +835,7 @@ export function WidgetConfigurator({
                 starBg={starBg}
                 radius={radius}
                 showBranding={config.show_branding}
+                dict={dict}
               />
             ) : config.layout === "sello" ? (
               <SealBadge
@@ -825,9 +844,16 @@ export function WidgetConfigurator({
                 accent={config.accent_color}
                 starBg={starBg}
                 showBranding={config.show_branding}
+                dict={dict}
               />
             ) : config.layout === "mosaico" ? (
-              <MosaicList reviews={previewReviews.slice(0, 6)} accent={config.accent_color} borderColor={borderColor} radius={radius} />
+              <MosaicList
+                reviews={previewReviews.slice(0, 6)}
+                accent={config.accent_color}
+                borderColor={borderColor}
+                radius={radius}
+                dict={dict}
+              />
             ) : config.layout === "spotlight" ? (
               <Spotlight
                 reviews={previewReviews}
@@ -835,6 +861,7 @@ export function WidgetConfigurator({
                 accent={config.accent_color}
                 isDark={isDark}
                 businessName={businessName}
+                dict={dict}
               />
             ) : (
               <div
@@ -856,6 +883,7 @@ export function WidgetConfigurator({
                         isDark={isDark}
                         radius={radius}
                         businessName={businessName}
+                        dict={dict}
                       />
                     </div>
                   ) : (
@@ -866,6 +894,7 @@ export function WidgetConfigurator({
                         accent={config.accent_color}
                         isDark={isDark}
                         businessName={businessName}
+                        dict={dict}
                       />
                     </div>
                   ),
@@ -873,15 +902,13 @@ export function WidgetConfigurator({
               </div>
             )}
             {config.show_branding && config.layout !== "badge" && config.layout !== "sello" && (
-              <p className="mt-4 text-right text-[10px] opacity-50">
-                Reseñas verificadas por Kelsira — Puntaje Objetivo IA
-              </p>
+              <p className="mt-4 text-right text-[10px] opacity-50">{dict.footerBranding}</p>
             )}
           </div>
         </Card>
 
         <Card className="min-w-0 p-6">
-          <p className="mb-3 text-sm font-medium text-muted">Código para tu tienda</p>
+          <p className="mb-3 text-sm font-medium text-muted">{dict.codeSectionTitle}</p>
           <div className="flex min-w-0 items-start gap-2 rounded-xl border border-border bg-surface p-4">
             <code
               suppressHydrationWarning
@@ -892,19 +919,17 @@ export function WidgetConfigurator({
             <button
               onClick={copySnippet}
               className="shrink-0 rounded-lg border border-border p-2 transition-colors hover:bg-surface-2"
-              aria-label="Copiar código"
+              aria-label={dict.copyCodeAria}
             >
               {copied ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
             </button>
           </div>
-          <p className="mt-2 text-xs text-muted">
-            Copia el código de arriba y sigue los pasos según dónde tengas tu tienda:
-          </p>
+          <p className="mt-2 text-xs text-muted">{dict.codeSectionHint}</p>
         </Card>
 
         <Card className="min-w-0 p-6">
-          <p className="mb-3 text-sm font-medium text-muted">Cómo instalarlo paso a paso</p>
-          <PlatformInstructions />
+          <p className="mb-3 text-sm font-medium text-muted">{dict.installStepsTitle}</p>
+          <PlatformInstructions dict={dict.platform} />
         </Card>
       </div>
     </div>

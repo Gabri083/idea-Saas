@@ -4,14 +4,17 @@ import { requireBusinessId } from "@/lib/auth";
 import { hasGrowthAccess } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { CopyableLink } from "@/components/dashboard/copyable-link";
+import { getDictionary } from "@/lib/i18n/get-locale";
 
 export default async function WidgetPage() {
   const businessId = await requireBusinessId();
-  const [business, config, reviews] = await Promise.all([
+  const [business, config, reviews, dict] = await Promise.all([
     getBusiness(businessId),
     getWidgetConfig(businessId),
     getReviews(businessId),
+    getDictionary(),
   ]);
+  const t = dict.dashboard.widget;
 
   const publicReviews = reviews.filter((r) => r.status === "published" || r.status === "resolved");
   const canCustomize = hasGrowthAccess(business.plan);
@@ -22,30 +25,23 @@ export default async function WidgetPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Widget embebible</h1>
-        <p className="mt-1 text-sm text-muted">
-          Configura el estilo, previsualízalo en vivo y copia el código para tu e-commerce.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.pageTitle}</h1>
+        <p className="mt-1 text-sm text-muted">{t.pageSubtitle}</p>
       </div>
 
       <Card className="p-5">
-        <p className="text-sm font-medium">Tu link público para recibir reseñas</p>
-        <p className="mt-1 text-xs text-muted">
-          Compártelo con tus clientes (por email, WhatsApp, etc.) para que dejen su reseña.
-        </p>
+        <p className="text-sm font-medium">{t.publicLinkTitle}</p>
+        <p className="mt-1 text-xs text-muted">{t.publicLinkSubtitle}</p>
         <div className="mt-3">
-          <CopyableLink path={`/review/${businessId}`} />
+          <CopyableLink path={`/review/${businessId}`} copyAria={t.copyLinkAria} />
         </div>
       </Card>
 
       <Card className="p-5">
-        <p className="text-sm font-medium">Tu página pública de reseñas</p>
-        <p className="mt-1 text-xs text-muted">
-          El historial completo, buenas y malas, con paginación — no solo las 12 que caben en el widget.
-          Compártela donde quieras que un comprador pueda revisar todo.
-        </p>
+        <p className="text-sm font-medium">{t.publicPageTitle}</p>
+        <p className="mt-1 text-xs text-muted">{t.publicPageSubtitle}</p>
         <div className="mt-3">
-          <CopyableLink path={`/resenas/${businessId}`} />
+          <CopyableLink path={`/resenas/${businessId}`} copyAria={t.copyLinkAria} />
         </div>
       </Card>
 
@@ -55,6 +51,7 @@ export default async function WidgetPage() {
         initialConfig={effectiveConfig}
         reviews={publicReviews}
         canCustomize={canCustomize}
+        dict={t}
       />
     </div>
   );
