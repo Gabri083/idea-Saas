@@ -1,3 +1,5 @@
+import type { Locale } from "@/lib/i18n/config";
+
 export type Plan = "free" | "starter" | "growth" | "enterprise";
 
 /** null = unlimited. Single source of truth, used at signup, checkout webhook, and submit-time enforcement. */
@@ -57,6 +59,7 @@ export interface Business {
   monthly_review_cap: number | null;
   category: BusinessCategory | null;
   business_description: string | null;
+  locale: Locale;
   lemonsqueezy_customer_id: string | null;
   lemonsqueezy_subscription_id: string | null;
   subscription_status: string | null;

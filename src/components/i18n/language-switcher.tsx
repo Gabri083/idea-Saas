@@ -13,6 +13,14 @@ export function LanguageSwitcher({ locale, className }: { locale: Locale; classN
   useEffect(() => {
     if (!pendingLocale || pendingLocale === locale) return;
     document.cookie = `${LOCALE_COOKIE}=${pendingLocale};path=/;max-age=${60 * 60 * 24 * 365}`;
+    // Best-effort: persists the choice on the business record (if signed in)
+    // so async transactional emails can match it later. No-ops silently on
+    // the public marketing site, where there's no session to attach it to.
+    fetch("/api/business/locale", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale: pendingLocale }),
+    }).catch(() => {});
     startTransition(() => router.refresh());
   }, [pendingLocale, locale, router]);
 

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
 import { PLAN_REVIEW_CAP } from "@/lib/types";
+import { getLocale } from "@/lib/i18n/get-locale";
 
 const BodySchema = z.object({
   business_name: z.string().min(2).max(120),
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
       monthly_review_cap: PLAN_REVIEW_CAP.free,
       category,
       business_description: business_description || null,
+      locale: await getLocale(),
     })
     .select()
     .single();

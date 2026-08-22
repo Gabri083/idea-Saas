@@ -24,6 +24,62 @@
   // them, so the copy shouldn't read like a correction happened.
   var CONFIRM_EPSILON = 0.15;
 
+  // Every UI string the widget itself renders (not the review text, which is
+  // never touched) — keyed off the embedding business's own locale, since a
+  // storefront visitor has no Kelsira session/cookie of their own to read.
+  var STRINGS = {
+    en: {
+      aiTagTitle: "Score calculated by AI from the review's text",
+      aiTag: "AI",
+      confirmedCaption: "Confirmed by AI",
+      correctedCaption: "Corrected on facts, not anger",
+      product: "Product",
+      service: "Service",
+      delivery: "Shipping",
+      replyFrom: "Reply from ",
+      reviewAriaLabel: "Review ",
+      reviewsWord: "reviews",
+      verifiedReviewsWord: "verified reviews",
+      kelsiraVerified: "Verified by Kelsira",
+      aiScoresHeader: "AI objective scores",
+      viewReviews: "View reviews →",
+      viewAllPrefix: "View all ",
+      viewVerifiedAria: "View verified reviews",
+      noReviewsYet: "No verified reviews yet.",
+      poweredFooter: "Reviews verified by Kelsira — AI Objective Score",
+      clientAndAi: "Customer & AI: ",
+      client: "Customer ",
+      dateLocale: "en-US",
+    },
+    es: {
+      aiTagTitle: "Puntaje calculado por IA a partir del texto de la reseña",
+      aiTag: "IA",
+      confirmedCaption: "Confirmado por IA",
+      correctedCaption: "Corrección por hechos, no por enojo",
+      product: "Producto",
+      service: "Atención",
+      delivery: "Envío",
+      replyFrom: "Respuesta de ",
+      reviewAriaLabel: "Reseña ",
+      reviewsWord: "reseñas",
+      verifiedReviewsWord: "reseñas verificadas",
+      kelsiraVerified: "Verificado por Kelsira",
+      aiScoresHeader: "Puntajes objetivo IA",
+      viewReviews: "Ver reseñas →",
+      viewAllPrefix: "Ver las ",
+      viewVerifiedAria: "Ver reseñas verificadas",
+      noReviewsYet: "Aún no hay reseñas verificadas.",
+      poweredFooter: "Reseñas verificadas por Kelsira — Puntaje Objetivo IA",
+      clientAndAi: "Cliente e IA: ",
+      client: "Cliente ",
+      dateLocale: "es",
+    },
+  };
+  // Reassigned in mount() once the business's locale arrives — safe as a
+  // module-level var because each embedded <script> tag re-runs this whole
+  // IIFE in its own fresh scope, so multiple widgets on one page never share it.
+  var T = STRINGS.en;
+
   function escapeHtml(str) {
     var div = document.createElement("div");
     div.textContent = str;
@@ -61,7 +117,7 @@
 
   function formatDate(iso) {
     try {
-      return new Intl.DateTimeFormat("es", { day: "numeric", month: "short" }).format(new Date(iso));
+      return new Intl.DateTimeFormat(T.dateLocale, { day: "numeric", month: "short" }).format(new Date(iso));
     } catch {
       return "";
     }
@@ -116,7 +172,7 @@
   }
 
   function aiTagHtml() {
-    return '<span class="kelsira-ai-tag" title="Puntaje calculado por IA a partir del texto de la reseña">IA</span>';
+    return '<span class="kelsira-ai-tag" title="' + T.aiTagTitle + '">' + T.aiTag + "</span>";
   }
 
   // The signature "correction line" shared by El Recibo and El Medidor: a
@@ -128,7 +184,7 @@
         row:
           '<span class="kelsira-final" style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</span>" +
           aiTagHtml(),
-        caption: "Confirmado por IA",
+        caption: T.confirmedCaption,
       };
     }
     return {
@@ -137,20 +193,20 @@
         '<span class="kelsira-arrow">→</span>' +
         '<span class="kelsira-final" style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</span>" +
         aiTagHtml(),
-      caption: "Corrección por hechos, no por enojo",
+      caption: T.correctedCaption,
     };
   }
 
   function breakdownHtml(review) {
     return (
       '<div class="kelsira-breakdown">' +
-      '<span class="kelsira-pill">Producto ' +
+      '<span class="kelsira-pill">' + T.product + " " +
       review.product_score +
       "★</span>" +
-      '<span class="kelsira-pill">Atención ' +
+      '<span class="kelsira-pill">' + T.service + " " +
       review.service_score +
       "★</span>" +
-      '<span class="kelsira-pill">Envío ' +
+      '<span class="kelsira-pill">' + T.delivery + " " +
       review.delivery_score +
       "★</span>" +
       "</div>"
@@ -161,7 +217,7 @@
     if (!review.business_reply) return "";
     return (
       '<div class="kelsira-reply">' +
-      '<span class="kelsira-reply-from">Respuesta de ' +
+      '<span class="kelsira-reply-from">' + T.replyFrom +
       escapeHtml(businessName) +
       "</span>" +
       '<p class="kelsira-reply-text">' +
@@ -225,9 +281,9 @@
       "</div>" +
       '<div class="kelsira-gauge-legend">' +
       (confirmed
-        ? '<span>Cliente e IA: <b style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</b></span>"
-        : '<span>Cliente <b>' + review.customer_star_rating.toFixed(1) + "</b></span>" +
-          '<span style="color:' + accent + '">IA <b style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</b></span>") +
+        ? '<span>' + T.clientAndAi + '<b style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</b></span>"
+        : '<span>' + T.client + '<b>' + review.customer_star_rating.toFixed(1) + "</b></span>" +
+          '<span style="color:' + accent + '">' + T.aiTag + ' <b style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</b></span>") +
       "</div>" +
       (showBreakdown ? breakdownHtml(review) : "") +
       '<div class="kelsira-card-foot">' +
@@ -299,7 +355,7 @@
             var dot = document.createElement("button");
             dot.type = "button";
             dot.className = "kelsira-dot" + (i === index ? " kelsira-dot--active" : "");
-            dot.setAttribute("aria-label", "Reseña " + (i + 1));
+            dot.setAttribute("aria-label", T.reviewAriaLabel + (i + 1));
             dot.addEventListener("click", function () {
               goTo(i);
             });
@@ -356,7 +412,7 @@
       "</div>" +
       '<span class="kelsira-badge-sub">' +
       data.total_reviews +
-      " reseñas verificadas" +
+      " " + T.verifiedReviewsWord +
       (showBranding ? " · Kelsira" : "") +
       "</span>" +
       "</div>";
@@ -372,12 +428,12 @@
       '<div class="kelsira-seal" style="--kelsira-seal-accent:' + accent + '">' +
       '<span class="kelsira-seal-num">' + data.average_rating.toFixed(1) + "</span>" +
       starsHtml(data.average_rating, 12, accent) +
-      '<span class="kelsira-seal-sub">' + data.total_reviews + " reseñas · IA</span>" +
+      '<span class="kelsira-seal-sub">' + data.total_reviews + " " + T.reviewsWord + " · " + T.aiTag + "</span>" +
       "</div>" +
       (showBranding
         ? '<div class="kelsira-seal-caption">' +
           '<img src="' + origin + '/logo-mark.png" alt="" width="16" height="16">' +
-          "<span>Verificado por Kelsira</span>" +
+          "<span>" + T.kelsiraVerified + "</span>" +
           "</div>"
         : "");
     container.appendChild(wrap);
@@ -389,7 +445,7 @@
     wrap.className = "kelsira-mosaic-wrap";
     var header = document.createElement("div");
     header.className = "kelsira-mosaic-header";
-    header.textContent = "Puntajes objetivo IA";
+    header.textContent = T.aiScoresHeader;
     wrap.appendChild(header);
 
     var list = document.createElement("div");
@@ -432,7 +488,7 @@
     wrap.innerHTML =
       '<div class="kelsira-ticker-badge">' +
       '<b style="color:' + accent + '">' + data.average_rating.toFixed(1) + "★</b>" +
-      "<span>" + data.total_reviews + " reseñas</span>" +
+      "<span>" + data.total_reviews + " " + T.reviewsWord + "</span>" +
       "</div>" +
       '<div class="kelsira-ticker-mask">' +
       '<div class="kelsira-ticker-track">' +
@@ -452,7 +508,7 @@
       starsHtml(data.average_rating, 16, accent) +
       '<b style="color:' + accent + '">' + data.average_rating.toFixed(1) + "</b>" +
       aiTagHtml() +
-      '<span class="kelsira-row-count">(' + data.total_reviews + " reseñas)</span>";
+      '<span class="kelsira-row-count">(' + data.total_reviews + " " + T.reviewsWord + ")</span>";
     container.appendChild(wrap);
   }
 
@@ -469,12 +525,12 @@
       "<b>" + data.average_rating.toFixed(1) + "</b>" +
       '<span class="kelsira-bar-mid">· ' +
       data.total_reviews +
-      " reseñas verificadas" +
+      " " + T.verifiedReviewsWord +
       (showBranding ? " · Kelsira" : "") +
       "</span>" +
       '<a class="kelsira-bar-link" href="' +
       origin + "/resenas/" + encodeURIComponent(businessId) +
-      '" target="_blank" rel="noopener">Ver reseñas →</a>';
+      '" target="_blank" rel="noopener">' + T.viewReviews + "</a>";
     container.appendChild(bar);
   }
 
@@ -509,15 +565,15 @@
         .join("") +
       '<a class="kelsira-launcher-cta" style="color:' + accent + '" href="' +
       origin + "/resenas/" + encodeURIComponent(businessId) +
-      '" target="_blank" rel="noopener">Ver las ' + data.total_reviews + " reseñas →</a>" +
-      (showBranding ? '<div class="kelsira-launcher-brand">Verificado por Kelsira</div>' : "");
+      '" target="_blank" rel="noopener">' + T.viewAllPrefix + data.total_reviews + " " + T.reviewsWord + " →</a>" +
+      (showBranding ? '<div class="kelsira-launcher-brand">' + T.kelsiraVerified + "</div>" : "");
 
     var bubble = document.createElement("button");
     bubble.type = "button";
     bubble.className = "kelsira-launcher-bubble";
     bubble.style.background = accent;
     bubble.textContent = data.average_rating.toFixed(1) + "★";
-    bubble.setAttribute("aria-label", "Ver reseñas verificadas");
+    bubble.setAttribute("aria-label", T.viewVerifiedAria);
 
     var open = true;
     function render() {
@@ -719,6 +775,7 @@
         return res.json();
       })
       .then(function (data) {
+        T = STRINGS[data.business.locale] || STRINGS.en;
         injectStyles("kelsira-widget-styles");
 
         var isDark = data.config.theme_mode === "dark";
@@ -738,7 +795,7 @@
         if (data.total_reviews === 0) {
           var empty = document.createElement("div");
           empty.className = "kelsira-badge kelsira-empty";
-          empty.textContent = "Aún no hay reseñas verificadas.";
+          empty.textContent = T.noReviewsYet;
           container.appendChild(empty);
           return;
         }
@@ -786,7 +843,7 @@
         ) {
           var footer = document.createElement("div");
           footer.className = "kelsira-powered";
-          footer.textContent = "Reseñas verificadas por Kelsira — Puntaje Objetivo IA";
+          footer.textContent = T.poweredFooter;
           container.appendChild(footer);
         }
       })

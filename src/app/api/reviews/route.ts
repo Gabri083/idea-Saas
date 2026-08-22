@@ -10,6 +10,7 @@ import {
   reviewCapReachedEmail,
   reviewConfirmationEmail,
 } from "@/lib/email-templates";
+import { getLocale } from "@/lib/i18n/get-locale";
 
 const RequestSchema = z.object({
   business_id: uuidSchema,
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
   const { data: business, error: businessError } = await admin
     .from("businesses")
     .select(
-      "id, name, contact_email, category, business_description, monthly_review_cap, cap_alert_sent_month",
+      "id, name, contact_email, category, business_description, locale, monthly_review_cap, cap_alert_sent_month",
     )
     .eq("id", business_id)
     .maybeSingle();
@@ -89,7 +90,11 @@ export async function POST(request: NextRequest) {
         await admin.from("businesses").update({ cap_alert_sent_month: currentMonth }).eq("id", business_id);
         await sendEmail({
           to: business.contact_email,
-          ...reviewCapReachedEmail({ businessName: business.name, cap: business.monthly_review_cap }),
+          ...reviewCapReachedEmail({
+            locale: business.locale,
+            businessName: business.name,
+            cap: business.monthly_review_cap,
+          }),
         });
       }
       return NextResponse.json(
@@ -183,6 +188,7 @@ export async function POST(request: NextRequest) {
   await sendEmail({
     to: customer_email,
     ...reviewConfirmationEmail({
+      locale: await getLocale(),
       customerName: customer_name,
       businessName: business.name,
       overallRating: overallAiRating,
@@ -193,6 +199,7 @@ export async function POST(request: NextRequest) {
     await sendEmail({
       to: business.contact_email,
       ...recurringIssueAlertEmail({
+        locale: business.locale,
         businessName: business.name,
         issueLabel: issue.label,
         deadline: issue.deadline,

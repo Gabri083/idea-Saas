@@ -25,6 +25,7 @@ export const mockBusiness: Business = {
   monthly_review_cap: null,
   category: "moda_calzado",
   business_description: "Tienda online de ropa y accesorios de diseño independiente.",
+  locale: "en",
   lemonsqueezy_customer_id: null,
   lemonsqueezy_subscription_id: null,
   subscription_status: null,

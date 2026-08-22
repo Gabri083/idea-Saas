@@ -24,6 +24,7 @@ create table if not exists businesses (
   category           text check (category in
                        ('restaurante', 'moda_calzado', 'belleza', 'electronica', 'hogar', 'salud', 'otro')),
   business_description text, -- short free-text context the AI uses to calibrate scoring
+  locale             text not null default 'en' check (locale in ('en', 'es')), -- language for transactional emails sent to this business
   lemonsqueezy_customer_id     text,
   lemonsqueezy_subscription_id text,
   subscription_status          text, -- e.g. active, on_trial, past_due, cancelled, expired, unpaid

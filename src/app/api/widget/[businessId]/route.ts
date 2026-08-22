@@ -44,7 +44,7 @@ export async function GET(
 
     return withCors(
       NextResponse.json({
-        business: { name: business.name },
+        business: { name: business.name, locale: business.locale },
         config: effectiveConfig,
         average_rating: Math.round(average * 10) / 10,
         total_reviews: allPublicReviews.length,

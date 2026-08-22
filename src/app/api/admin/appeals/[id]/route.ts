@@ -70,7 +70,7 @@ export async function PATCH(
 
   const { data: business } = await admin
     .from("businesses")
-    .select("name, contact_email")
+    .select("name, contact_email, locale")
     .eq("id", appeal.business_id)
     .maybeSingle();
 
@@ -78,6 +78,7 @@ export async function PATCH(
     await sendEmail({
       to: business.contact_email,
       ...appealResolvedEmail({
+        locale: business.locale,
         businessName: business.name,
         status,
         resolutionNotes: resolution_notes ?? null,
