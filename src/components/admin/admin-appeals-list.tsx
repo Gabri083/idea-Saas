@@ -7,9 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
 import { formatDate } from "@/lib/utils";
 import type { AdminAppealRow } from "@/lib/admin-data";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
+
+type AdminDict = Dictionary["admin"];
 
 const statusTone = { pending: "amber", approved: "emerald", rejected: "rose" } as const;
-const statusLabel = { pending: "Pendiente", approved: "Aprobada", rejected: "Rechazada" } as const;
 
 function ScoreInput({
   label,
@@ -39,7 +41,8 @@ function ScoreInput({
   );
 }
 
-function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
+function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict }) {
+  const t = dict.appeals;
   const [status, setStatus] = useState(appeal.status);
   const [notes, setNotes] = useState("");
   const [pending, setPending] = useState<"approved" | "rejected" | null>(null);
@@ -73,10 +76,10 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
     <Card className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <p className="text-sm font-medium">{appeal.business?.name ?? "Negocio"}</p>
+          <p className="text-sm font-medium">{appeal.business?.name ?? t.businessFallback}</p>
           <p className="text-xs text-muted">{formatDate(appeal.created_at)}</p>
         </div>
-        <Badge tone={statusTone[status]}>{statusLabel[status]}</Badge>
+        <Badge tone={statusTone[status]}>{dict.status[status]}</Badge>
       </div>
 
       {appeal.review && (
@@ -91,13 +94,13 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
       )}
 
       <p className="mt-3 text-sm">
-        <span className="font-medium">Motivo de la apelación: </span>
+        <span className="font-medium">{t.reasonLabel}</span>
         {appeal.reason}
       </p>
 
       {appeal.evidence_links.length > 0 && (
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-muted">Evidencia:</span>
+          <span className="text-xs text-muted">{t.evidenceLabel}</span>
           {appeal.evidence_links.map((link, i) =>
             link.url ? (
               <a
@@ -107,11 +110,11 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 rounded-lg border border-cobalt/30 bg-cobalt/10 px-2 py-1 text-xs text-cobalt hover:bg-cobalt/20"
               >
-                <Paperclip size={11} /> Archivo {i + 1}
+                <Paperclip size={11} /> {t.fileLabel} {i + 1}
               </a>
             ) : (
               <span key={link.path} className="text-xs text-rose">
-                (enlace no disponible)
+                {t.linkUnavailable}
               </span>
             ),
           )}
@@ -123,7 +126,7 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Nota de resolución (opcional)"
+            placeholder={t.notesPlaceholder}
             rows={2}
             className="resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
           />
@@ -131,17 +134,17 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
           {correcting && (
             <div className="flex flex-wrap items-end gap-3 rounded-lg border border-cobalt/30 bg-cobalt/[0.05] p-3">
               <ScoreInput
-                label="Producto"
+                label={t.scoreProduct}
                 value={scores.product_score}
                 onChange={(v) => setScores((s) => ({ ...s, product_score: v }))}
               />
               <ScoreInput
-                label="Atención"
+                label={t.scoreService}
                 value={scores.service_score}
                 onChange={(v) => setScores((s) => ({ ...s, service_score: v }))}
               />
               <ScoreInput
-                label="Envío"
+                label={t.scoreDelivery}
                 value={scores.delivery_score}
                 onChange={(v) => setScores((s) => ({ ...s, delivery_score: v }))}
               />
@@ -151,7 +154,7 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
                 className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-emerald/30 bg-emerald/10 px-3 py-1.5 text-xs font-medium text-emerald transition-colors hover:bg-emerald/20 disabled:opacity-50"
               >
                 {pending === "approved" ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                Confirmar puntaje corregido
+                {t.confirmCorrected}
               </button>
             </div>
           )}
@@ -167,7 +170,7 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
               ) : (
                 <Check size={14} />
               )}
-              Aprobar: reseña falsa (archivar)
+              {t.approveFalse}
             </button>
             <button
               onClick={() => setCorrecting((v) => !v)}
@@ -175,7 +178,7 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
               className="inline-flex items-center gap-1.5 rounded-lg border border-cobalt/30 bg-cobalt/10 px-3 py-1.5 text-xs font-medium text-cobalt transition-colors hover:bg-cobalt/20 disabled:opacity-50"
             >
               <SlidersHorizontal size={14} />
-              Aprobar: reseña real, mal evaluada
+              {t.approveMisrated}
             </button>
             <button
               onClick={() => resolve("rejected")}
@@ -183,28 +186,31 @@ function AppealCard({ appeal }: { appeal: AdminAppealRow }) {
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
             >
               {pending === "rejected" ? <Loader2 size={14} className="animate-spin" /> : <X size={14} />}
-              Rechazar apelación
+              {t.reject}
             </button>
           </div>
         </div>
       ) : (
         appeal.resolution_notes && (
-          <p className="mt-3 text-xs text-muted">Nota: {appeal.resolution_notes}</p>
+          <p className="mt-3 text-xs text-muted">
+            {t.noteLabel}
+            {appeal.resolution_notes}
+          </p>
         )
       )}
     </Card>
   );
 }
 
-export function AdminAppealsList({ appeals }: { appeals: AdminAppealRow[] }) {
+export function AdminAppealsList({ appeals, dict }: { appeals: AdminAppealRow[]; dict: AdminDict }) {
   if (appeals.length === 0) {
-    return <Card className="p-8 text-center text-sm text-muted">No hay apelaciones todavía.</Card>;
+    return <Card className="p-8 text-center text-sm text-muted">{dict.appeals.empty}</Card>;
   }
 
   return (
     <div className="flex flex-col gap-4">
       {appeals.map((appeal) => (
-        <AppealCard key={appeal.id} appeal={appeal} />
+        <AppealCard key={appeal.id} appeal={appeal} dict={dict} />
       ))}
     </div>
   );

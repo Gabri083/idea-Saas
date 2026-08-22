@@ -3,14 +3,9 @@ import { Footer } from "@/components/landing/footer";
 import { LogoMark } from "@/components/brand/logo-mark";
 import { getDictionary } from "@/lib/i18n/get-locale";
 
-const links = [
-  { href: "/legal/terminos", label: "Términos del Servicio" },
-  { href: "/legal/privacidad", label: "Política de Privacidad" },
-  { href: "/legal/transparencia-ia", label: "Transparencia de la IA" },
-];
-
 export default async function LegalLayout({ children }: { children: React.ReactNode }) {
   const dict = await getDictionary();
+  const links = dict.footer.columns.legal.links;
   return (
     <>
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-md">

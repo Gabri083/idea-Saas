@@ -1,11 +1,21 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
-export function LegalTitle({ children, updated }: { children: React.ReactNode; updated: string }) {
+export function LegalTitle({
+  children,
+  updated,
+  updatedLabel = "Última actualización:",
+}: {
+  children: React.ReactNode;
+  updated: string;
+  updatedLabel?: string;
+}) {
   return (
     <div className="mb-10">
       <h1 className="text-3xl font-semibold tracking-tight">{children}</h1>
-      <p className="mt-2 text-sm text-muted">Última actualización: {updated}</p>
+      <p className="mt-2 text-sm text-muted">
+        {updatedLabel} {updated}
+      </p>
     </div>
   );
 }
