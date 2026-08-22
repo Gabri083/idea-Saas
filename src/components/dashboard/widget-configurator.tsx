@@ -96,17 +96,30 @@ const fontStack: Record<string, string> = {
   georgia: "Georgia, serif",
   mono: "ui-monospace, monospace",
 };
-const layoutIds: WidgetConfig["layout"][] = ["carousel", "grid", "wall", "spotlight", "badge", "sello", "mosaico"];
+const layoutIds: WidgetConfig["layout"][] = [
+  "carousel",
+  "grid",
+  "wall",
+  "spotlight",
+  "badge",
+  "sello",
+  "mosaico",
+  "cinta",
+  "lanzador",
+  "barra",
+  "fila",
+];
 const cardStyleIds: WidgetConfig["card_style"][] = ["recibo", "medidor"];
 // grid/wall/carousel repeat one card per review — the other four layouts are
 // single aggregate displays, so the card-style choice doesn't apply to them.
 const CARD_STYLE_LAYOUTS: WidgetConfig["layout"][] = ["carousel", "grid", "wall"];
 
-// "Bordes" doesn't mean anything for El Sello (always a circle) or El Recibo
-// (its cut corner is a fixed part of the style, not a tunable roundness) —
-// show the control only where it actually changes something.
+// "Bordes" doesn't mean anything for El Sello (always a circle), El Recibo
+// (its cut corner is a fixed part of the style), La Barra Superior (a
+// full-bleed bar has no visible corners) or La Fila de Producto (no box at
+// all) — show the control only where it actually changes something.
 function radiusApplies(layout: WidgetConfig["layout"], cardStyle: WidgetConfig["card_style"]) {
-  if (layout === "sello") return false;
+  if (layout === "sello" || layout === "barra" || layout === "fila") return false;
   if (CARD_STYLE_LAYOUTS.includes(layout) && cardStyle === "recibo") return false;
   return true;
 }
@@ -490,6 +503,208 @@ function MosaicList({
   );
 }
 
+// La Cinta is deliberately a fixed dark ribbon regardless of theme_mode — like
+// El Recibo's cut corner and El Sello's circle, its identity doesn't flex with
+// light/dark, it's meant to read as a bold ticker on any storefront background.
+function Ticker({
+  reviews,
+  average,
+  count,
+  accent,
+  radius,
+  dict,
+}: {
+  reviews: Review[];
+  average: number;
+  count: number;
+  accent: string;
+  radius: string;
+  dict: WidgetDict;
+}) {
+  const items = reviews.map((r) => (
+    <span key={r.id} className="inline-flex shrink-0 items-center gap-1">
+      <b className="font-semibold text-white">{r.customer_name}</b>
+      <b style={{ color: accent }}>{r.overall_ai_rating.toFixed(1)}</b>
+      <span>· {r.review_text.length > 70 ? `${r.review_text.slice(0, 70).trim()}…` : r.review_text}</span>
+      <span className="opacity-30">●</span>
+    </span>
+  ));
+
+  return (
+    <div
+      className="flex items-center overflow-hidden text-white shadow-[0_12px_32px_-16px_rgba(0,0,0,.5)]"
+      style={{ background: "#14161c", borderRadius: radius }}
+    >
+      <div
+        className="flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-3"
+        style={{ background: "rgba(255,255,255,.06)", borderRight: "1px solid rgba(255,255,255,.08)" }}
+      >
+        <b style={{ color: accent }}>{average.toFixed(1)}★</b>
+        <span className="text-[11px] opacity-55">{dict.tickerCount.replace("{n}", String(count))}</span>
+      </div>
+      <div className="relative min-w-0 flex-1 overflow-hidden">
+        <div
+          className="kelsira-ticker-track flex items-center gap-10 whitespace-nowrap px-5 text-[12.5px]"
+          style={{ animation: "kelsira-ticker-scroll 26s linear infinite" }}
+        >
+          {items}
+          {items}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// La Fila de Producto — no box, no border: just the inline star-row a shopper
+// already expects right under a product title, before the price.
+function ProductRow({
+  average,
+  count,
+  accent,
+  starBg,
+  dict,
+}: {
+  average: number;
+  count: number;
+  accent: string;
+  starBg: string;
+  dict: WidgetDict;
+}) {
+  return (
+    <div className="inline-flex items-center gap-2 text-sm">
+      <Stars value={average} size={16} accent={accent} bg={starBg} />
+      <b style={{ color: accent }}>{average.toFixed(1)}</b>
+      <AiTag dict={dict} />
+      <span className="underline decoration-current/40 underline-offset-2 opacity-70">
+        {dict.rowCount.replace("{n}", String(count))}
+      </span>
+    </div>
+  );
+}
+
+// La Barra Superior — full-bleed bar meant to sit pinned above the page, in
+// the same slot as a free-shipping promo bar. Folds the Kelsira mark inline
+// (like El Clásico) since a separate footer line would be orphaned once this
+// bar is unpinned from where the widget script sits in the DOM.
+function TopBar({
+  average,
+  count,
+  accent,
+  starBg,
+  bg,
+  fg,
+  borderColor,
+  showBranding,
+  dict,
+}: {
+  average: number;
+  count: number;
+  accent: string;
+  starBg: string;
+  bg: string;
+  fg: string;
+  borderColor: string;
+  showBranding: boolean;
+  dict: WidgetDict;
+}) {
+  return (
+    <div
+      className="flex items-center justify-center gap-2 border-b px-4 py-2.5 text-[13px]"
+      style={{ background: bg, color: fg, borderColor }}
+    >
+      <Stars value={average} size={13} accent={accent} bg={starBg} />
+      <b>{average.toFixed(1)}</b>
+      <span className="opacity-70">
+        · {dict.reviewsVerifiedCount.replace("{n}", String(count))}
+        {showBranding ? " · Kelsira" : ""}
+      </span>
+      <span className="underline decoration-current/40 underline-offset-2 opacity-80">{dict.barViewLink}</span>
+    </div>
+  );
+}
+
+// El Lanzador — floating corner bubble + popover panel, the same slot a
+// support-chat launcher already occupies. Branding folds into the panel
+// footer instead of the separate global line, for the same reason as La
+// Barra Superior.
+function Launcher({
+  reviews,
+  average,
+  count,
+  accent,
+  businessName,
+  isDark,
+  radius,
+  showBranding,
+  dict,
+}: {
+  reviews: Review[];
+  average: number;
+  count: number;
+  accent: string;
+  businessName: string;
+  isDark: boolean;
+  radius: string;
+  showBranding: boolean;
+  dict: WidgetDict;
+}) {
+  const [open, setOpen] = useState(true);
+  const bg = isDark ? "#101114" : "#ffffff";
+  const fg = isDark ? "#f4f5f7" : "#111318";
+  const borderColor = isDark ? "#232529" : "#e5e7eb";
+
+  return (
+    <div className="absolute right-5 bottom-5 flex flex-col items-end gap-3">
+      {open && (
+        <div
+          className="w-64 overflow-hidden border shadow-[0_20px_50px_-18px_rgba(0,0,0,.4)]"
+          style={{ background: bg, color: fg, borderColor, borderRadius: radius }}
+        >
+          <div className="flex items-center justify-between px-3.5 py-3 text-white" style={{ background: accent }}>
+            <b className="text-sm">
+              {average.toFixed(1)}★ {businessName}
+            </b>
+            <span className="text-xs opacity-75">{count}</span>
+          </div>
+          {reviews.slice(0, 3).map((r, i) => (
+            <div
+              key={r.id}
+              className="flex items-center gap-2 px-3.5 py-2.5 text-xs"
+              style={i > 0 ? { borderTop: `1px solid ${borderColor}` } : undefined}
+            >
+              <b className="shrink-0">{r.customer_name}</b>
+              <span className="min-w-0 flex-1 truncate opacity-65">
+                {r.overall_ai_rating.toFixed(1)} · {r.review_text}
+              </span>
+            </div>
+          ))}
+          <div
+            className="px-3.5 py-2.5 text-center text-xs font-medium"
+            style={{ color: accent, borderTop: `1px solid ${borderColor}` }}
+          >
+            {dict.launcherViewAll.replace("{n}", String(count))}
+          </div>
+          {showBranding && (
+            <div
+              className="px-3.5 py-2 text-center text-[10.5px] opacity-55"
+              style={{ borderTop: `1px solid ${borderColor}` }}
+            >
+              {dict.verifiedByKelsira}
+            </div>
+          )}
+        </div>
+      )}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-[0_10px_26px_-8px_rgba(0,0,0,.4)]"
+        style={{ background: accent }}
+      >
+        {average.toFixed(1)}★
+      </button>
+    </div>
+  );
+}
+
 function Spotlight({
   reviews,
   showBreakdown,
@@ -820,10 +1035,13 @@ export function WidgetConfigurator({
           <div
             className="rounded-2xl border p-6"
             style={{
+              position: "relative",
               background: isDark ? "#101114" : "#ffffff",
               color: isDark ? "#f4f5f7" : "#111318",
               borderColor,
               fontFamily: fontStack[config.font_family] ?? undefined,
+              ...(config.layout === "lanzador" && { overflow: "hidden", minHeight: 400 }),
+              ...(config.layout === "barra" && { overflow: "hidden", minHeight: 220 }),
             }}
           >
             {config.layout === "badge" ? (
@@ -854,6 +1072,15 @@ export function WidgetConfigurator({
                 radius={radius}
                 dict={dict}
               />
+            ) : config.layout === "cinta" ? (
+              <Ticker
+                reviews={previewReviews.slice(0, 6)}
+                average={average}
+                count={previewReviews.length}
+                accent={config.accent_color}
+                radius={radius}
+                dict={dict}
+              />
             ) : config.layout === "spotlight" ? (
               <Spotlight
                 reviews={previewReviews}
@@ -861,6 +1088,40 @@ export function WidgetConfigurator({
                 accent={config.accent_color}
                 isDark={isDark}
                 businessName={businessName}
+                dict={dict}
+              />
+            ) : config.layout === "fila" ? (
+              <ProductRow
+                average={average}
+                count={previewReviews.length}
+                accent={config.accent_color}
+                starBg={starBg}
+                dict={dict}
+              />
+            ) : config.layout === "barra" ? (
+              <div className="absolute inset-x-0 top-0">
+                <TopBar
+                  average={average}
+                  count={previewReviews.length}
+                  accent={config.accent_color}
+                  starBg={starBg}
+                  bg={isDark ? "#101114" : "#ffffff"}
+                  fg={isDark ? "#f4f5f7" : "#111318"}
+                  borderColor={borderColor}
+                  showBranding={config.show_branding}
+                  dict={dict}
+                />
+              </div>
+            ) : config.layout === "lanzador" ? (
+              <Launcher
+                reviews={previewReviews}
+                average={average}
+                count={previewReviews.length}
+                accent={config.accent_color}
+                businessName={businessName}
+                isDark={isDark}
+                radius={radius}
+                showBranding={config.show_branding}
                 dict={dict}
               />
             ) : (
@@ -901,9 +1162,13 @@ export function WidgetConfigurator({
                 )}
               </div>
             )}
-            {config.show_branding && config.layout !== "badge" && config.layout !== "sello" && (
-              <p className="mt-4 text-right text-[10px] opacity-50">{dict.footerBranding}</p>
-            )}
+            {config.show_branding &&
+              config.layout !== "badge" &&
+              config.layout !== "sello" &&
+              config.layout !== "barra" &&
+              config.layout !== "lanzador" && (
+                <p className="mt-4 text-right text-[10px] opacity-50">{dict.footerBranding}</p>
+              )}
           </div>
         </Card>
 

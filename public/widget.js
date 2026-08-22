@@ -410,6 +410,130 @@
     container.appendChild(wrap);
   }
 
+  // ---------- La Cinta: scrolling trust ticker ----------
+  // Fixed dark bar regardless of theme_mode — like El Recibo's cut corner and
+  // El Sello's circle, this style's identity doesn't flex with light/dark; it
+  // reads as a bold ribbon on any storefront background.
+  function mountTicker(container, data, accent) {
+    var single = data.reviews
+      .map(function (r) {
+        return (
+          '<span class="kelsira-ticker-item">' +
+          '<b class="kelsira-ticker-name">' + escapeHtml(r.customer_name) + "</b> " +
+          '<b class="kelsira-ticker-score" style="color:' + accent + '">' + r.overall_ai_rating.toFixed(1) + "</b> " +
+          "· " + escapeHtml(truncate(r.review_text, 70)) +
+          "</span>"
+        );
+      })
+      .join('<span class="kelsira-ticker-dot">●</span>');
+
+    var wrap = document.createElement("div");
+    wrap.className = "kelsira-ticker";
+    wrap.innerHTML =
+      '<div class="kelsira-ticker-badge">' +
+      '<b style="color:' + accent + '">' + data.average_rating.toFixed(1) + "★</b>" +
+      "<span>" + data.total_reviews + " reseñas</span>" +
+      "</div>" +
+      '<div class="kelsira-ticker-mask">' +
+      '<div class="kelsira-ticker-track">' +
+      single +
+      '<span class="kelsira-ticker-dot">●</span>' +
+      single +
+      "</div>" +
+      "</div>";
+    container.appendChild(wrap);
+  }
+
+  // ---------- La Fila de Producto: no box at all, just the inline star row ----------
+  function mountFila(container, data, accent) {
+    var wrap = document.createElement("div");
+    wrap.className = "kelsira-row";
+    wrap.innerHTML =
+      starsHtml(data.average_rating, 16, accent) +
+      '<b style="color:' + accent + '">' + data.average_rating.toFixed(1) + "</b>" +
+      aiTagHtml() +
+      '<span class="kelsira-row-count">(' + data.total_reviews + " reseñas)</span>";
+    container.appendChild(wrap);
+  }
+
+  // ---------- La Barra Superior: full-bleed bar pinned above the page ----------
+  // Folds the Kelsira mark inline (see mountLanzador note) since a separate
+  // footer line would render wherever the script tag sits in the DOM, not
+  // next to this bar once it's pinned to the viewport.
+  function mountBarra(container, data, accent, origin, businessId) {
+    var showBranding = data.config.show_branding;
+    var bar = document.createElement("div");
+    bar.className = "kelsira-bar";
+    bar.innerHTML =
+      starsHtml(data.average_rating, 13, accent) +
+      "<b>" + data.average_rating.toFixed(1) + "</b>" +
+      '<span class="kelsira-bar-mid">· ' +
+      data.total_reviews +
+      " reseñas verificadas" +
+      (showBranding ? " · Kelsira" : "") +
+      "</span>" +
+      '<a class="kelsira-bar-link" href="' +
+      origin + "/resenas/" + encodeURIComponent(businessId) +
+      '" target="_blank" rel="noopener">Ver reseñas →</a>';
+    container.appendChild(bar);
+  }
+
+  // ---------- El Lanzador: floating corner bubble + popover panel ----------
+  // Branding folds into the panel footer instead of the separate global
+  // line, for the same reason as La Barra Superior.
+  function mountLanzador(container, data, accent, origin, businessId) {
+    var showBranding = data.config.show_branding;
+    var wrap = document.createElement("div");
+    wrap.className = "kelsira-launcher";
+
+    var panel = document.createElement("div");
+    panel.className = "kelsira-launcher-panel";
+    panel.innerHTML =
+      '<div class="kelsira-launcher-head" style="background:' + accent + '">' +
+      "<b>" + data.average_rating.toFixed(1) + "★ " + escapeHtml(data.business.name) + "</b>" +
+      "<span>" + data.total_reviews + "</span>" +
+      "</div>" +
+      data.reviews
+        .slice(0, 3)
+        .map(function (r) {
+          return (
+            '<div class="kelsira-launcher-row"><b>' +
+            escapeHtml(r.customer_name) +
+            "</b><span>" +
+            r.overall_ai_rating.toFixed(1) +
+            " · " +
+            escapeHtml(truncate(r.review_text, 60)) +
+            "</span></div>"
+          );
+        })
+        .join("") +
+      '<a class="kelsira-launcher-cta" style="color:' + accent + '" href="' +
+      origin + "/resenas/" + encodeURIComponent(businessId) +
+      '" target="_blank" rel="noopener">Ver las ' + data.total_reviews + " reseñas →</a>" +
+      (showBranding ? '<div class="kelsira-launcher-brand">Verificado por Kelsira</div>' : "");
+
+    var bubble = document.createElement("button");
+    bubble.type = "button";
+    bubble.className = "kelsira-launcher-bubble";
+    bubble.style.background = accent;
+    bubble.textContent = data.average_rating.toFixed(1) + "★";
+    bubble.setAttribute("aria-label", "Ver reseñas verificadas");
+
+    var open = true;
+    function render() {
+      panel.style.display = open ? "block" : "none";
+    }
+    bubble.addEventListener("click", function () {
+      open = !open;
+      render();
+    });
+    render();
+
+    wrap.appendChild(panel);
+    wrap.appendChild(bubble);
+    container.appendChild(wrap);
+  }
+
   function injectStyles(id) {
     if (document.getElementById(id)) return;
     var style = document.createElement("style");
@@ -502,7 +626,38 @@
       ".kelsira-mosaic-who .kelsira-name{font-size:11.5px;}" +
       ".kelsira-mosaic-who .kelsira-date{font-size:9.5px;}" +
       ".kelsira-mosaic-num{font-weight:700;font-size:12.5px;width:28px;flex-shrink:0;}" +
-      ".kelsira-mosaic-quote{font-size:11.5px;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}";
+      ".kelsira-mosaic-quote{font-size:11.5px;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}" +
+      // La Cinta — scrolling trust ticker, fixed dark bar (see comment above mountTicker).
+      ".kelsira-ticker{display:flex;align-items:center;background:#14161c;color:#fff;border-radius:var(--kelsira-radius);overflow:hidden;box-shadow:0 12px 32px -16px rgba(0,0,0,.5);}" +
+      ".kelsira-ticker-badge{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.08);white-space:nowrap;font-size:14px;}" +
+      ".kelsira-ticker-badge span{font-size:11px;opacity:.55;}" +
+      ".kelsira-ticker-mask{flex:1;overflow:hidden;position:relative;min-width:0;}" +
+      ".kelsira-ticker-track{display:inline-flex;align-items:center;gap:40px;white-space:nowrap;padding:0 20px;font-size:12.5px;animation:kelsira-ticker-scroll 26s linear infinite;}" +
+      ".kelsira-ticker-item{opacity:.85;}" +
+      ".kelsira-ticker-dot{opacity:.3;}" +
+      "@keyframes kelsira-ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}" +
+      "@media (prefers-reduced-motion: reduce){.kelsira-ticker-track{animation:none}}" +
+      // La Fila de Producto — no box, just the inline row.
+      ".kelsira-row{display:inline-flex;align-items:center;gap:8px;font-size:14px;}" +
+      ".kelsira-row-count{text-decoration:underline;text-underline-offset:2px;opacity:.7;}" +
+      // La Barra Superior — full-bleed bar pinned above the page.
+      ".kelsira-bar{position:fixed;top:0;left:0;right:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--kelsira-bg);color:var(--kelsira-fg);border-bottom:1px solid var(--kelsira-border);padding:10px 16px;font-size:13px;box-shadow:0 2px 12px rgba(0,0,0,.06);}" +
+      ".kelsira-bar b{font-weight:700;}" +
+      ".kelsira-bar-mid{opacity:.7;}" +
+      ".kelsira-bar-link{text-decoration:underline;text-underline-offset:2px;opacity:.85;color:inherit;}" +
+      // El Lanzador — floating corner bubble + popover panel.
+      ".kelsira-launcher{position:fixed;right:20px;bottom:20px;z-index:2147483000;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}" +
+      ".kelsira-launcher-bubble{width:52px;height:52px;border-radius:50%;color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer;box-shadow:0 10px 26px -8px rgba(0,0,0,.4);}" +
+      ".kelsira-launcher-panel{width:260px;background:var(--kelsira-bg);color:var(--kelsira-fg);border:1px solid var(--kelsira-border);border-radius:var(--kelsira-radius);overflow:hidden;box-shadow:0 20px 50px -18px rgba(0,0,0,.4);}" +
+      ".kelsira-launcher-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;color:#fff;}" +
+      ".kelsira-launcher-head b{font-size:13px;}" +
+      ".kelsira-launcher-head span{font-size:11px;opacity:.75;}" +
+      ".kelsira-launcher-row{display:flex;align-items:center;gap:8px;padding:9px 14px;font-size:11.5px;border-top:1px solid var(--kelsira-border);}" +
+      ".kelsira-launcher-row:first-of-type{border-top:none;}" +
+      ".kelsira-launcher-row b{flex-shrink:0;}" +
+      ".kelsira-launcher-row span{opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}" +
+      ".kelsira-launcher-cta{display:block;text-align:center;padding:10px;font-size:11.5px;font-weight:600;text-decoration:none;border-top:1px solid var(--kelsira-border);}" +
+      ".kelsira-launcher-brand{text-align:center;padding:8px;font-size:10px;opacity:.55;border-top:1px solid var(--kelsira-border);}";
     document.head.appendChild(style);
   }
 
@@ -549,6 +704,14 @@
           mountSello(container, data, accent, origin);
         } else if (layout === "mosaico") {
           mountMosaico(container, data.reviews, accent);
+        } else if (layout === "cinta") {
+          mountTicker(container, data, accent);
+        } else if (layout === "fila") {
+          mountFila(container, data, accent);
+        } else if (layout === "barra") {
+          mountBarra(container, data, accent, origin, businessId);
+        } else if (layout === "lanzador") {
+          mountLanzador(container, data, accent, origin, businessId);
         } else if (layout === "spotlight") {
           mountSpotlight(container, data.reviews, data.config.show_breakdown, accent, data.business.name);
         } else {
@@ -564,9 +727,17 @@
           container.appendChild(list);
         }
 
-        // El Clásico and El Sello already fold the Kelsira mark into the card
-        // itself, so the separate footer line would just repeat it below.
-        if (data.config.show_branding && layout !== "badge" && layout !== "sello") {
+        // El Clásico, El Sello, La Barra Superior and El Lanzador already fold
+        // the Kelsira mark into themselves, so the separate footer line would
+        // just repeat it below — or, for the fixed-position pair, render as an
+        // orphaned line wherever the script tag happens to sit in the DOM.
+        if (
+          data.config.show_branding &&
+          layout !== "badge" &&
+          layout !== "sello" &&
+          layout !== "barra" &&
+          layout !== "lanzador"
+        ) {
           var footer = document.createElement("div");
           footer.className = "kelsira-powered";
           footer.textContent = "Reseñas verificadas por Kelsira — Puntaje Objetivo IA";
