@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SignupForm } from "@/components/auth/signup-form";
 import { LogoMark } from "@/components/brand/logo-mark";
+import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 
-export const metadata: Metadata = {
-  title: "Crea tu cuenta gratis",
-  description: "Empieza gratis con el plan Gratis de Kelsira. Sin tarjeta de crédito.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = await getDictionary();
+  return { title: dict.auth.signup.pageTitle, description: dict.auth.signup.pageDescription };
+}
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
   return (
     <main className="flex flex-1 flex-col items-center bg-grid px-4 py-12 sm:py-20">
       <div className="w-full max-w-md">
@@ -18,19 +20,17 @@ export default function SignupPage() {
         </Link>
 
         <div className="mt-8 rounded-2xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-8">
-          <h1 className="text-xl font-semibold tracking-tight">Crea tu cuenta</h1>
-          <p className="mt-1 text-sm text-muted">
-            Empieza con el plan Gratis. Sin tarjeta de crédito.
-          </p>
+          <h1 className="text-xl font-semibold tracking-tight">{dict.auth.signup.title}</h1>
+          <p className="mt-1 text-sm text-muted">{dict.auth.signup.subtitle}</p>
 
           <div className="mt-6">
-            <SignupForm />
+            <SignupForm dict={dict.auth} locale={locale} />
           </div>
 
           <p className="mt-6 text-center text-sm text-muted">
-            ¿Ya tienes cuenta?{" "}
+            {dict.auth.signup.haveAccount}{" "}
             <Link href="/login" className="text-cobalt hover:underline">
-              Inicia sesión
+              {dict.auth.signup.loginLink}
             </Link>
           </p>
         </div>

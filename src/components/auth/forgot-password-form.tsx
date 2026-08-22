@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Loader2, Mail, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export function ForgotPasswordForm() {
+export function ForgotPasswordForm({ dict }: { dict: Dictionary["auth"] }) {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [error, setError] = useState("");
 
@@ -22,7 +23,7 @@ export function ForgotPasswordForm() {
     });
 
     if (resetError) {
-      setError("No se pudo enviar el correo. Intenta de nuevo en unos minutos.");
+      setError(dict.forgotPassword.error);
       setStatus("error");
       return;
     }
@@ -34,7 +35,7 @@ export function ForgotPasswordForm() {
     return (
       <div className="flex items-center gap-2 rounded-xl border border-emerald/30 bg-emerald/[0.06] px-4 py-3 text-sm text-emerald">
         <CheckCircle2 size={16} className="shrink-0" />
-        Si ese correo tiene una cuenta, te enviamos un link para restablecer tu contraseña.
+        {dict.forgotPassword.success}
       </div>
     );
   }
@@ -43,14 +44,14 @@ export function ForgotPasswordForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm font-medium">
-          Correo electrónico
+          {dict.emailLabel}
         </label>
         <input
           id="email"
           name="email"
           type="email"
           required
-          placeholder="tucorreo@ejemplo.com"
+          placeholder={dict.emailPlaceholder}
           className="rounded-xl border border-border bg-surface px-4 py-2.5 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
         />
       </div>
@@ -60,11 +61,11 @@ export function ForgotPasswordForm() {
       <Button type="submit" size="lg" disabled={status === "loading"} className="mt-2 w-full">
         {status === "loading" ? (
           <>
-            <Loader2 size={18} className="animate-spin" /> Enviando…
+            <Loader2 size={18} className="animate-spin" /> {dict.forgotPassword.submitLoading}
           </>
         ) : (
           <>
-            <Mail size={18} /> Enviar link de recuperación
+            <Mail size={18} /> {dict.forgotPassword.submitIdle}
           </>
         )}
       </Button>

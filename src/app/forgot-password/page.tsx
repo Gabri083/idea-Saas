@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { LogoMark } from "@/components/brand/logo-mark";
+import { getDictionary } from "@/lib/i18n/get-locale";
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
+  const dict = await getDictionary();
   return (
     <main className="flex flex-1 flex-col items-center bg-grid px-4 py-12 sm:py-20">
       <div className="w-full max-w-md">
@@ -12,18 +14,16 @@ export default function ForgotPasswordPage() {
         </Link>
 
         <div className="mt-8 rounded-2xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-8">
-          <h1 className="text-xl font-semibold tracking-tight">Recupera tu contraseña</h1>
-          <p className="mt-1 text-sm text-muted">
-            Te enviamos un link para elegir una nueva contraseña.
-          </p>
+          <h1 className="text-xl font-semibold tracking-tight">{dict.auth.forgotPassword.title}</h1>
+          <p className="mt-1 text-sm text-muted">{dict.auth.forgotPassword.subtitle}</p>
 
           <div className="mt-6">
-            <ForgotPasswordForm />
+            <ForgotPasswordForm dict={dict.auth} />
           </div>
 
           <p className="mt-6 text-center text-sm text-muted">
             <Link href="/login" className="text-cobalt hover:underline">
-              Volver a iniciar sesión
+              {dict.auth.forgotPassword.backToLogin}
             </Link>
           </p>
         </div>

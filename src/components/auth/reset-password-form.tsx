@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { Loader2, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export function ResetPasswordForm() {
+export function ResetPasswordForm({ dict }: { dict: Dictionary["auth"] }) {
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [linkInvalid, setLinkInvalid] = useState(false);
@@ -52,7 +53,7 @@ export function ResetPasswordForm() {
     const confirm = String(formData.get("confirm"));
 
     if (password !== confirm) {
-      setError("Las contraseñas no coinciden.");
+      setError(dict.resetPassword.mismatchError);
       setStatus("error");
       return;
     }
@@ -61,7 +62,7 @@ export function ResetPasswordForm() {
     const { error: updateError } = await supabase.auth.updateUser({ password });
 
     if (updateError) {
-      setError("No se pudo actualizar la contraseña. El link puede haber expirado.");
+      setError(dict.resetPassword.updateError);
       setStatus("error");
       return;
     }
@@ -73,9 +74,9 @@ export function ResetPasswordForm() {
   if (linkInvalid) {
     return (
       <p className="text-sm text-rose">
-        Este link no es válido o ya expiró. Solicita uno nuevo desde{" "}
+        {dict.resetPassword.invalidLinkPrefix}{" "}
         <a href="/forgot-password" className="text-cobalt hover:underline">
-          ¿Olvidaste tu contraseña?
+          {dict.resetPassword.invalidLinkCta}
         </a>
         .
       </p>
@@ -85,7 +86,7 @@ export function ResetPasswordForm() {
   if (!ready) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted">
-        <Loader2 size={16} className="animate-spin" /> Verificando tu link…
+        <Loader2 size={16} className="animate-spin" /> {dict.resetPassword.verifying}
       </div>
     );
   }
@@ -94,7 +95,7 @@ export function ResetPasswordForm() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="password" className="text-sm font-medium">
-          Nueva contraseña
+          {dict.resetPassword.newPasswordLabel}
         </label>
         <input
           id="password"
@@ -102,14 +103,14 @@ export function ResetPasswordForm() {
           type="password"
           required
           minLength={8}
-          placeholder="Mínimo 8 caracteres"
+          placeholder={dict.passwordPlaceholderMin8}
           className="rounded-xl border border-border bg-surface px-4 py-2.5 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
         />
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="confirm" className="text-sm font-medium">
-          Confirma la contraseña
+          {dict.resetPassword.confirmLabel}
         </label>
         <input
           id="confirm"
@@ -117,7 +118,7 @@ export function ResetPasswordForm() {
           type="password"
           required
           minLength={8}
-          placeholder="Repite la contraseña"
+          placeholder={dict.resetPassword.confirmPlaceholder}
           className="rounded-xl border border-border bg-surface px-4 py-2.5 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
         />
       </div>
@@ -127,11 +128,11 @@ export function ResetPasswordForm() {
       <Button type="submit" size="lg" disabled={status === "loading"} className="mt-2 w-full">
         {status === "loading" ? (
           <>
-            <Loader2 size={18} className="animate-spin" /> Guardando…
+            <Loader2 size={18} className="animate-spin" /> {dict.resetPassword.submitLoading}
           </>
         ) : (
           <>
-            <KeyRound size={18} /> Guardar contraseña
+            <KeyRound size={18} /> {dict.resetPassword.submitIdle}
           </>
         )}
       </Button>

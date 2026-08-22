@@ -6,59 +6,27 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Plan } from "@/lib/types";
-
-const plans: { id: Plan; name: string; price: string; trialNote: string; features: string[] }[] = [
-  {
-    id: "free",
-    name: "Gratis",
-    price: "$0",
-    trialNote: "Incluido siempre, sin tarjeta.",
-    features: ["Hasta 20 reseñas/mes", "Widget estándar"],
-  },
-  {
-    id: "starter",
-    name: "Starter",
-    price: "$29/mes",
-    trialNote: "14 días de prueba gratis, requiere tarjeta.",
-    features: ["Hasta 200 reseñas/mes", "Widget estándar"],
-  },
-  {
-    id: "growth",
-    name: "Growth",
-    price: "$79/mes",
-    trialNote: "14 días de prueba gratis, requiere tarjeta.",
-    features: ["Reseñas ilimitadas", "Consultor de Mejora Operativa IA", "Apelaciones prioritarias"],
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "$199/mes",
-    trialNote: "14 días de prueba gratis, requiere tarjeta.",
-    features: ["Soporte multi-tienda", "API custom", "Gestor de cuenta dedicado"],
-  },
-];
-
-const STATUS_LABEL: Record<string, string> = {
-  active: "Activa",
-  on_trial: "En prueba",
-  past_due: "Pago atrasado",
-  cancelled: "Cancelada (activa hasta el fin del período)",
-  expired: "Expirada",
-  unpaid: "Impaga",
-  paused: "Pausada",
-};
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 export function PlanSection({
   currentPlan,
   subscriptionStatus,
   customerPortalUrl,
+  dict,
 }: {
   currentPlan: Plan;
   subscriptionStatus: string | null;
   customerPortalUrl: string | null;
+  dict: Dictionary["dashboard"]["planSection"];
 }) {
   const [pendingPlan, setPendingPlan] = useState<Plan | null>(null);
   const [error, setError] = useState("");
+  const plans: { id: Plan; name: string; price: string; trialNote: string; features: string[] }[] = [
+    { id: "free", ...dict.plans.free },
+    { id: "starter", ...dict.plans.starter },
+    { id: "growth", ...dict.plans.growth },
+    { id: "enterprise", ...dict.plans.enterprise },
+  ];
 
   async function subscribe(plan: Plan) {
     setPendingPlan(plan);
@@ -70,10 +38,10 @@ export function PlanSection({
         body: JSON.stringify({ plan }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "No se pudo iniciar el pago.");
+      if (!res.ok) throw new Error(data.error || dict.checkoutError);
       window.location.assign(data.url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ocurrió un error inesperado.");
+      setError(err instanceof Error ? err.message : dict.genericError);
       setPendingPlan(null);
     }
   }
@@ -81,10 +49,10 @@ export function PlanSection({
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <h2 className="text-lg font-medium">Tu plan</h2>
+        <h2 className="text-lg font-medium">{dict.title}</h2>
         {subscriptionStatus && (
           <Badge tone={subscriptionStatus === "active" || subscriptionStatus === "on_trial" ? "emerald" : "amber"}>
-            {STATUS_LABEL[subscriptionStatus] ?? subscriptionStatus}
+            {dict.statusLabels[subscriptionStatus as keyof typeof dict.statusLabels] ?? subscriptionStatus}
           </Badge>
         )}
         {customerPortalUrl && (
@@ -94,7 +62,7 @@ export function PlanSection({
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-sm text-cobalt hover:underline"
           >
-            Gestionar suscripción <ExternalLink size={13} />
+            {dict.manageSubscription} <ExternalLink size={13} />
           </a>
         )}
       </div>
@@ -108,7 +76,7 @@ export function PlanSection({
             <Card key={p.id} className={cn("flex flex-col p-5", isCurrent && "border-cobalt/50 bg-cobalt/[0.04]")}>
               <div className="flex items-center justify-between">
                 <p className="font-medium">{p.name}</p>
-                {isCurrent && <Badge tone="cobalt">Actual</Badge>}
+                {isCurrent && <Badge tone="cobalt">{dict.current}</Badge>}
               </div>
               <p className="mt-1 text-2xl font-semibold">{p.price}</p>
               <p className="mt-1 text-xs text-muted">{p.trialNote}</p>
@@ -122,7 +90,7 @@ export function PlanSection({
               </ul>
               {p.id === "free" ? (
                 <div className="mt-4 flex items-center justify-center rounded-lg border border-border px-3 py-2 text-sm text-muted">
-                  {isCurrent ? "Plan actual" : "Plan gratuito"}
+                  {isCurrent ? dict.currentPlanCta : dict.freePlanCta}
                 </div>
               ) : (
                 <button
@@ -137,12 +105,12 @@ export function PlanSection({
                 >
                   {pendingPlan === p.id ? (
                     <>
-                      <Loader2 size={14} className="animate-spin" /> Redirigiendo…
+                      <Loader2 size={14} className="animate-spin" /> {dict.redirecting}
                     </>
                   ) : isCurrent ? (
-                    "Plan actual"
+                    dict.currentPlanCta
                   ) : (
-                    `Suscribirse a ${p.name}`
+                    dict.subscribeTo.replace("{name}", p.name)
                   )}
                 </button>
               )}

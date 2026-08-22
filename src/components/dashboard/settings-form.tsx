@@ -3,12 +3,23 @@
 import { useState } from "react";
 import { Check, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BUSINESS_CATEGORY_LABELS } from "@/lib/types";
+import { getCategoryLabels } from "@/lib/types";
 import type { Business } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
-export function SettingsForm({ business }: { business: Business }) {
+export function SettingsForm({
+  business,
+  dict,
+  locale,
+}: {
+  business: Business;
+  dict: Dictionary["dashboard"]["settings"]["form"];
+  locale: Locale;
+}) {
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState("");
+  const categoryLabels = getCategoryLabels(locale);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,12 +40,12 @@ export function SettingsForm({ business }: { business: Business }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "No se pudo guardar.");
+      if (!res.ok) throw new Error(data.error || dict.saveError);
 
       setStatus("saved");
       setTimeout(() => setStatus("idle"), 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ocurrió un error inesperado.");
+      setError(err instanceof Error ? err.message : dict.genericError);
       setStatus("error");
     }
   }
@@ -43,7 +54,7 @@ export function SettingsForm({ business }: { business: Business }) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className="text-sm font-medium">
-          Nombre del negocio
+          {dict.nameLabel}
         </label>
         <input
           id="name"
@@ -57,7 +68,7 @@ export function SettingsForm({ business }: { business: Business }) {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="contact_email" className="text-sm font-medium">
-          Correo de contacto
+          {dict.contactEmailLabel}
         </label>
         <input
           id="contact_email"
@@ -71,7 +82,7 @@ export function SettingsForm({ business }: { business: Business }) {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="category" className="text-sm font-medium">
-          Rubro
+          {dict.categoryLabel}
         </label>
         <select
           id="category"
@@ -80,18 +91,18 @@ export function SettingsForm({ business }: { business: Business }) {
           defaultValue={business.category ?? "otro"}
           className="rounded-xl border border-border bg-surface px-4 py-2.5 text-sm outline-none ring-cobalt/40 focus:ring-2"
         >
-          {Object.entries(BUSINESS_CATEGORY_LABELS).map(([value, label]) => (
+          {Object.entries(categoryLabels).map(([value, label]) => (
             <option key={value} value={value}>
               {label}
             </option>
           ))}
         </select>
-        <p className="text-xs text-muted">Le da contexto a la IA para juzgar reseñas según tu rubro.</p>
+        <p className="text-xs text-muted">{dict.categoryHint}</p>
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="business_description" className="text-sm font-medium">
-          Descripción breve <span className="text-muted">(opcional)</span>
+          {dict.descriptionLabel} <span className="text-muted">{dict.descriptionOptional}</span>
         </label>
         <textarea
           id="business_description"
@@ -108,15 +119,15 @@ export function SettingsForm({ business }: { business: Business }) {
       <Button type="submit" disabled={status === "saving"} className="w-fit">
         {status === "saving" ? (
           <>
-            <Loader2 size={16} className="animate-spin" /> Guardando…
+            <Loader2 size={16} className="animate-spin" /> {dict.saving}
           </>
         ) : status === "saved" ? (
           <>
-            <Check size={16} /> Guardado
+            <Check size={16} /> {dict.saved}
           </>
         ) : (
           <>
-            <Save size={16} /> Guardar cambios
+            <Save size={16} /> {dict.saveChanges}
           </>
         )}
       </Button>

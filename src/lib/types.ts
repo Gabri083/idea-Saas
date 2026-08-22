@@ -34,6 +34,20 @@ export const BUSINESS_CATEGORY_LABELS: Record<BusinessCategory, string> = {
   otro: "Otro",
 };
 
+const BUSINESS_CATEGORY_LABELS_EN: Record<BusinessCategory, string> = {
+  restaurante: "Restaurant / Food",
+  moda_calzado: "Fashion & footwear",
+  belleza: "Beauty & personal care",
+  electronica: "Electronics & tech",
+  hogar: "Home & decor",
+  salud: "Health & wellness",
+  otro: "Other",
+};
+
+export function getCategoryLabels(locale: "en" | "es"): Record<BusinessCategory, string> {
+  return locale === "en" ? BUSINESS_CATEGORY_LABELS_EN : BUSINESS_CATEGORY_LABELS;
+}
+
 export interface Business {
   id: string;
   name: string;

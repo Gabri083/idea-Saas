@@ -7,8 +7,11 @@ import { cn } from "@/lib/utils";
 import { navItems } from "@/components/dashboard/nav-items";
 import { hasGrowthAccess, type Plan } from "@/lib/types";
 import { LogoMark } from "@/components/brand/logo-mark";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export function Sidebar({ plan }: { plan: Plan }) {
+type SidebarDict = Pick<Dictionary["dashboard"], "nav" | "backToSite">;
+
+export function Sidebar({ plan, dict }: { plan: Plan; dict: SidebarDict }) {
   const pathname = usePathname();
   const unlocked = hasGrowthAccess(plan);
 
@@ -20,7 +23,7 @@ export function Sidebar({ plan }: { plan: Plan }) {
       </div>
 
       <nav className="flex flex-col gap-1 px-3 py-2">
-        {navItems.map(({ href, label, icon: Icon, growthOnly }) => {
+        {navItems.map(({ href, key, icon: Icon, growthOnly }) => {
           const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
           const locked = growthOnly && !unlocked;
           return (
@@ -35,7 +38,7 @@ export function Sidebar({ plan }: { plan: Plan }) {
               )}
             >
               <Icon size={17} />
-              <span className="flex-1">{label}</span>
+              <span className="flex-1">{dict.nav[key]}</span>
               {locked && <Lock size={12} className="shrink-0 opacity-50" />}
             </Link>
           );
@@ -47,7 +50,7 @@ export function Sidebar({ plan }: { plan: Plan }) {
           href="/"
           className="block rounded-lg border border-border px-3 py-2.5 text-center text-xs text-muted transition-colors hover:text-foreground"
         >
-          ← Volver al sitio
+          {dict.backToSite}
         </Link>
       </div>
     </aside>

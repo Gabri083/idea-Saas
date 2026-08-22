@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
 import { LogoMark } from "@/components/brand/logo-mark";
+import { getDictionary } from "@/lib/i18n/get-locale";
 
-export const metadata: Metadata = {
-  title: "Iniciar sesión",
-  description: "Entra a tu dashboard de Kelsira.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const dict = await getDictionary();
+  return { title: dict.auth.login.pageTitle, description: dict.auth.login.pageDescription };
+}
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const dict = await getDictionary();
   return (
     <main className="flex flex-1 flex-col items-center bg-grid px-4 py-12 sm:py-20">
       <div className="w-full max-w-md">
@@ -18,17 +20,17 @@ export default function LoginPage() {
         </Link>
 
         <div className="mt-8 rounded-2xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-8">
-          <h1 className="text-xl font-semibold tracking-tight">Inicia sesión</h1>
-          <p className="mt-1 text-sm text-muted">Entra a tu dashboard.</p>
+          <h1 className="text-xl font-semibold tracking-tight">{dict.auth.login.title}</h1>
+          <p className="mt-1 text-sm text-muted">{dict.auth.login.subtitle}</p>
 
           <div className="mt-6">
-            <LoginForm />
+            <LoginForm dict={dict.auth} />
           </div>
 
           <p className="mt-6 text-center text-sm text-muted">
-            ¿No tienes cuenta?{" "}
+            {dict.auth.login.noAccount}{" "}
             <Link href="/signup" className="text-cobalt hover:underline">
-              Regístrate gratis
+              {dict.auth.login.signupLink}
             </Link>
           </p>
         </div>

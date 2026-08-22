@@ -6,14 +6,17 @@ import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/dashboard/nav-items";
 import { hasGrowthAccess, type Plan } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export function MobileNav({ plan }: { plan: Plan }) {
+type MobileNavDict = Pick<Dictionary["dashboard"], "nav">;
+
+export function MobileNav({ plan, dict }: { plan: Plan; dict: MobileNavDict }) {
   const pathname = usePathname();
   const unlocked = hasGrowthAccess(plan);
 
   return (
     <nav className="flex gap-1 overflow-x-auto border-b border-border bg-surface/40 px-3 py-2 md:hidden">
-      {navItems.map(({ href, label, icon: Icon, growthOnly }) => {
+      {navItems.map(({ href, key, icon: Icon, growthOnly }) => {
         const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
         const locked = growthOnly && !unlocked;
         return (
@@ -26,7 +29,7 @@ export function MobileNav({ plan }: { plan: Plan }) {
             )}
           >
             <Icon size={14} />
-            {label}
+            {dict.nav[key]}
             {locked && <Lock size={11} className="opacity-50" />}
           </Link>
         );

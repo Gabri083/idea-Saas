@@ -2,8 +2,17 @@ import Link from "next/link";
 import { Gauge } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export function PlanUsageCard({ used, cap }: { used: number; cap: number | null }) {
+export function PlanUsageCard({
+  used,
+  cap,
+  dict,
+}: {
+  used: number;
+  cap: number | null;
+  dict: Dictionary["dashboard"]["planUsage"];
+}) {
   if (cap == null) {
     return (
       <Card className="flex items-center gap-3 p-5">
@@ -11,8 +20,8 @@ export function PlanUsageCard({ used, cap }: { used: number; cap: number | null 
           <Gauge size={17} />
         </span>
         <div>
-          <p className="text-sm font-medium">Reseñas ilimitadas este mes</p>
-          <p className="text-xs text-muted">Tu plan no tiene límite mensual.</p>
+          <p className="text-sm font-medium">{dict.unlimitedTitle}</p>
+          <p className="text-xs text-muted">{dict.unlimitedSub}</p>
         </div>
       </Card>
     );
@@ -28,10 +37,10 @@ export function PlanUsageCard({ used, cap }: { used: number; cap: number | null 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Gauge size={16} className={cn(atCap ? "text-rose" : nearCap ? "text-amber" : "text-cobalt")} />
-          <p className="text-sm font-medium">Uso de tu plan este mes</p>
+          <p className="text-sm font-medium">{dict.usageTitle}</p>
         </div>
         <span className="text-sm text-muted">
-          {used} de {cap} reseñas
+          {dict.usageOf.replace("{used}", String(used)).replace("{cap}", String(cap))}
         </span>
       </div>
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2">
@@ -39,16 +48,16 @@ export function PlanUsageCard({ used, cap }: { used: number; cap: number | null 
       </div>
       {atCap ? (
         <p className="mt-2 text-xs text-rose">
-          Alcanzaste el límite de tu plan — las nuevas reseñas no se recibirán hasta el próximo mes.{" "}
+          {dict.atCapText}{" "}
           <Link href="/dashboard/settings" className="underline">
-            Actualizar plan
+            {dict.atCapCta}
           </Link>
         </p>
       ) : nearCap ? (
         <p className="mt-2 text-xs text-amber">
-          Te estás acercando al límite de tu plan.{" "}
+          {dict.nearCapText}{" "}
           <Link href="/dashboard/settings" className="underline">
-            Ver planes
+            {dict.nearCapCta}
           </Link>
         </p>
       ) : null}

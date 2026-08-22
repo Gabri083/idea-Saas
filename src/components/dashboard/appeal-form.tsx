@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Paperclip, Loader2, ShieldQuestion, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Review } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "application/pdf"];
 const MAX_FILES = 5;
@@ -14,11 +15,13 @@ export function AppealForm({
   reviews,
   defaultReviewId,
   onCreated,
+  dict,
 }: {
   businessId: string;
   reviews: Review[];
   defaultReviewId?: string;
   onCreated: (payload: { reviewId: string; reason: string }) => void;
+  dict: Dictionary["dashboard"]["appeals"]["form"];
 }) {
   const [reviewId, setReviewId] = useState(defaultReviewId ?? reviews[0]?.id ?? "");
   const [reason, setReason] = useState("");
@@ -29,17 +32,17 @@ export function AppealForm({
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(e.target.files ?? []);
     if (picked.length > MAX_FILES) {
-      setError(`Máximo ${MAX_FILES} archivos.`);
+      setError(dict.maxFilesError.replace("{max}", String(MAX_FILES)));
       return;
     }
     const tooBig = picked.find((f) => f.size > MAX_SIZE);
     if (tooBig) {
-      setError(`"${tooBig.name}" supera los 10MB.`);
+      setError(dict.tooBigError.replace("{name}", tooBig.name));
       return;
     }
     const badType = picked.find((f) => !ALLOWED_TYPES.includes(f.type));
     if (badType) {
-      setError(`"${badType.name}" debe ser imagen o PDF.`);
+      setError(dict.badTypeError.replace("{name}", badType.name));
       return;
     }
     setError("");
@@ -61,7 +64,7 @@ export function AppealForm({
 
         const uploadRes = await fetch("/api/appeals/upload", { method: "POST", body: formData });
         const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(uploadData.error || "No se pudo subir la evidencia.");
+        if (!uploadRes.ok) throw new Error(uploadData.error || dict.uploadError);
         evidence_urls = uploadData.paths;
       }
 
@@ -77,14 +80,14 @@ export function AppealForm({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "No se pudo enviar la apelación.");
+      if (!res.ok) throw new Error(data.error || dict.submitError);
 
       setStatus("done");
       onCreated({ reviewId, reason });
       setReason("");
       setFiles([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ocurrió un error inesperado.");
+      setError(err instanceof Error ? err.message : dict.genericError);
       setStatus("error");
     }
   }
@@ -92,7 +95,7 @@ export function AppealForm({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium">Reseña a apelar</label>
+        <label className="text-sm font-medium">{dict.reviewLabel}</label>
         <select
           value={reviewId}
           onChange={(e) => setReviewId(e.target.value)}
@@ -107,27 +110,27 @@ export function AppealForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium">Motivo y evidencia</label>
+        <label className="text-sm font-medium">{dict.reasonLabel}</label>
         <textarea
           required
           minLength={10}
           rows={4}
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Explica por qué esta reseña es injusta, falsa o difamatoria. Referencia la evidencia adjunta (comprobante de envío, número de seguimiento, chats)."
+          placeholder={dict.reasonPlaceholder}
           className="resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
         />
       </div>
 
       <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted transition-colors hover:bg-surface-2">
         <Paperclip size={16} />
-        {files.length > 0 ? files.map((f) => f.name).join(", ") : "Adjuntar evidencia (imágenes o PDF, máx. 10MB c/u)"}
+        {files.length > 0 ? files.map((f) => f.name).join(", ") : dict.attachLabel}
         <input type="file" multiple accept={ALLOWED_TYPES.join(",")} className="hidden" onChange={handleFileChange} />
       </label>
 
       {status === "done" && (
         <div className="flex items-center gap-2 rounded-xl border border-emerald/30 bg-emerald/[0.06] px-4 py-3 text-sm text-emerald">
-          <CheckCircle2 size={16} /> Apelación enviada. La reseña quedó marcada como &ldquo;en apelación&rdquo;.
+          <CheckCircle2 size={16} /> {dict.success}
         </div>
       )}
       {error && <p className="text-sm text-rose">{error}</p>}
@@ -139,15 +142,15 @@ export function AppealForm({
       >
         {status === "uploading" ? (
           <>
-            <Loader2 size={16} className="animate-spin" /> Subiendo evidencia…
+            <Loader2 size={16} className="animate-spin" /> {dict.uploading}
           </>
         ) : status === "submitting" ? (
           <>
-            <Loader2 size={16} className="animate-spin" /> Enviando…
+            <Loader2 size={16} className="animate-spin" /> {dict.submitting}
           </>
         ) : (
           <>
-            <ShieldQuestion size={16} /> Enviar apelación
+            <ShieldQuestion size={16} /> {dict.submit}
           </>
         )}
       </Button>

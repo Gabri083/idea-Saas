@@ -3,6 +3,8 @@ import { UpgradeGate } from "@/components/dashboard/upgrade-gate";
 import { getBusiness, getCalibrationRequests, getRecurringIssues, getReviews } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
 import { hasGrowthAccess } from "@/lib/types";
+import { getDictionary } from "@/lib/i18n/get-locale";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 export default async function CalibrationPage({
   searchParams,
@@ -11,24 +13,23 @@ export default async function CalibrationPage({
 }) {
   const { issueId } = await searchParams;
   const businessId = await requireBusinessId();
-  const business = await getBusiness(businessId);
+  const [business, dict] = await Promise.all([getBusiness(businessId), getDictionary()]);
+  const t = dict.dashboard.calibration;
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Centro de calibración e histórico</h1>
-        <p className="mt-1 text-sm text-muted">
-          Si corregiste un problema operativo (ej. cambiaste de transportista), solicita aquí que
-          las reseñas históricas asociadas se recalibren o archiven.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t.pageTitle}</h1>
+        <p className="mt-1 text-sm text-muted">{t.pageSubtitle}</p>
       </div>
 
       {hasGrowthAccess(business.plan) ? (
-        <CalibrationCenterLoader businessId={businessId} issueId={issueId} />
+        <CalibrationCenterLoader businessId={businessId} issueId={issueId} dict={t} />
       ) : (
         <UpgradeGate
-          feature="El Centro de Calibración"
-          description="Solicita que las reseñas históricas asociadas a un problema ya resuelto se recalibren o archiven, con evidencia. Disponible en los planes Growth y Enterprise."
+          title={t.gateTitle}
+          description={t.gateDescription}
+          viewPlansLabel={dict.dashboard.upgradeGate.viewPlans}
         />
       )}
     </div>
@@ -38,9 +39,11 @@ export default async function CalibrationPage({
 async function CalibrationCenterLoader({
   businessId,
   issueId,
+  dict,
 }: {
   businessId: string;
   issueId?: string;
+  dict: Dictionary["dashboard"]["calibration"];
 }) {
   const [issues, reviews, requests] = await Promise.all([
     getRecurringIssues(businessId),
@@ -55,6 +58,7 @@ async function CalibrationCenterLoader({
       reviews={reviews}
       initialRequests={requests}
       focusIssueId={issueId}
+      dict={dict}
     />
   );
 }

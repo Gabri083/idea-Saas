@@ -8,17 +8,20 @@ import { Button } from "@/components/ui/button";
 import { normalizeIssueKey } from "@/lib/ai/recurring-issues";
 import { formatDate } from "@/lib/utils";
 import type { CalibrationRequest, RecurringIssue, Review } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 function IssueCalibrationCard({
   businessId,
   issue,
   matchedReviews,
   onSubmitted,
+  dict,
 }: {
   businessId: string;
   issue: RecurringIssue;
   matchedReviews: Review[];
   onSubmitted: (req: CalibrationRequest) => void;
+  dict: Dictionary["dashboard"]["calibration"];
 }) {
   const [evidence, setEvidence] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
@@ -50,12 +53,12 @@ function IssueCalibrationCard({
     <Card className="p-6">
       <div className="flex items-center justify-between gap-3">
         <p className="font-medium">{issue.issue_label}</p>
-        <Badge tone="neutral">{matchedReviews.length} reseñas asociadas</Badge>
+        <Badge tone="neutral">{dict.associatedReviews.replace("{n}", String(matchedReviews.length))}</Badge>
       </div>
 
       {status === "done" ? (
         <div className="mt-4 flex items-center gap-2 rounded-lg border border-emerald/30 bg-emerald/[0.06] px-4 py-3 text-sm text-emerald">
-          <CheckCircle2 size={16} /> Solicitud enviada — quedará pendiente de revisión.
+          <CheckCircle2 size={16} /> {dict.requestSent}
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
@@ -65,21 +68,21 @@ function IssueCalibrationCard({
             rows={3}
             value={evidence}
             onChange={(e) => setEvidence(e.target.value)}
-            placeholder="Describe qué corregiste (ej. cambiamos de transportista el 12/07) y adjunta evidencia de respaldo."
+            placeholder={dict.evidencePlaceholder}
             className="resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
           />
           <Button type="submit" size="sm" variant="secondary" className="w-fit" disabled={status === "submitting"}>
             {status === "submitting" ? (
               <>
-                <Loader2 size={14} className="animate-spin" /> Enviando…
+                <Loader2 size={14} className="animate-spin" /> {dict.submitting}
               </>
             ) : (
               <>
-                <History size={14} /> Solicitar recalibración
+                <History size={14} /> {dict.requestRecalibration}
               </>
             )}
           </Button>
-          {status === "error" && <p className="text-xs text-rose">No se pudo enviar. Intenta de nuevo.</p>}
+          {status === "error" && <p className="text-xs text-rose">{dict.submitError}</p>}
         </form>
       )}
     </Card>
@@ -92,12 +95,14 @@ export function CalibrationCenter({
   reviews,
   initialRequests,
   focusIssueId,
+  dict,
 }: {
   businessId: string;
   issues: RecurringIssue[];
   reviews: Review[];
   initialRequests: CalibrationRequest[];
   focusIssueId?: string;
+  dict: Dictionary["dashboard"]["calibration"];
 }) {
   const [requests, setRequests] = useState(initialRequests);
 
@@ -119,7 +124,7 @@ export function CalibrationCenter({
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h2 className="mb-4 text-lg font-medium">Fallas históricas superadas</h2>
+        <h2 className="mb-4 text-lg font-medium">{dict.historicalIssuesTitle}</h2>
         <div className="flex flex-col gap-4">
           {sortedIssues.map((issue) => (
             <IssueCalibrationCard
@@ -128,21 +133,20 @@ export function CalibrationCenter({
               issue={issue}
               matchedReviews={matchedByIssue.get(issue.id) ?? []}
               onSubmitted={(req) => setRequests((prev) => [req, ...prev])}
+              dict={dict}
             />
           ))}
           {sortedIssues.length === 0 && (
-            <Card className="p-6 text-center text-sm text-muted">
-              No hay problemas recurrentes registrados todavía.
-            </Card>
+            <Card className="p-6 text-center text-sm text-muted">{dict.noIssues}</Card>
           )}
         </div>
       </div>
 
       <div>
-        <h2 className="mb-4 text-lg font-medium">Historial de solicitudes</h2>
+        <h2 className="mb-4 text-lg font-medium">{dict.requestHistoryTitle}</h2>
         <div className="flex flex-col gap-3">
           {requests.length === 0 && (
-            <Card className="p-6 text-center text-sm text-muted">Aún no has solicitado calibraciones.</Card>
+            <Card className="p-6 text-center text-sm text-muted">{dict.noRequests}</Card>
           )}
           {requests.map((req) => (
             <Card key={req.id} className="flex items-start justify-between gap-3 p-5">
@@ -151,7 +155,7 @@ export function CalibrationCenter({
                 <p className="mt-1 text-xs text-muted">{formatDate(req.requested_at)}</p>
               </div>
               <Badge tone={req.status === "approved" ? "emerald" : req.status === "rejected" ? "rose" : "amber"}>
-                {req.status === "pending" ? "Pendiente" : req.status === "approved" ? "Aprobada" : "Rechazada"}
+                {dict.requestStatusLabels[req.status]}
               </Badge>
             </Card>
           ))}

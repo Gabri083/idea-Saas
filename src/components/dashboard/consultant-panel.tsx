@@ -7,8 +7,15 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { daysUntil, formatDate } from "@/lib/utils";
 import type { RecurringIssue } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export function ConsultantPanel({ issues: initialIssues }: { issues: RecurringIssue[] }) {
+export function ConsultantPanel({
+  issues: initialIssues,
+  dict,
+}: {
+  issues: RecurringIssue[];
+  dict: Dictionary["dashboard"]["consultant"];
+}) {
   const [issues, setIssues] = useState(initialIssues);
   const [pendingId, setPendingId] = useState<string | null>(null);
 
@@ -30,11 +37,8 @@ export function ConsultantPanel({ issues: initialIssues }: { issues: RecurringIs
     return (
       <Card className="flex flex-col items-center gap-2 p-10 text-center">
         <TrendingUp size={24} className="text-emerald" />
-        <p className="text-sm font-medium">Sin cuellos de botella detectados</p>
-        <p className="text-sm text-muted">
-          Cuando la IA detecte fallas recurrentes en tus reseñas, aparecerán aquí con un
-          temporizador de resolución de 30 días.
-        </p>
+        <p className="text-sm font-medium">{dict.noBottlenecksTitle}</p>
+        <p className="text-sm text-muted">{dict.noBottlenecksBody}</p>
       </Card>
     );
   }
@@ -57,19 +61,16 @@ export function ConsultantPanel({ issues: initialIssues }: { issues: RecurringIs
                   <p className="font-medium">{issue.issue_label}</p>
                 </div>
                 <p className="mt-1 text-sm text-muted">
-                  Se detectaron {issue.occurrences} quejas relacionadas · primera vez{" "}
-                  {formatDate(issue.first_detected_at)}
+                  {dict.occurrences
+                    .replace("{n}", String(issue.occurrences))
+                    .replace("{date}", formatDate(issue.first_detected_at))}
                 </p>
               </div>
 
               <Badge
                 tone={issue.status === "resolved" ? "emerald" : issue.status === "acknowledged" ? "cobalt" : "amber"}
               >
-                {issue.status === "resolved"
-                  ? "Resuelto"
-                  : issue.status === "acknowledged"
-                    ? "Reconocido"
-                    : "Abierto"}
+                {dict.statusLabels[issue.status]}
               </Badge>
             </div>
 
@@ -77,14 +78,12 @@ export function ConsultantPanel({ issues: initialIssues }: { issues: RecurringIs
               <Clock size={15} className={overdue ? "text-amber" : "text-muted"} />
               {overdue ? (
                 <span className="text-amber">
-                  Plazo vencido hace {Math.abs(remaining)} días — las nuevas reseñas relacionadas
-                  reciben una penalización de -{issue.penalty_factor} estrellas.
+                  {dict.overdueText
+                    .replace("{days}", String(Math.abs(remaining)))
+                    .replace("{penalty}", String(issue.penalty_factor))}
                 </span>
               ) : (
-                <span className="text-muted">
-                  {remaining} días para solucionar este cuello de botella antes de que afecte la
-                  ponderación de futuras reseñas.
-                </span>
+                <span className="text-muted">{dict.remainingText.replace("{days}", String(remaining))}</span>
               )}
             </div>
 
@@ -95,14 +94,14 @@ export function ConsultantPanel({ issues: initialIssues }: { issues: RecurringIs
                   onClick={() => acknowledge(issue.id)}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-cobalt/30 bg-cobalt/10 px-3 py-1.5 text-xs font-medium text-cobalt transition-colors hover:bg-cobalt/20 disabled:opacity-50"
                 >
-                  <CheckCircle2 size={14} /> Reconocer problema
+                  <CheckCircle2 size={14} /> {dict.acknowledgeButton}
                 </button>
               )}
               <Link
                 href={`/dashboard/calibration?issueId=${issue.id}`}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface-2"
               >
-                <History size={14} /> Solicitar calibración con evidencia
+                <History size={14} /> {dict.requestCalibrationButton}
               </Link>
             </div>
           </Card>

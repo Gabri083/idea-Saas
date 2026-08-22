@@ -7,13 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
 import { formatDate, cn } from "@/lib/utils";
 import type { Review, ReviewStatus } from "@/lib/types";
-
-const tabs: { key: "all" | ReviewStatus; label: string }[] = [
-  { key: "all", label: "Todas" },
-  { key: "published", label: "Publicadas" },
-  { key: "in_appeal", label: "En apelación" },
-  { key: "resolved", label: "Resueltas" },
-];
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 const statusTone: Record<ReviewStatus, "neutral" | "emerald" | "amber" | "cobalt"> = {
   published: "cobalt",
@@ -22,14 +16,19 @@ const statusTone: Record<ReviewStatus, "neutral" | "emerald" | "amber" | "cobalt
   archived: "neutral",
 };
 
-const statusLabel: Record<ReviewStatus, string> = {
-  published: "Publicada",
-  in_appeal: "En apelación",
-  resolved: "Resuelta",
-  archived: "Archivada",
-};
-
-export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
+export function ReviewsTable({
+  initialReviews,
+  dict,
+}: {
+  initialReviews: Review[];
+  dict: Dictionary["dashboard"]["reviews"];
+}) {
+  const tabs: { key: "all" | ReviewStatus; label: string }[] = [
+    { key: "all", label: dict.tabs.all },
+    { key: "published", label: dict.tabs.published },
+    { key: "in_appeal", label: dict.tabs.in_appeal },
+    { key: "resolved", label: dict.tabs.resolved },
+  ];
   const [reviews, setReviews] = useState(initialReviews);
   const [tab, setTab] = useState<"all" | ReviewStatus>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -100,7 +99,7 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
       <div className="mt-4 flex flex-col gap-3">
         {filtered.length === 0 && (
           <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">
-            No hay reseñas en esta categoría.
+            {dict.emptyState}
           </p>
         )}
 
@@ -116,9 +115,9 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium">{review.customer_name}</p>
                     <span className="text-xs text-muted">{formatDate(review.created_at)}</span>
-                    <Badge tone={statusTone[review.status]}>{statusLabel[review.status]}</Badge>
+                    <Badge tone={statusTone[review.status]}>{dict.statusLabels[review.status]}</Badge>
                     {review.penalty_applied > 0 && (
-                      <Badge tone="amber">Penalización -{review.penalty_applied}</Badge>
+                      <Badge tone="amber">{dict.penalty.replace("{n}", String(review.penalty_applied))}</Badge>
                     )}
                   </div>
                   <p className="mt-1 line-clamp-1 text-sm text-muted">{review.review_text}</p>
@@ -151,7 +150,7 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                       href={`/dashboard/appeals?reviewId=${review.id}`}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface-2"
                     >
-                      <ShieldQuestion size={14} /> Apelar reseña
+                      <ShieldQuestion size={14} /> {dict.appealReview}
                     </Link>
                     {review.status !== "resolved" && (
                       <button
@@ -159,7 +158,7 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                         onClick={() => updateStatus(review.id, "resolved")}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-emerald/30 bg-emerald/10 px-3 py-1.5 text-xs font-medium text-emerald transition-colors hover:bg-emerald/20 disabled:opacity-50"
                       >
-                        <CheckCircle2 size={14} /> Marcar como resuelto
+                        <CheckCircle2 size={14} /> {dict.markResolved}
                       </button>
                     )}
                   </div>
@@ -168,7 +167,7 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                     {review.business_reply && replyEditingId !== review.id ? (
                       <div className="rounded-lg bg-surface-2 px-4 py-3">
                         <div className="flex items-center justify-between gap-3">
-                          <p className="text-xs font-semibold text-muted">Tu respuesta pública</p>
+                          <p className="text-xs font-semibold text-muted">{dict.yourReply}</p>
                           <button
                             onClick={() => {
                               setReplyDrafts((prev) => ({ ...prev, [review.id]: review.business_reply ?? "" }));
@@ -176,7 +175,7 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                             }}
                             className="text-xs font-medium text-cobalt hover:underline"
                           >
-                            Editar
+                            {dict.edit}
                           </button>
                         </div>
                         <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground/90">
@@ -186,7 +185,7 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                     ) : (
                       <div>
                         <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted">
-                          <MessageSquareReply size={14} /> Responder públicamente
+                          <MessageSquareReply size={14} /> {dict.replyPublicly}
                         </p>
                         <textarea
                           value={replyDrafts[review.id] ?? ""}
@@ -195,7 +194,7 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                           }
                           maxLength={1000}
                           rows={3}
-                          placeholder="Esta respuesta será visible para cualquiera que vea la reseña (widget y página de resultado)."
+                          placeholder={dict.replyPlaceholder}
                           className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-cobalt/50"
                         />
                         <div className="mt-2 flex justify-end gap-2">
@@ -204,7 +203,7 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                               onClick={() => setReplyEditingId(null)}
                               className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground"
                             >
-                              Cancelar
+                              {dict.cancel}
                             </button>
                           )}
                           <button
@@ -212,7 +211,7 @@ export function ReviewsTable({ initialReviews }: { initialReviews: Review[] }) {
                             onClick={() => submitReply(review.id)}
                             className="rounded-lg bg-cobalt px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                           >
-                            Publicar respuesta
+                            {dict.postReply}
                           </button>
                         </div>
                       </div>
