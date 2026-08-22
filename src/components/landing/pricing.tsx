@@ -2,64 +2,21 @@ import { Check } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-const plans = [
-  {
-    name: "Gratis",
-    price: "$0",
-    suffix: "",
-    trialNote: "Sin tarjeta de crédito.",
-    description: "Para probar Kelsira en serio antes de decidir.",
-    features: ["Hasta 20 reseñas/mes", "Widget estándar", "Puntaje objetivo IA"],
-    highlighted: false,
-  },
-  {
-    name: "Starter",
-    price: "$29",
-    suffix: "/mes",
-    trialNote: "14 días de prueba gratis, requiere tarjeta.",
-    description: "Para marcas independientes que están empezando.",
-    features: ["Hasta 200 reseñas/mes", "Widget estándar", "Puntaje objetivo IA", "Soporte por email"],
-    highlighted: false,
-  },
-  {
-    name: "Growth",
-    price: "$79",
-    suffix: "/mes",
-    trialNote: "14 días de prueba gratis, requiere tarjeta.",
-    description: "Para e-commerce en crecimiento activo.",
-    features: [
-      "Reseñas ilimitadas",
-      "Consultor de Mejora Operativa IA",
-      "Apelaciones prioritarias",
-      "Widget personalizable",
-      "Centro de Calibración e Histórico",
-    ],
-    highlighted: true,
-  },
-  {
-    name: "Enterprise",
-    price: "$199",
-    suffix: "/mes",
-    trialNote: "14 días de prueba gratis, requiere tarjeta.",
-    description: "Para operaciones multi-tienda a gran escala.",
-    features: [
-      "Soporte multi-tienda",
-      "API custom",
-      "Gestor de cuenta dedicado",
-      "SLA de apelaciones",
-      "Todo lo del plan Growth",
-    ],
-    highlighted: false,
-  },
-];
+export function Pricing({ dict }: { dict: Dictionary["pricing"] }) {
+  const plans = [
+    { ...dict.plans.free, price: "$0", suffix: "", highlighted: false },
+    { ...dict.plans.starter, price: "$29", suffix: dict.perMonth, highlighted: false },
+    { ...dict.plans.growth, price: "$79", suffix: dict.perMonth, highlighted: true },
+    { ...dict.plans.enterprise, price: "$199", suffix: dict.perMonth, highlighted: false },
+  ];
 
-export function Pricing() {
   return (
     <section id="precios" className="mx-auto max-w-7xl px-6 py-24">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Planes simples y transparentes</h2>
-        <p className="mt-4 text-muted">Sin permanencia. Cancela cuando quieras.</p>
+        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{dict.title}</h2>
+        <p className="mt-4 text-muted">{dict.subtitle}</p>
       </div>
 
       <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -73,7 +30,7 @@ export function Pricing() {
           >
             {plan.highlighted && (
               <span className="mb-4 inline-flex w-fit items-center rounded-full bg-cobalt/15 px-3 py-1 text-xs font-medium text-cobalt">
-                Más popular
+                {dict.mostPopular}
               </span>
             )}
             <h3 className="text-lg font-medium">{plan.name}</h3>
@@ -98,7 +55,7 @@ export function Pricing() {
               variant={plan.highlighted ? "primary" : "secondary"}
               className="mt-8 w-full"
             >
-              {plan.name === "Gratis" ? "Empezar gratis" : `Elegir ${plan.name}`}
+              {plan.name === dict.plans.free.name ? dict.ctaFree : dict.ctaPaid(plan.name)}
             </LinkButton>
           </Card>
         ))}

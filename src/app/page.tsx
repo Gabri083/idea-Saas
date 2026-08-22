@@ -5,19 +5,21 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { ImpactCalculator } from "@/components/landing/impact-calculator";
 import { Pricing } from "@/components/landing/pricing";
 import { Footer } from "@/components/landing/footer";
+import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 
-export default function Home() {
+export default async function Home() {
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
   return (
     <>
-      <Navbar />
+      <Navbar dict={dict.nav} locale={locale} />
       <main className="flex-1">
-        <Hero />
-        <ProblemSolution />
-        <HowItWorks />
-        <ImpactCalculator />
-        <Pricing />
+        <Hero dict={dict.hero} />
+        <ProblemSolution dict={dict.problemSolution} />
+        <HowItWorks dict={dict.howItWorks} />
+        <ImpactCalculator dict={dict.impactCalculator} />
+        <Pricing dict={dict.pricing} />
       </main>
-      <Footer />
+      <Footer dict={dict.footer} />
     </>
   );
 }

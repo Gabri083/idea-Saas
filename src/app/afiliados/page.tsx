@@ -3,6 +3,7 @@ import { Users, Wallet, Rocket, Mail } from "lucide-react";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
 import { Card } from "@/components/ui/card";
+import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 
 export const metadata: Metadata = {
   title: "Programa de Afiliados",
@@ -27,10 +28,11 @@ const steps = [
   },
 ];
 
-export default function AfiliadosPage() {
+export default async function AfiliadosPage() {
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
   return (
     <>
-      <Navbar />
+      <Navbar dict={dict.nav} locale={locale} />
       <main className="flex-1 bg-grid">
         <section className="mx-auto max-w-4xl px-6 py-20 text-center">
           <span className="inline-flex items-center rounded-full border border-cobalt/30 bg-cobalt/10 px-3 py-1 text-xs font-medium text-cobalt">
@@ -98,7 +100,7 @@ export default function AfiliadosPage() {
           </Card>
         </section>
       </main>
-      <Footer />
+      <Footer dict={dict.footer} />
     </>
   );
 }

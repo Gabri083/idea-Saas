@@ -1,33 +1,10 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/brand/logo-mark";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-const columns = [
-  {
-    title: "Producto",
-    links: [
-      { label: "Cómo funciona", href: "#como-funciona" },
-      { label: "Precios", href: "#precios" },
-      { label: "Programa de afiliados", href: "/afiliados" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Términos del Servicio", href: "/legal/terminos" },
-      { label: "Política de Privacidad", href: "/legal/privacidad" },
-      { label: "Política de Transparencia de la IA", href: "/legal/transparencia-ia" },
-    ],
-  },
-  {
-    title: "Contacto",
-    links: [
-      { label: "hola@kelsira.app", href: "mailto:hola@kelsira.app" },
-      { label: "Soporte", href: "mailto:soporte@kelsira.app" },
-    ],
-  },
-];
+export function Footer({ dict }: { dict: Dictionary["footer"] }) {
+  const columns = [dict.columns.product, dict.columns.legal, dict.columns.contact];
 
-export function Footer() {
   return (
     <footer className="border-t border-border/60 py-16">
       <div className="mx-auto max-w-7xl px-6">
@@ -37,9 +14,7 @@ export function Footer() {
               <LogoMark size={32} />
               Kelsira
             </Link>
-            <p className="mt-3 max-w-xs text-sm text-muted">
-              Reputación justa y reseñas asistidas por IA para e-commerce.
-            </p>
+            <p className="mt-3 max-w-xs text-sm text-muted">{dict.tagline}</p>
           </div>
 
           {columns.map((col) => (
@@ -59,8 +34,8 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border/60 pt-8 text-xs text-muted sm:flex-row">
-          <span>© {new Date().getFullYear()} Kelsira. Todos los derechos reservados.</span>
-          <span>Cada calificación IA es auditable y explicable.</span>
+          <span>{dict.rights(new Date().getFullYear())}</span>
+          <span>{dict.auditable}</span>
         </div>
       </div>
     </footer>

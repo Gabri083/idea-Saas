@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Footer } from "@/components/landing/footer";
 import { LogoMark } from "@/components/brand/logo-mark";
+import { getDictionary } from "@/lib/i18n/get-locale";
 
 const links = [
   { href: "/legal/terminos", label: "Términos del Servicio" },
@@ -8,7 +9,8 @@ const links = [
   { href: "/legal/transparencia-ia", label: "Transparencia de la IA" },
 ];
 
-export default function LegalLayout({ children }: { children: React.ReactNode }) {
+export default async function LegalLayout({ children }: { children: React.ReactNode }) {
+  const dict = await getDictionary();
   return (
     <>
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -29,7 +31,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       <main className="flex-1 bg-grid">
         <div className="mx-auto max-w-3xl px-6 py-16">{children}</div>
       </main>
-      <Footer />
+      <Footer dict={dict.footer} />
     </>
   );
 }

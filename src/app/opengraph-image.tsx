@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-export const alt = "Kelsira — Reputación Justa y Reseñas Asistidas por IA";
+export const alt = "Kelsira — Fair Reputation, AI-Assisted Reviews";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -47,7 +47,7 @@ export default async function Image() {
             textAlign: "center",
           }}
         >
-          Reputación justa y reseñas asistidas por IA
+          Fair reputation, AI-assisted reviews
         </div>
       </div>
     ),
