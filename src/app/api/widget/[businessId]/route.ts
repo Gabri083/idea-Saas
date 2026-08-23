@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBusiness, getReviews, getWidgetConfig } from "@/lib/data";
+import { getBusiness, getCategoryBenchmark, getReviews, getWidgetConfig } from "@/lib/data";
 import { resolveBusinessId } from "@/lib/demo";
-import { hasGrowthAccess } from "@/lib/types";
+import { getCategoryLabels, hasGrowthAccess } from "@/lib/types";
 import { recencyWeightedAverage } from "@/lib/utils";
 
 function withCors(response: NextResponse) {
@@ -29,6 +29,13 @@ export async function GET(
       getWidgetConfig(businessId),
     ]);
 
+    // Only computed/sent when the layout actually needs it — every other
+    // layout ignores this field, and getCategoryBenchmark() is cheap
+    // (a no-op in demo mode, and skipped instantly without a saved category).
+    const benchmark =
+      config.layout === "comparador" ? await getCategoryBenchmark(business.category, businessId) : { available: false as const };
+    const categoryLabel = business.category ? getCategoryLabels(business.locale)[business.category] : null;
+
     // The full public history — never trimmed, never hidden — is what the
     // count and the headline average are computed from. Only the list of
     // cards actually rendered is capped, further down.
@@ -44,10 +51,11 @@ export async function GET(
 
     return withCors(
       NextResponse.json({
-        business: { name: business.name, locale: business.locale },
+        business: { name: business.name, locale: business.locale, category_label: categoryLabel },
         config: effectiveConfig,
         average_rating: Math.round(average * 10) / 10,
         total_reviews: allPublicReviews.length,
+        category_benchmark: benchmark,
         reviews: displayReviews.map((r) => ({
           id: r.id,
           customer_name: r.customer_name,

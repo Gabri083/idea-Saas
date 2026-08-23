@@ -50,6 +50,11 @@
       clientAndAi: "Customer & AI: ",
       client: "Customer ",
       dateLocale: "en-US",
+      notificationJustLeft: "{name} left a {score} review",
+      comparatorAbove: "{delta}% above the {category} average",
+      comparatorBelow: "{delta}% below the {category} average",
+      comparatorOnPar: "On par with the {category} average",
+      checkoutTrustText: "{n} verified purchases — AI-scored, uncensored.",
     },
     es: {
       aiTagTitle: "Puntaje calculado por IA a partir del texto de la reseña",
@@ -73,6 +78,11 @@
       clientAndAi: "Cliente e IA: ",
       client: "Cliente ",
       dateLocale: "es",
+      notificationJustLeft: "{name} dejó una reseña de {score}",
+      comparatorAbove: "{delta}% arriba del promedio de {category}",
+      comparatorBelow: "{delta}% bajo el promedio de {category}",
+      comparatorOnPar: "En línea con el promedio de {category}",
+      checkoutTrustText: "{n} compras verificadas — evaluadas por IA, sin censura.",
     },
   };
   // Reassigned in mount() once the business's locale arrives — safe as a
@@ -590,6 +600,109 @@
     container.appendChild(wrap);
   }
 
+  // ---------- La Notificación: live social-proof toast, cycles reviews on its own ----------
+  function mountNotificacion(container, data, showBranding) {
+    var wrap = document.createElement("div");
+    wrap.className = "kelsira-notify";
+
+    var reviews = data.reviews;
+    var index = 0;
+
+    function render() {
+      var r = reviews[index];
+      wrap.innerHTML =
+        avatarHtml(r.customer_name) +
+        '<div class="kelsira-notify-body">' +
+        "<p>" +
+        T.notificationJustLeft
+          .replace("{name}", "<b>" + escapeHtml(r.customer_name) + "</b>")
+          .replace("{score}", r.overall_ai_rating.toFixed(1) + "★") +
+        "</p>" +
+        (showBranding
+          ? '<span class="kelsira-notify-meta">' + T.kelsiraVerified + " · " + formatDate(r.created_at) + "</span>"
+          : "") +
+        "</div>";
+    }
+
+    render();
+    if (reviews.length > 1) {
+      setInterval(function () {
+        index = (index + 1) % reviews.length;
+        render();
+      }, 4500);
+    }
+
+    container.appendChild(wrap);
+  }
+
+  // ---------- El Comparador: business average vs. category benchmark ----------
+  function mountComparador(container, data, accent) {
+    var wrap = document.createElement("div");
+    wrap.className = "kelsira-compare";
+
+    var benchmark = data.category_benchmark;
+    var category = data.business.category_label || "";
+    var illustrative = !benchmark || !benchmark.available;
+    var delta = illustrative
+      ? 15
+      : Math.round(((data.average_rating - benchmark.average) / benchmark.average) * 100);
+    var isAbove = delta > 2;
+    var isBelow = delta < -2;
+    var tone = isAbove ? "#16a34a" : isBelow ? "#e11d48" : null;
+    var label = isAbove
+      ? T.comparatorAbove.replace("{delta}", Math.abs(delta)).replace("{category}", category)
+      : isBelow
+        ? T.comparatorBelow.replace("{delta}", Math.abs(delta)).replace("{category}", category)
+        : T.comparatorOnPar.replace("{category}", category);
+
+    wrap.innerHTML =
+      '<b style="color:' + accent + '">' + data.average_rating.toFixed(1) + "★</b>" +
+      '<span class="kelsira-compare-div"></span>' +
+      '<span class="kelsira-compare-delta"' +
+      (tone ? ' style="color:' + tone + ";background:" + tone + '1f"' : "") +
+      ">" +
+      (isAbove ? "↑ " : isBelow ? "↓ " : "") +
+      escapeHtml(label) +
+      "</span>";
+
+    container.appendChild(wrap);
+  }
+
+  // ---------- La Franja de Pie de Página: quiet, inline reputation strip ----------
+  function mountFranja(container, data, accent, showBranding) {
+    var wrap = document.createElement("div");
+    wrap.className = "kelsira-strip";
+    wrap.innerHTML =
+      '<div class="kelsira-strip-left">' +
+      (showBranding
+        ? '<span class="kelsira-strip-logo" style="background:' + accent + '">K</span>'
+        : "") +
+      "<span>" +
+      data.total_reviews + " " + T.verifiedReviewsWord +
+      (showBranding ? " · Kelsira" : "") +
+      "</span>" +
+      "</div>" +
+      '<div class="kelsira-strip-avatars">' +
+      data.reviews
+        .slice(0, 3)
+        .map(function (r) {
+          return avatarHtml(r.customer_name, 22);
+        })
+        .join("") +
+      "</div>";
+    container.appendChild(wrap);
+  }
+
+  // ---------- El Cierre: checkout-page reassurance, right above the buy button ----------
+  function mountCierre(container, data, accent) {
+    var wrap = document.createElement("div");
+    wrap.className = "kelsira-checkout-trust";
+    wrap.innerHTML =
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="' + accent + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
+      "<span>" + escapeHtml(T.checkoutTrustText.replace("{n}", data.total_reviews)) + "</span>";
+    container.appendChild(wrap);
+  }
+
   function injectStyles(id) {
     if (document.getElementById(id)) return;
     var style = document.createElement("style");
@@ -713,7 +826,25 @@
       ".kelsira-launcher-row b{flex-shrink:0;}" +
       ".kelsira-launcher-row span{opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}" +
       ".kelsira-launcher-cta{display:block;text-align:center;padding:10px;font-size:11.5px;font-weight:600;text-decoration:none;border-top:1px solid var(--kelsira-border);}" +
-      ".kelsira-launcher-brand{text-align:center;padding:8px;font-size:10px;opacity:.55;border-top:1px solid var(--kelsira-border);}";
+      ".kelsira-launcher-brand{text-align:center;padding:8px;font-size:10px;opacity:.55;border-top:1px solid var(--kelsira-border);}" +
+      // La Notificación — floating corner toast, opposite side from El Lanzador.
+      ".kelsira-notify{position:fixed;left:20px;bottom:20px;z-index:2147483000;display:flex;align-items:center;gap:10px;max-width:280px;background:var(--kelsira-bg);color:var(--kelsira-fg);border:1px solid var(--kelsira-border);border-radius:var(--kelsira-radius);padding:12px;box-shadow:0 10px 26px -10px rgba(0,0,0,.35);animation:kelsira-notify-in .4s cubic-bezier(.2,.8,.2,1);}" +
+      "@keyframes kelsira-notify-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}" +
+      ".kelsira-notify-body p{margin:0;font-size:12px;line-height:1.4;}" +
+      ".kelsira-notify-meta{display:block;margin-top:2px;font-size:10.5px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}" +
+      // El Comparador — pill badge, always rounded regardless of the Bordes setting.
+      ".kelsira-compare{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--kelsira-border);border-radius:999px;padding:7px 7px 7px 16px;font-size:14px;}" +
+      ".kelsira-compare-div{width:1px;height:16px;background:var(--kelsira-border);}" +
+      ".kelsira-compare-delta{border-radius:999px;padding:5px 10px;font-size:11px;font-weight:600;}" +
+      // La Franja de Pie de Página — quiet, full-bleed, sits inline in the footer.
+      ".kelsira-strip{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--kelsira-border);padding:14px 0;}" +
+      ".kelsira-strip-left{display:flex;align-items:center;gap:10px;font-size:12px;opacity:.8;}" +
+      ".kelsira-strip-logo{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;color:#fff;font-size:11px;font-weight:800;flex-shrink:0;}" +
+      ".kelsira-strip-avatars{display:flex;}" +
+      ".kelsira-strip-avatars .kelsira-avatar{margin-left:-8px;border:2px solid var(--kelsira-bg);}" +
+      // El Cierre — checkout-page reassurance block.
+      ".kelsira-checkout-trust{display:flex;align-items:center;gap:10px;border-radius:calc(var(--kelsira-radius) * 0.7);padding:12px 14px;font-size:12px;background:var(--kelsira-pill-bg);}" +
+      ".kelsira-checkout-trust svg{flex-shrink:0;}";
     document.head.appendChild(style);
   }
 
@@ -815,6 +946,14 @@
           mountBarra(container, data, accent, origin, businessId);
         } else if (layout === "lanzador") {
           mountLanzador(container, data, accent, origin, businessId);
+        } else if (layout === "notificacion") {
+          mountNotificacion(container, data, data.config.show_branding);
+        } else if (layout === "comparador") {
+          mountComparador(container, data, accent);
+        } else if (layout === "franja") {
+          mountFranja(container, data, accent, data.config.show_branding);
+        } else if (layout === "cierre") {
+          mountCierre(container, data, accent);
         } else if (layout === "spotlight") {
           mountSpotlight(container, data.reviews, data.config.show_breakdown, accent, data.business.name);
         } else {
@@ -830,16 +969,21 @@
           container.appendChild(list);
         }
 
-        // El Clásico, El Sello, La Barra Superior and El Lanzador already fold
+        // El Clásico, El Sello, La Barra Superior, El Lanzador, La
+        // Notificación, El Comparador, La Franja and El Cierre already fold
         // the Kelsira mark into themselves, so the separate footer line would
-        // just repeat it below — or, for the fixed-position pair, render as an
+        // just repeat it below — or, for the fixed-position ones, render as an
         // orphaned line wherever the script tag happens to sit in the DOM.
         if (
           data.config.show_branding &&
           layout !== "badge" &&
           layout !== "sello" &&
           layout !== "barra" &&
-          layout !== "lanzador"
+          layout !== "lanzador" &&
+          layout !== "notificacion" &&
+          layout !== "comparador" &&
+          layout !== "franja" &&
+          layout !== "cierre"
         ) {
           var footer = document.createElement("div");
           footer.className = "kelsira-powered";

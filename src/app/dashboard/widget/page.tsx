@@ -1,20 +1,23 @@
 import { WidgetConfigurator } from "@/components/dashboard/widget-configurator";
-import { getBusiness, getReviews, getWidgetConfig } from "@/lib/data";
+import { getBusiness, getCategoryBenchmark, getReviews, getWidgetConfig } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
-import { hasGrowthAccess } from "@/lib/types";
+import { getCategoryLabels, hasGrowthAccess } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { CopyableLink } from "@/components/dashboard/copyable-link";
-import { getDictionary } from "@/lib/i18n/get-locale";
+import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 
 export default async function WidgetPage() {
   const businessId = await requireBusinessId();
-  const [business, config, reviews, dict] = await Promise.all([
+  const [business, config, reviews, dict, locale] = await Promise.all([
     getBusiness(businessId),
     getWidgetConfig(businessId),
     getReviews(businessId),
     getDictionary(),
+    getLocale(),
   ]);
   const t = dict.dashboard.widget;
+  const benchmark = await getCategoryBenchmark(business.category, businessId);
+  const categoryLabel = business.category ? getCategoryLabels(locale)[business.category] : t.comparatorSampleCategory;
 
   const publicReviews = reviews.filter((r) => r.status === "published" || r.status === "resolved");
   const canCustomize = hasGrowthAccess(business.plan);
@@ -51,6 +54,8 @@ export default async function WidgetPage() {
         initialConfig={effectiveConfig}
         reviews={publicReviews}
         canCustomize={canCustomize}
+        benchmark={benchmark}
+        categoryLabel={categoryLabel}
         dict={t}
       />
     </div>

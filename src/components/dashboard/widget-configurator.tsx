@@ -8,6 +8,8 @@ import { PlatformInstructions } from "@/components/dashboard/platform-instructio
 import { cn, isConfirmed, recencyWeightedAverage } from "@/lib/utils";
 import type { Review, WidgetConfig } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+import type { CategoryBenchmark } from "@/lib/data";
+import { SITE_URL } from "@/lib/site";
 
 type WidgetDict = Dictionary["dashboard"]["widget"];
 
@@ -108,6 +110,10 @@ const layoutIds: WidgetConfig["layout"][] = [
   "lanzador",
   "barra",
   "fila",
+  "notificacion",
+  "comparador",
+  "franja",
+  "cierre",
 ];
 const cardStyleIds: WidgetConfig["card_style"][] = ["recibo", "medidor"];
 // grid/wall/carousel repeat one card per review — the other four layouts are
@@ -115,11 +121,14 @@ const cardStyleIds: WidgetConfig["card_style"][] = ["recibo", "medidor"];
 const CARD_STYLE_LAYOUTS: WidgetConfig["layout"][] = ["carousel", "grid", "wall"];
 
 // "Bordes" doesn't mean anything for El Sello (always a circle), El Recibo
-// (its cut corner is a fixed part of the style), La Barra Superior (a
-// full-bleed bar has no visible corners) or La Fila de Producto (no box at
-// all) — show the control only where it actually changes something.
+// (its cut corner is a fixed part of the style), La Barra Superior / La
+// Franja de Pie de Página (full-bleed, no visible corners), La Fila de
+// Producto (no box at all) or El Comparador (always a pill) — show the
+// control only where it actually changes something.
 function radiusApplies(layout: WidgetConfig["layout"], cardStyle: WidgetConfig["card_style"]) {
-  if (layout === "sello" || layout === "barra" || layout === "fila") return false;
+  if (layout === "sello" || layout === "barra" || layout === "fila" || layout === "franja" || layout === "comparador") {
+    return false;
+  }
   if (CARD_STYLE_LAYOUTS.includes(layout) && cardStyle === "recibo") return false;
   return true;
 }
@@ -705,6 +714,188 @@ function Launcher({
   );
 }
 
+// La Notificación — a live social-proof toast, the same fixed corner slot as
+// El Lanzador (but the opposite side, so the two never collide if a business
+// somehow had both). Cycles through recent reviews on its own; branding folds
+// into the toast itself for the same reason as La Barra Superior.
+function Notification({
+  reviews,
+  isDark,
+  radius,
+  showBranding,
+  dict,
+}: {
+  reviews: Review[];
+  isDark: boolean;
+  radius: string;
+  showBranding: boolean;
+  dict: WidgetDict;
+}) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (reviews.length < 2) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % reviews.length), 4500);
+    return () => clearInterval(id);
+  }, [reviews.length]);
+
+  const review = reviews[Math.min(index, reviews.length - 1)];
+  const bg = isDark ? "#101114" : "#ffffff";
+  const fg = isDark ? "#f4f5f7" : "#111318";
+  const borderColor = isDark ? "#232529" : "#e5e7eb";
+
+  return (
+    <div className="absolute bottom-5 left-5 max-w-[270px]">
+      <div
+        className="flex items-center gap-2.5 border p-3 shadow-[0_10px_26px_-10px_rgba(0,0,0,.35)]"
+        style={{ background: bg, color: fg, borderColor, borderRadius: radius }}
+      >
+        <Avatar name={review.customer_name} />
+        <div className="min-w-0">
+          <p className="text-xs leading-snug">
+            {dict.notificationJustLeft
+              .replace("{name}", review.customer_name)
+              .replace("{score}", `${review.overall_ai_rating.toFixed(1)}★`)}
+          </p>
+          {showBranding && (
+            <p className="mt-0.5 truncate text-[10.5px] opacity-55">
+              {dict.verifiedByKelsira} · {formatDate(review.created_at)}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const COMPARATOR_EMERALD = "#16a34a";
+const COMPARATOR_ROSE = "#e11d48";
+
+// El Comparador — turns the industry benchmark already computed on the
+// dashboard into a public trust argument. Falls back to an illustrative
+// example whenever real peer data isn't available yet (too few businesses
+// or reviews in the category), so it never renders broken or empty.
+function Comparator({
+  average,
+  benchmark,
+  categoryLabel,
+  accent,
+  borderColor,
+  dict,
+}: {
+  average: number;
+  benchmark: CategoryBenchmark;
+  categoryLabel: string;
+  accent: string;
+  borderColor: string;
+  dict: WidgetDict;
+}) {
+  const illustrative = !benchmark.available;
+  const delta = illustrative
+    ? 15
+    : Math.round(((average - benchmark.average) / benchmark.average) * 100);
+  const isAbove = delta > 2;
+  const isBelow = delta < -2;
+  const tone = isAbove ? COMPARATOR_EMERALD : isBelow ? COMPARATOR_ROSE : undefined;
+  const label = isAbove
+    ? dict.comparatorAbove.replace("{delta}", String(Math.abs(delta))).replace("{category}", categoryLabel)
+    : isBelow
+      ? dict.comparatorBelow.replace("{delta}", String(Math.abs(delta))).replace("{category}", categoryLabel)
+      : dict.comparatorOnPar.replace("{category}", categoryLabel);
+
+  return (
+    <div className="inline-flex items-center gap-2.5 rounded-full border py-1.5 pl-4 pr-1.5 text-sm" style={{ borderColor }}>
+      <b style={{ color: accent }}>{average.toFixed(1)}★</b>
+      <span className="h-4 w-px" style={{ background: borderColor }} />
+      <span
+        className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+        style={tone ? { color: tone, background: `${tone}1f` } : undefined}
+      >
+        {isAbove ? "↑ " : isBelow ? "↓ " : ""}
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// La Franja de Pie de Página — sits inline wherever the script tag is placed
+// in the footer, instead of pinned like La Barra Superior. Deliberately
+// quiet: a reputation line meant to blend in, not compete for attention.
+function FooterStrip({
+  reviews,
+  count,
+  accent,
+  borderColor,
+  bg,
+  fg,
+  showBranding,
+  dict,
+}: {
+  reviews: Review[];
+  count: number;
+  accent: string;
+  borderColor: string;
+  bg: string;
+  fg: string;
+  showBranding: boolean;
+  dict: WidgetDict;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between gap-4 border-t px-1 py-3"
+      style={{ borderColor, background: bg, color: fg }}
+    >
+      <div className="flex items-center gap-2.5">
+        {showBranding && (
+          <span
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[11px] font-extrabold text-white"
+            style={{ background: accent }}
+          >
+            K
+          </span>
+        )}
+        <span className="text-xs opacity-75">
+          {dict.reviewsVerifiedCount.replace("{n}", String(count))}
+          {showBranding ? " · Kelsira" : ""}
+        </span>
+      </div>
+      <div className="flex -space-x-2">
+        {reviews.slice(0, 3).map((r) => (
+          <Avatar key={r.id} name={r.customer_name} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// El Cierre — a compact reassurance block meant to sit right above the buy
+// button on a checkout page, the exact moment doubts show up that no other
+// layout ever reaches.
+function CheckoutTrust({
+  count,
+  accent,
+  isDark,
+  showBranding,
+  dict,
+}: {
+  count: number;
+  accent: string;
+  isDark: boolean;
+  showBranding: boolean;
+  dict: WidgetDict;
+}) {
+  const pillBg = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
+  return (
+    <div className="flex items-center gap-2.5 rounded-lg px-3.5 py-3 text-xs" style={{ background: pillBg }}>
+      <Check size={16} className="shrink-0" style={{ color: accent }} />
+      <span className="opacity-85">
+        {dict.checkoutTrustText.replace("{n}", String(count))}
+        {showBranding ? " · Kelsira" : ""}
+      </span>
+    </div>
+  );
+}
+
 function Spotlight({
   reviews,
   showBreakdown,
@@ -797,6 +988,8 @@ export function WidgetConfigurator({
   initialConfig,
   reviews,
   canCustomize,
+  benchmark,
+  categoryLabel,
   dict,
 }: {
   businessId: string;
@@ -804,16 +997,15 @@ export function WidgetConfigurator({
   initialConfig: WidgetConfig;
   reviews: Review[];
   canCustomize: boolean;
+  benchmark: CategoryBenchmark;
+  categoryLabel: string;
   dict: WidgetDict;
 }) {
   const [config, setConfig] = useState(initialConfig);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [copied, setCopied] = useState(false);
-  const [origin] = useState(() =>
-    typeof window !== "undefined" ? window.location.origin : "https://cdn.tusaas.com",
-  );
 
-  const snippet = `<script src="${origin}/widget.js" data-business-id="${businessId}"></script>`;
+  const snippet = `<script src="${SITE_URL}/widget.js" data-business-id="${businessId}"></script>`;
 
   async function save() {
     setSaveStatus("saving");
@@ -1042,6 +1234,7 @@ export function WidgetConfigurator({
               fontFamily: fontStack[config.font_family] ?? undefined,
               ...(config.layout === "lanzador" && { overflow: "hidden", minHeight: 400 }),
               ...(config.layout === "barra" && { overflow: "hidden", minHeight: 220 }),
+              ...(config.layout === "notificacion" && { overflow: "hidden", minHeight: 180 }),
             }}
           >
             {config.layout === "badge" ? (
@@ -1124,6 +1317,42 @@ export function WidgetConfigurator({
                 showBranding={config.show_branding}
                 dict={dict}
               />
+            ) : config.layout === "notificacion" ? (
+              <Notification
+                reviews={previewReviews}
+                isDark={isDark}
+                radius={radius}
+                showBranding={config.show_branding}
+                dict={dict}
+              />
+            ) : config.layout === "comparador" ? (
+              <Comparator
+                average={average}
+                benchmark={benchmark}
+                categoryLabel={categoryLabel}
+                accent={config.accent_color}
+                borderColor={borderColor}
+                dict={dict}
+              />
+            ) : config.layout === "franja" ? (
+              <FooterStrip
+                reviews={previewReviews}
+                count={previewReviews.length}
+                accent={config.accent_color}
+                borderColor={borderColor}
+                bg={isDark ? "#101114" : "#ffffff"}
+                fg={isDark ? "#f4f5f7" : "#111318"}
+                showBranding={config.show_branding}
+                dict={dict}
+              />
+            ) : config.layout === "cierre" ? (
+              <CheckoutTrust
+                count={previewReviews.length}
+                accent={config.accent_color}
+                isDark={isDark}
+                showBranding={config.show_branding}
+                dict={dict}
+              />
             ) : (
               <div
                 className={cn(
@@ -1166,7 +1395,11 @@ export function WidgetConfigurator({
               config.layout !== "badge" &&
               config.layout !== "sello" &&
               config.layout !== "barra" &&
-              config.layout !== "lanzador" && (
+              config.layout !== "lanzador" &&
+              config.layout !== "notificacion" &&
+              config.layout !== "comparador" &&
+              config.layout !== "franja" &&
+              config.layout !== "cierre" && (
                 <p className="mt-4 text-right text-[10px] opacity-50">{dict.footerBranding}</p>
               )}
           </div>

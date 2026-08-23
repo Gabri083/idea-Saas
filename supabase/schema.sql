@@ -56,7 +56,7 @@ create table if not exists widget_configs (
   border_radius  text not null default 'lg' check (border_radius in ('none', 'sm', 'md', 'lg', 'full')),
   font_family    text not null default 'inter',
   layout         text not null default 'carousel'
-                   check (layout in ('carousel', 'badge', 'grid', 'wall', 'spotlight', 'sello', 'mosaico', 'cinta', 'lanzador', 'barra', 'fila')),
+                   check (layout in ('carousel', 'badge', 'grid', 'wall', 'spotlight', 'sello', 'mosaico', 'cinta', 'lanzador', 'barra', 'fila', 'notificacion', 'comparador', 'franja', 'cierre')),
   card_style     text not null default 'recibo' check (card_style in ('recibo', 'medidor')),
   show_breakdown boolean not null default true,
   show_branding  boolean not null default true, -- "Verificado por Kelsira" footer; forced true on free/starter regardless of this value

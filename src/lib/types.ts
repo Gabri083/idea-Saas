@@ -147,6 +147,10 @@ export interface WidgetConfig {
     | "cinta"
     | "lanzador"
     | "barra"
+    | "notificacion"
+    | "comparador"
+    | "franja"
+    | "cierre"
     | "fila";
   card_style: "recibo" | "medidor"; // per-review card look, used by grid/wall/carousel
   show_breakdown: boolean;
