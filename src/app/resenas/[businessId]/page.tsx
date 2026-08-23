@@ -3,22 +3,19 @@ import type { Metadata } from "next";
 import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import { getBusiness, getReviews } from "@/lib/data";
 import { resolveBusinessId } from "@/lib/demo";
-import { BUSINESS_CATEGORY_LABELS, type Review } from "@/lib/types";
+import { getCategoryLabels, type Review } from "@/lib/types";
 import { formatDate, isConfirmed, recencyWeightedAverage } from "@/lib/utils";
 import { StarRating } from "@/components/ui/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { LogoMark } from "@/components/brand/logo-mark";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 const PAGE_SIZE = 10;
 
 type Attribute = "producto" | "atencion" | "envio";
-
-const ATTRIBUTE_LABELS: Record<Attribute, string> = {
-  producto: "Producto",
-  atencion: "Atención",
-  envio: "Envío",
-};
 
 const ATTRIBUTE_SCORE: Record<Attribute, (r: Review) => number> = {
   producto: (r) => r.product_score,
@@ -48,10 +45,13 @@ export async function generateMetadata({
   params: Promise<{ businessId: string }>;
 }): Promise<Metadata> {
   const { businessId } = await params;
-  const { business, publicReviews } = await loadData(businessId);
+  const [{ business, publicReviews }, dict] = await Promise.all([loadData(businessId), getDictionary()]);
+  const t = dict.publicReviews;
   const average = recencyWeightedAverage(publicReviews, (r) => r.overall_ai_rating);
-  const title = `Reseñas de ${business.name} — ${average.toFixed(1)}★ en Kelsira`;
-  const description = `${publicReviews.length} reseñas verificadas de ${business.name}, con puntaje calculado por IA a partir de los hechos descritos por cada cliente.`;
+  const title = t.metaTitleTemplate.replace("{name}", business.name).replace("{rating}", average.toFixed(1));
+  const description = t.metaDescriptionTemplate
+    .replace("{count}", String(publicReviews.length))
+    .replace("{name}", business.name);
   return { title, description };
 }
 
@@ -64,7 +64,17 @@ export default async function PublicReviewsPage({
 }) {
   const { businessId } = await params;
   const { page: pageParam, filter: filterParam } = await searchParams;
-  const { business, publicReviews } = await loadData(businessId);
+  const [{ business, publicReviews }, dict, locale] = await Promise.all([
+    loadData(businessId),
+    getDictionary(),
+    getLocale(),
+  ]);
+  const t = dict.publicReviews;
+  const attributeLabels: Record<Attribute, string> = {
+    producto: t.attributeProduct,
+    atencion: t.attributeService,
+    envio: t.attributeDelivery,
+  };
 
   const average = recencyWeightedAverage(publicReviews, (r) => r.overall_ai_rating);
 
@@ -118,21 +128,24 @@ export default async function PublicReviewsPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <div className="w-full max-w-2xl">
-        <Link href="/" className="flex items-center justify-center gap-2 text-sm font-semibold">
-          <LogoMark size={28} />
-          Kelsira
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
+            <LogoMark size={28} />
+            Kelsira
+          </Link>
+          <LanguageSwitcher locale={locale} />
+        </div>
 
         <div className="mt-8 rounded-2xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="text-xl font-semibold tracking-tight">{business.name}</h1>
               {business.category && (
-                <p className="mt-1 text-sm text-muted">{BUSINESS_CATEGORY_LABELS[business.category]}</p>
+                <p className="mt-1 text-sm text-muted">{getCategoryLabels(locale)[business.category]}</p>
               )}
             </div>
             <div className="flex items-center gap-1.5 rounded-full border border-cobalt/30 bg-cobalt/[0.06] px-3 py-1.5 text-xs text-cobalt">
-              <ShieldCheck size={13} /> Verificado por Kelsira
+              <ShieldCheck size={13} /> {t.verifiedBadge}
             </div>
           </div>
 
@@ -142,33 +155,35 @@ export default async function PublicReviewsPage({
               <div>
                 <StarRating value={average} size={16} />
                 <p className="mt-0.5 text-xs text-muted">
-                  {publicReviews.length} reseña{publicReviews.length === 1 ? "" : "s"} verificada
-                  {publicReviews.length === 1 ? "" : "s"} · Puntaje Objetivo IA
+                  {publicReviews.length === 1
+                    ? t.reviewCountSingular
+                    : t.reviewCountPlural.replace("{n}", String(publicReviews.length))}
                 </p>
               </div>
             </div>
           ) : (
-            <p className="mt-5 text-sm text-muted">Este negocio aún no tiene reseñas verificadas.</p>
+            <p className="mt-5 text-sm text-muted">{t.noReviewsYet}</p>
           )}
         </div>
 
         {publicReviews.length > 0 && (
           <div className="mt-6">
-            <p className="mb-2 text-xs font-medium text-muted">Filtra por lo que te importa:</p>
+            <p className="mb-2 text-xs font-medium text-muted">{t.filterHeading}</p>
             <div className="flex flex-wrap gap-2">
               <AttributeChip active={!activeAttribute} href="?">
-                Todas ({publicReviews.length})
+                {t.allChip.replace("{n}", String(publicReviews.length))}
               </AttributeChip>
-              {(Object.keys(ATTRIBUTE_LABELS) as Attribute[]).map((attr) => (
+              {(Object.keys(attributeLabels) as Attribute[]).map((attr) => (
                 <AttributeChip key={attr} active={activeAttribute === attr} href={`?filter=${attr}`}>
-                  {ATTRIBUTE_LABELS[attr]} ({attributeCounts[attr]})
+                  {t.attributeChip
+                    .replace("{label}", attributeLabels[attr])
+                    .replace("{n}", String(attributeCounts[attr]))}
                 </AttributeChip>
               ))}
             </div>
             {activeAttribute && (
               <p className="mt-2 text-xs text-muted">
-                Mostrando reseñas con problemas de {ATTRIBUTE_LABELS[activeAttribute].toLowerCase()}, ordenadas de
-                peor a mejor.
+                {t.activeFilterExplanation.replace("{attribute}", attributeLabels[activeAttribute].toLowerCase())}
               </p>
             )}
           </div>
@@ -177,15 +192,15 @@ export default async function PublicReviewsPage({
         <div className="mt-4 flex flex-col gap-4">
           {activeAttribute && visibleReviews.length === 0 ? (
             <Card className="p-6 text-center text-sm text-muted">
-              Ningún cliente reportó problemas de {ATTRIBUTE_LABELS[activeAttribute].toLowerCase()} —{" "}
+              {t.emptyFilterState.replace("{attribute}", attributeLabels[activeAttribute].toLowerCase())}{" "}
               <Link href="?" className="text-cobalt hover:underline">
-                ver todas las reseñas
+                {t.emptyFilterCta}
               </Link>
               .
             </Card>
           ) : (
             pageReviews.map((review) => (
-              <ReviewEntry key={review.id} review={review} businessName={business.name} />
+              <ReviewEntry key={review.id} review={review} businessName={business.name} locale={locale} dict={t} />
             ))
           )}
         </div>
@@ -193,13 +208,13 @@ export default async function PublicReviewsPage({
         {totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between text-sm">
             <PageLink page={page - 1} disabled={page <= 1} filter={activeAttribute}>
-              <ChevronLeft size={15} /> Anteriores
+              <ChevronLeft size={15} /> {t.paginationPrev}
             </PageLink>
             <span className="text-xs text-muted">
-              Página {page} de {totalPages}
+              {t.paginationPage.replace("{page}", String(page)).replace("{total}", String(totalPages))}
             </span>
             <PageLink page={page + 1} disabled={page >= totalPages} filter={activeAttribute}>
-              Siguientes <ChevronRight size={15} />
+              {t.paginationNext} <ChevronRight size={15} />
             </PageLink>
           </div>
         )}
@@ -245,7 +260,17 @@ function PageLink({
   );
 }
 
-function ReviewEntry({ review, businessName }: { review: Review; businessName: string }) {
+function ReviewEntry({
+  review,
+  businessName,
+  locale,
+  dict,
+}: {
+  review: Review;
+  businessName: string;
+  locale: "es" | "en";
+  dict: Dictionary["publicReviews"];
+}) {
   const confirmed = isConfirmed(review);
   return (
     <Card className="p-5">
@@ -260,11 +285,11 @@ function ReviewEntry({ review, businessName }: { review: Review; businessName: s
           </>
         )}
         <span className="rounded border border-current px-1 py-px text-[9px] font-bold uppercase leading-tight tracking-wide text-muted opacity-80">
-          IA
+          {dict.aiTag}
         </span>
       </div>
       <p className="mt-0.5 text-[10.5px] uppercase tracking-wide text-muted opacity-70">
-        {confirmed ? "Confirmado por IA" : "Corrección por hechos, no por enojo"}
+        {confirmed ? dict.confirmedCaption : dict.correctedCaption}
       </p>
       <div className="mt-2">
         <StarRating value={review.overall_ai_rating} size={14} />
@@ -281,11 +306,11 @@ function ReviewEntry({ review, businessName }: { review: Review; businessName: s
       )}
       <div className="mt-4 flex items-center justify-between">
         <span className="text-xs font-medium">{review.customer_name}</span>
-        <span className="text-xs text-muted">{formatDate(review.created_at)}</span>
+        <span className="text-xs text-muted">{formatDate(review.created_at, locale)}</span>
       </div>
       {review.business_reply && (
         <div className="mt-3 rounded-lg bg-surface-2 px-3 py-2.5">
-          <p className="text-[11px] font-bold text-muted">Respuesta de {businessName}</p>
+          <p className="text-[11px] font-bold text-muted">{dict.replyFrom.replace("{name}", businessName)}</p>
           <p className="mt-0.5 text-[12.5px] text-foreground/85">{review.business_reply}</p>
         </div>
       )}

@@ -10,7 +10,7 @@ import {
   reviewCapReachedEmail,
   reviewConfirmationEmail,
 } from "@/lib/email-templates";
-import { getLocale } from "@/lib/i18n/get-locale";
+import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 
 const RequestSchema = z.object({
   business_id: uuidSchema,
@@ -27,10 +27,13 @@ const MIN_FILL_TIME_MS = 2000;
 const DUPLICATE_WINDOW_MINUTES = 60;
 
 export async function POST(request: NextRequest) {
+  const [visitorLocale, dict] = await Promise.all([getLocale(), getDictionary()]);
+  const t = dict.publicReview;
+
   const parsed = RequestSchema.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Solicitud inválida", details: parsed.error.flatten() },
+      { error: t.apiInvalidRequest, details: parsed.error.flatten() },
       { status: 400 },
     );
   }
@@ -47,14 +50,11 @@ export async function POST(request: NextRequest) {
 
   // Honeypot: real users never see or fill this field.
   if (website) {
-    return NextResponse.json({ error: "Solicitud inválida" }, { status: 400 });
+    return NextResponse.json({ error: t.apiInvalidRequest }, { status: 400 });
   }
   // A form submitted faster than a human could plausibly type it out.
   if (started_at && Date.now() - started_at < MIN_FILL_TIME_MS) {
-    return NextResponse.json(
-      { error: "Tu reseña se envió demasiado rápido, intenta de nuevo." },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: t.apiTooFast }, { status: 400 });
   }
 
   const admin = createAdminClient();
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     .maybeSingle();
 
   if (businessError || !business) {
-    return NextResponse.json({ error: "Negocio no encontrado." }, { status: 404 });
+    return NextResponse.json({ error: t.apiBusinessNotFound }, { status: 404 });
   }
 
   if (business.monthly_review_cap != null) {
@@ -97,10 +97,7 @@ export async function POST(request: NextRequest) {
           }),
         });
       }
-      return NextResponse.json(
-        { error: "Este negocio alcanzó su límite de reseñas del mes en su plan actual." },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: t.apiCapReached }, { status: 403 });
     }
   }
 
@@ -113,10 +110,7 @@ export async function POST(request: NextRequest) {
     .maybeSingle();
 
   if (recentDuplicate) {
-    return NextResponse.json(
-      { error: "Ya enviaste una reseña recientemente para este negocio. Intenta más tarde." },
-      { status: 429 },
-    );
+    return NextResponse.json({ error: t.apiDuplicate }, { status: 429 });
   }
 
   // Step 1 — structured, deterministic fact-based analysis via OpenAI JSON mode,
@@ -129,19 +123,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("AI analysis failed", err);
-    return NextResponse.json(
-      { error: "No se pudo analizar la reseña en este momento." },
-      { status: 502 },
-    );
+    return NextResponse.json({ error: t.apiAnalysisFailed }, { status: 502 });
   }
 
   if (!analysis.is_valid_review) {
     return NextResponse.json(
-      {
-        error:
-          analysis.rejection_reason ??
-          "Tu reseña no contiene información suficiente sobre tu experiencia. Cuéntanos más detalles.",
-      },
+      { error: analysis.rejection_reason ?? t.apiDefaultRejection },
       { status: 422 },
     );
   }
@@ -182,13 +169,13 @@ export async function POST(request: NextRequest) {
 
   if (insertError || !review) {
     console.error("Failed to persist review", insertError);
-    return NextResponse.json({ error: "No se pudo guardar la reseña." }, { status: 500 });
+    return NextResponse.json({ error: t.apiSaveFailed }, { status: 500 });
   }
 
   await sendEmail({
     to: customer_email,
     ...reviewConfirmationEmail({
-      locale: await getLocale(),
+      locale: visitorLocale,
       customerName: customer_name,
       businessName: business.name,
       overallRating: overallAiRating,

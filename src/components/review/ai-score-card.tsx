@@ -7,25 +7,26 @@ import { StarRating } from "@/components/ui/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Review } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-const dimensionMeta = [
-  { key: "product_score", label: "Producto", icon: PackageSearch },
-  { key: "service_score", label: "Atención", icon: Headset },
-  { key: "delivery_score", label: "Tiempos de entrega", icon: Truck },
-] as const;
-
-export function AiScoreCard({ review }: { review: Review }) {
+export function AiScoreCard({ review, dict }: { review: Review; dict: Dictionary["publicReview"] }) {
   const [open, setOpen] = useState(false);
+
+  const dimensionMeta = [
+    { key: "product_score", label: dict.dimensionProduct, icon: PackageSearch },
+    { key: "service_score", label: dict.dimensionService, icon: Headset },
+    { key: "delivery_score", label: dict.dimensionDelivery, icon: Truck },
+  ] as const;
 
   return (
     <div className="rounded-2xl border border-cobalt/30 bg-cobalt/[0.04] p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-cobalt">
           <ShieldCheck size={16} />
-          <span className="text-xs font-semibold uppercase tracking-wide">Puntaje Objetivo IA</span>
+          <span className="text-xs font-semibold uppercase tracking-wide">{dict.scoreBadge}</span>
         </div>
         {review.penalty_applied > 0 && (
-          <Badge tone="amber">Penalización por inacción -{review.penalty_applied}</Badge>
+          <Badge tone="amber">{dict.penaltyBadge.replace("{n}", String(review.penalty_applied))}</Badge>
         )}
       </div>
 
@@ -35,7 +36,7 @@ export function AiScoreCard({ review }: { review: Review }) {
         </span>
         <div>
           <StarRating value={review.overall_ai_rating} size={20} />
-          <p className="mt-1 text-xs text-muted">sobre 5, calculado por hechos</p>
+          <p className="mt-1 text-xs text-muted">{dict.outOfFive}</p>
         </div>
       </div>
 
@@ -47,7 +48,7 @@ export function AiScoreCard({ review }: { review: Review }) {
         onClick={() => setOpen((v) => !v)}
         className="mt-5 flex w-full items-center justify-between rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-surface-2"
       >
-        Ver desglose por categoría
+        {dict.toggleBreakdown}
         <ChevronDown size={16} className={cn("transition-transform", open && "rotate-180")} />
       </button>
 
