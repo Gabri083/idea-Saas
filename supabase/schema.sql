@@ -168,6 +168,22 @@ create table if not exists calibration_requests (
 create index if not exists calibration_business_idx on calibration_requests (business_id);
 
 -- ============================================================================
+-- founder_waitlist: capture-only, no login required — the "Founding Member"
+-- launch offer (30% off for 6 months, capped at 40 businesses), redeemed
+-- manually once billing is live. Never touched by anon/authenticated
+-- clients directly, only by the server's service-role key, so it carries no
+-- access policies of its own.
+-- ============================================================================
+create table if not exists founder_waitlist (
+  id            uuid primary key default gen_random_uuid(),
+  business_name text not null,
+  email         text not null,
+  platform      text not null check (platform in ('shopify', 'woocommerce', 'other')),
+  locale        text not null default 'en' check (locale in ('en', 'es')),
+  created_at    timestamptz not null default now()
+);
+
+-- ============================================================================
 -- Row Level Security
 -- ============================================================================
 alter table businesses          enable row level security;
@@ -177,6 +193,7 @@ alter table reviews             enable row level security;
 alter table recurring_issues    enable row level security;
 alter table appeals             enable row level security;
 alter table calibration_requests enable row level security;
+alter table founder_waitlist    enable row level security;
 
 -- helper predicate used repeatedly below: "does auth.uid() belong to this business?"
 create or replace function is_business_member(target_business_id uuid)

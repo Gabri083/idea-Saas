@@ -176,3 +176,26 @@ export async function getWidgetConfig(businessId: string): Promise<WidgetConfig>
     .maybeSingle();
   return (data as WidgetConfig) ?? mockWidgetConfig;
 }
+
+/** Hard cap for the "Founding Member" launch offer — 30% off for 6 months. */
+export const FOUNDER_CAP = 40;
+
+export interface FounderStatus {
+  cap: number;
+  taken: number;
+  remaining: number;
+  soldOut: boolean;
+}
+
+/** A real, verifiable count — never an invented "hurry, almost gone" number. */
+export async function getFounderStatus(): Promise<FounderStatus> {
+  if (!isSupabaseConfigured()) {
+    return { cap: FOUNDER_CAP, taken: 0, remaining: FOUNDER_CAP, soldOut: false };
+  }
+
+  const admin = createAdminClient();
+  const { count } = await admin.from("founder_waitlist").select("id", { count: "exact", head: true });
+  const taken = count ?? 0;
+  const remaining = Math.max(0, FOUNDER_CAP - taken);
+  return { cap: FOUNDER_CAP, taken, remaining, soldOut: remaining <= 0 };
+}
