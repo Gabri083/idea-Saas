@@ -30,6 +30,7 @@ export function FoundersForm({ dict, soldOut }: { dict: FoundersDict; soldOut: b
         body: JSON.stringify({
           business_name: formData.get("business_name"),
           email: formData.get("email"),
+          store_domain: formData.get("store_domain") || undefined,
           platform: formData.get("platform"),
           website: formData.get("website") || "",
           started_at: startedAt,
@@ -129,6 +130,20 @@ export function FoundersForm({ dict, soldOut }: { dict: FoundersDict; soldOut: b
             type="email"
             required
             placeholder={dict.formEmailPlaceholder}
+            className="rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="store_domain" className="text-sm font-medium">
+            {dict.formStoreUrl}
+          </label>
+          <input
+            id="store_domain"
+            name="store_domain"
+            required
+            maxLength={200}
+            placeholder={dict.formStoreUrlPlaceholder}
             className="rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
           />
         </div>

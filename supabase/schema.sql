@@ -178,6 +178,10 @@ create table if not exists founder_waitlist (
   id            uuid primary key default gen_random_uuid(),
   business_name text not null,
   email         text not null,
+  -- normalized store domain (e.g. "mystore.com"), required for the 40
+  -- founding spots so one person can't claim several with throwaway emails;
+  -- null for signups made after the cap is reached (general interest only).
+  store_domain  text,
   platform      text not null check (platform in ('shopify', 'woocommerce', 'other')),
   locale        text not null default 'en' check (locale in ('en', 'es')),
   created_at    timestamptz not null default now()
