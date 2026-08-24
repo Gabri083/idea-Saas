@@ -187,14 +187,21 @@ export interface FounderStatus {
   soldOut: boolean;
 }
 
-/** A real, verifiable count — never an invented "hurry, almost gone" number. */
+/** A real, verifiable count — never an invented "hurry, almost gone" number.
+ * Counts businesses that actually claimed a founding spot AND are currently
+ * on a paid plan, so an abandoned signup (account created, checkout never
+ * completed) never holds a spot hostage. */
 export async function getFounderStatus(): Promise<FounderStatus> {
   if (!isSupabaseConfigured()) {
     return { cap: FOUNDER_CAP, taken: 0, remaining: FOUNDER_CAP, soldOut: false };
   }
 
   const admin = createAdminClient();
-  const { count } = await admin.from("founder_waitlist").select("id", { count: "exact", head: true });
+  const { count } = await admin
+    .from("businesses")
+    .select("id", { count: "exact", head: true })
+    .eq("is_founder", true)
+    .neq("plan", "free");
   const taken = count ?? 0;
   const remaining = Math.max(0, FOUNDER_CAP - taken);
   return { cap: FOUNDER_CAP, taken, remaining, soldOut: remaining <= 0 };

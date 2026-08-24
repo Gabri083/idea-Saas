@@ -2,14 +2,15 @@ import { Check } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { PLAN_PRICES } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 export function Pricing({ dict }: { dict: Dictionary["pricing"] }) {
   const plans = [
     { ...dict.plans.free, price: "$0", suffix: "", highlighted: false },
-    { ...dict.plans.starter, price: "$29", suffix: dict.perMonth, highlighted: false },
-    { ...dict.plans.growth, price: "$79", suffix: dict.perMonth, highlighted: true },
-    { ...dict.plans.enterprise, price: "$199", suffix: dict.perMonth, highlighted: false },
+    { ...dict.plans.starter, price: `$${PLAN_PRICES.starter}`, suffix: dict.perMonth, highlighted: false },
+    { ...dict.plans.growth, price: `$${PLAN_PRICES.growth}`, suffix: dict.perMonth, highlighted: true },
+    { ...dict.plans.enterprise, price: `$${PLAN_PRICES.enterprise}`, suffix: dict.perMonth, highlighted: false },
   ];
 
   return (

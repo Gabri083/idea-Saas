@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/data";
 import { PLAN_REVIEW_CAP } from "@/lib/types";
 import { getLocale } from "@/lib/i18n/get-locale";
+import { slugify } from "@/lib/utils";
 
 const BodySchema = z.object({
   business_name: z.string().min(2).max(120),
@@ -13,17 +14,6 @@ const BodySchema = z.object({
   email: z.string().email(),
   password: z.string().min(8).max(72),
 });
-
-function slugify(name: string): string {
-  const base = name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const suffix = crypto.randomUUID().slice(0, 6);
-  return `${base || "tienda"}-${suffix}`;
-}
 
 export async function POST(request: NextRequest) {
   if (!isSupabaseConfigured()) {

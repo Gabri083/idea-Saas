@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Turns a business name into a URL-safe, unique slug (e.g. "Aurora Studio" -> "aurora-studio-a1b2c3"). */
+export function slugify(name: string): string {
+  const base = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const suffix = crypto.randomUUID().slice(0, 6);
+  return `${base || "tienda"}-${suffix}`;
+}
+
 export function formatDate(iso: string, locale: "es" | "en" = "es"): string {
   return new Date(iso).toLocaleDateString(locale === "en" ? "en-US" : "es-ES", {
     day: "2-digit",

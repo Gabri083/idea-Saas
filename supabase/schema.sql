@@ -30,6 +30,8 @@ create table if not exists businesses (
   subscription_status          text, -- e.g. active, on_trial, past_due, cancelled, expired, unpaid
   customer_portal_url          text, -- Lemon Squeezy hosted "manage billing" link
   cap_alert_sent_month text, -- "YYYY-MM" of the last review-cap-reached email sent, so it fires once/month
+  is_founder         boolean not null default false, -- claimed one of the 40 Founding Member discount spots
+  store_domain       text, -- normalized store domain, set for founder signups only — dedupes real businesses, not just emails
   created_at         timestamptz not null default now()
 );
 

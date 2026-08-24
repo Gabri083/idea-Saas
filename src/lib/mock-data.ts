@@ -30,6 +30,8 @@ export const mockBusiness: Business = {
   lemonsqueezy_subscription_id: null,
   subscription_status: null,
   customer_portal_url: null,
+  is_founder: false,
+  store_domain: null,
   created_at: daysAgo(120),
 };
 

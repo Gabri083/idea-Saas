@@ -15,6 +15,13 @@ export function hasGrowthAccess(plan: Plan): boolean {
   return plan === "growth" || plan === "enterprise";
 }
 
+/** Monthly USD price per paid plan — single source of truth for the pricing page and checkout flows. */
+export const PLAN_PRICES: Record<"starter" | "growth" | "enterprise", number> = {
+  starter: 29,
+  growth: 79,
+  enterprise: 199,
+};
+
 export type ReviewStatus = "published" | "in_appeal" | "resolved" | "archived";
 
 export type BusinessCategory =
@@ -64,6 +71,8 @@ export interface Business {
   lemonsqueezy_subscription_id: string | null;
   subscription_status: string | null;
   customer_portal_url: string | null;
+  is_founder: boolean;
+  store_domain: string | null;
   created_at: string;
 }
 

@@ -48,8 +48,8 @@ export default async function FundadoresPage() {
             </p>
           )}
 
-          <div className="mx-auto mt-8 max-w-md text-left">
-            <FoundersForm dict={t} soldOut={status.soldOut} />
+          <div className="mx-auto mt-8 max-w-lg text-left">
+            <FoundersForm dict={t} soldOut={status.soldOut} locale={locale} />
           </div>
         </section>
       </main>
