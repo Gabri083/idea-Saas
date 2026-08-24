@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getLocale } from "@/lib/i18n/get-locale";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,7 +15,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_URL = "https://kelsira.app";
 // Static metadata can't read the locale cookie (it isn't per-request), so it
 // defaults to English to match DEFAULT_LOCALE — most crawlers and unfurlers
 // don't send Accept-Language anyway. Page-level metadata can still override
@@ -54,6 +55,12 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
+        {/* Lemon Squeezy affiliate attribution — must run on every page since a
+         * referral link can point anywhere on the site, not just /afiliados. */}
+        <Script id="ls-affiliate-config" strategy="afterInteractive">
+          {`window.lemonSqueezyAffiliateConfig = { store: "kelsira" };`}
+        </Script>
+        <Script src="https://lmsqueezy.com/affiliate.js" strategy="afterInteractive" />
       </body>
     </html>
   );

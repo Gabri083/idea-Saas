@@ -601,18 +601,16 @@ const es = {
     badge: "Programa de Afiliados",
     heroTitle: "Gana 50% por cada cliente que refieras",
     heroSubtitle:
-      "Kelsira paga el 50% del primer pago de cualquier negocio que se suscriba a un plan Growth o Enterprise por tu recomendación. Sin mínimos, sin letra chica.",
-    applyCta: "Postular por correo",
-    mailtoSubject: "Quiero ser afiliado de Kelsira",
-    mailtoBody: "Hola, quiero postular al programa de afiliados.\n\nNombre:\nDónde voy a compartir Kelsira:",
+      "Kelsira paga el 50% del primer pago de cualquier negocio que se suscriba a un plan pago por tu recomendación. Sin mínimos, sin letra chica.",
+    applyCta: "Postular como afiliado",
     steps: [
       {
         title: "1. Postula",
-        body: "Escríbenos con tu nombre y dónde vas a compartir Kelsira (redes, comunidad, agencia, etc.). Revisamos cada postulación a mano mientras el programa está recién empezando.",
+        body: "Aplica con tu nombre y dónde vas a compartir Kelsira (redes, comunidad, agencia, etc.). Revisamos cada postulación a mano mientras el programa está recién empezando.",
       },
       {
         title: "2. Comparte",
-        body: "Te damos un enlace o código único para que tus referidos lo mencionen al registrarse. Cualquier e-commerce que se suscriba a un plan pago (Growth o Enterprise) gracias a ti cuenta como tu referido.",
+        body: "Apenas te aprobamos, obtienes automáticamente un enlace único de referido. Cualquier negocio que se suscriba a un plan pago gracias a ese enlace cuenta como tu referido.",
       },
       {
         title: "3. Gana",
@@ -623,11 +621,11 @@ const es = {
     faq: [
       {
         q: "¿Sobre qué se calcula el 50%?",
-        a: "Sobre el primer pago que realiza el negocio referido al suscribirse a un plan Growth ($79/mes) o Enterprise ($199/mes). Es un pago único, no se repite los meses siguientes. El plan Starter es gratuito, así que no genera comisión.",
+        a: "Sobre el primer pago que realiza el negocio referido al suscribirse a cualquier plan pago de Kelsira. Es un pago único, no se repite los meses siguientes.",
       },
       {
         q: "¿Cómo y cuándo me pagan?",
-        a: "Te contactamos directamente para coordinar el pago una vez que tu referido complete su primer pago exitoso. Estamos empezando el programa, así que hoy el seguimiento es manual; a medida que crezca, pasaremos a un sistema de enlaces de referido con seguimiento automático.",
+        a: "El pago es automático: Lemon Squeezy calcula tu comisión apenas tu referido completa su primer pago, y te la deposita en cuanto tu saldo acumulado llega al mínimo de retiro.",
       },
       {
         q: "¿Hay límite de referidos?",
@@ -1382,18 +1380,16 @@ const en: typeof es = {
     badge: "Affiliate Program",
     heroTitle: "Earn 50% for every client you refer",
     heroSubtitle:
-      "Kelsira pays 50% of the first payment from any business that subscribes to a Growth or Enterprise plan on your recommendation. No minimums, no fine print.",
-    applyCta: "Apply by email",
-    mailtoSubject: "I want to become a Kelsira affiliate",
-    mailtoBody: "Hi, I'd like to apply for the affiliate program.\n\nName:\nWhere I'll be sharing Kelsira:",
+      "Kelsira pays 50% of the first payment from any business that subscribes to a paid plan on your recommendation. No minimums, no fine print.",
+    applyCta: "Apply as an affiliate",
     steps: [
       {
         title: "1. Apply",
-        body: "Write to us with your name and where you plan to share Kelsira (social media, a community, an agency, etc.). We review every application by hand while the program is just getting started.",
+        body: "Apply with your name and where you plan to share Kelsira (social media, a community, an agency, etc.). We review every application by hand while the program is just getting started.",
       },
       {
         title: "2. Share",
-        body: "We give you a unique link or code for your referrals to mention when they sign up. Any e-commerce business that subscribes to a paid plan (Growth or Enterprise) thanks to you counts as your referral.",
+        body: "As soon as you're approved, you automatically get a unique referral link. Any business that subscribes to a paid plan through that link counts as your referral.",
       },
       {
         title: "3. Earn",
@@ -1404,11 +1400,11 @@ const en: typeof es = {
     faq: [
       {
         q: "What is the 50% calculated on?",
-        a: "On the first payment the referred business makes when subscribing to a Growth ($79/mo) or Enterprise ($199/mo) plan. It's a one-time payout, not repeated in following months. The Starter plan is free, so it doesn't generate a commission.",
+        a: "On the first payment the referred business makes when subscribing to any paid Kelsira plan. It's a one-time payout, not repeated in following months.",
       },
       {
         q: "How and when do I get paid?",
-        a: "We contact you directly to arrange payment once your referral completes their first successful payment. The program is just starting, so tracking is manual for now; as it grows, we'll move to a referral-link system with automatic tracking.",
+        a: "Payment is automatic: Lemon Squeezy calculates your commission as soon as your referral completes their first payment, and pays it out once your accumulated balance hits the minimum payout threshold.",
       },
       {
         q: "Is there a referral limit?",

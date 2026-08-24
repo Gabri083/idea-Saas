@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Users, Wallet, Rocket, Mail } from "lucide-react";
+import { Users, Wallet, Rocket, ArrowRight } from "lucide-react";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
 import { Card } from "@/components/ui/card";
@@ -12,12 +12,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const stepIcons = [Rocket, Users, Wallet];
 
+// Lemon Squeezy's own affiliate hub handles applications, unique links, and
+// payouts — no custom signup flow needed on our side.
+const AFFILIATE_SIGNUP_URL = "https://kelsira.lemonsqueezy.com/affiliates";
+
 export default async function AfiliadosPage() {
   const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
   const t = dict.affiliates;
-  const mailtoHref =
-    `mailto:hola@kelsira.app?subject=${encodeURIComponent(t.mailtoSubject)}` +
-    `&body=${encodeURIComponent(t.mailtoBody)}`;
 
   return (
     <>
@@ -30,11 +31,13 @@ export default async function AfiliadosPage() {
           <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">{t.heroTitle}</h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted">{t.heroSubtitle}</p>
           <a
-            href={mailtoHref}
+            href={AFFILIATE_SIGNUP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-8 inline-flex items-center gap-2 rounded-xl bg-cobalt px-6 py-3.5 text-base font-medium text-white shadow-[0_0_0_1px_rgba(79,124,255,0.4),0_8px_24px_-8px_rgba(79,124,255,0.5)] transition-all hover:bg-cobalt-dim"
           >
-            <Mail size={17} />
             {t.applyCta}
+            <ArrowRight size={17} />
           </a>
         </section>
 
