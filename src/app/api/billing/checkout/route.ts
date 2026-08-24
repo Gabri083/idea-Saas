@@ -45,12 +45,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Negocio no encontrado." }, { status: 404 });
   }
 
+  // Founding Member discount: applied automatically when the account's own
+  // email matches a founder_waitlist signup — no code to copy or remember.
+  let discountCode: string | undefined;
+  if (process.env.LEMONSQUEEZY_FOUNDER_DISCOUNT_CODE) {
+    const { data: founderEntry } = await admin
+      .from("founder_waitlist")
+      .select("id")
+      .eq("email", business.contact_email)
+      .maybeSingle();
+    if (founderEntry) discountCode = process.env.LEMONSQUEEZY_FOUNDER_DISCOUNT_CODE;
+  }
+
   try {
     const url = await createCheckout({
       plan: parsed.data.plan,
       businessId,
       email: business.contact_email,
       redirectUrl: `${request.nextUrl.origin}/dashboard/settings?checkout=success`,
+      discountCode,
     });
     return NextResponse.json({ url });
   } catch (err) {

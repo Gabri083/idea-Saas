@@ -39,6 +39,7 @@ export async function createCheckout(params: {
   businessId: string;
   email: string;
   redirectUrl: string;
+  discountCode?: string;
 }): Promise<string> {
   const variantId = VARIANT_BY_PLAN[params.plan];
   if (!variantId) throw new Error(`No hay variant_id configurado para el plan ${params.plan}.`);
@@ -57,6 +58,7 @@ export async function createCheckout(params: {
           checkout_data: {
             email: params.email,
             custom: { business_id: params.businessId },
+            ...(params.discountCode ? { discount_code: params.discountCode } : {}),
           },
           product_options: {
             redirect_url: params.redirectUrl,

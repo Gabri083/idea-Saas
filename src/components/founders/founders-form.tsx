@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Check, Loader2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -56,6 +56,15 @@ export function FoundersForm({ dict, soldOut }: { dict: FoundersDict; soldOut: b
         </span>
         <p className="text-base font-semibold">{wasSoldOut ? dict.soldOutTitle : dict.successTitle}</p>
         <p className="text-sm text-muted">{wasSoldOut ? dict.soldOutBody : dict.successBody}</p>
+        {!wasSoldOut && (
+          <a
+            href="/signup"
+            className="mt-3 inline-flex items-center gap-2 rounded-xl bg-cobalt px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-cobalt-dim"
+          >
+            {dict.goToSignupCta}
+            <ArrowRight size={16} />
+          </a>
+        )}
       </Card>
     );
   }
