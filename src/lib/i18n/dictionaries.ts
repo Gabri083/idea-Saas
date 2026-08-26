@@ -137,6 +137,7 @@ const es = {
           { label: "Cómo funciona", href: "#como-funciona" },
           { label: "Precios", href: "#precios" },
           { label: "Programa de afiliados", href: "/afiliados" },
+          { label: "Blog", href: "/blog" },
         ],
       },
       legal: {
@@ -619,6 +620,15 @@ const es = {
       },
     ],
   },
+  blog: {
+    metaTitle: "Blog",
+    metaDescription: "Ideas y aprendizajes sobre reseñas justas, IA y reputación online para e-commerce.",
+    pageTitle: "Blog",
+    pageSubtitle: "Ideas sobre reseñas justas, IA y reputación online.",
+    readMore: "Leer más",
+    backToBlog: "Volver al blog",
+    emptyState: "Todavía no hay artículos publicados — vuelve pronto.",
+  },
   founders: {
     metaTitle: "Oferta Fundadores",
     metaDescription: "Bloquea 30% de descuento por tus primeros 6 meses en Kelsira — cupos limitados a 40 negocios.",
@@ -926,6 +936,7 @@ const en: typeof es = {
           { label: "How it works", href: "#como-funciona" },
           { label: "Pricing", href: "#precios" },
           { label: "Affiliate program", href: "/afiliados" },
+          { label: "Blog", href: "/blog" },
         ],
       },
       legal: {
@@ -1396,6 +1407,15 @@ const en: typeof es = {
         a: "No. You can refer as many businesses as you want and earn 50% of each one's first payment.",
       },
     ],
+  },
+  blog: {
+    metaTitle: "Blog",
+    metaDescription: "Thoughts on fair reviews, AI, and online reputation for e-commerce.",
+    pageTitle: "Blog",
+    pageSubtitle: "Thoughts on fair reviews, AI, and online reputation.",
+    readMore: "Read more",
+    backToBlog: "Back to blog",
+    emptyState: "No posts published yet — check back soon.",
   },
   founders: {
     metaTitle: "Founding Member Offer",
