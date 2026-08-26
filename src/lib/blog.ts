@@ -11,6 +11,7 @@ export interface BlogPostMeta {
   excerpt: string;
   date: string; // ISO date string
   locale: "es" | "en";
+  coverImage: string | null;
 }
 
 export interface BlogPost extends BlogPostMeta {
@@ -25,6 +26,17 @@ function readSlugs(): string[] {
     .map((f) => f.replace(/\.md$/, ""));
 }
 
+function toMeta(slug: string, data: Record<string, unknown>): BlogPostMeta {
+  return {
+    slug,
+    title: String(data.title),
+    excerpt: String(data.excerpt),
+    date: String(data.date),
+    locale: data.locale === "en" ? "en" : "es",
+    coverImage: typeof data.coverImage === "string" ? data.coverImage : null,
+  };
+}
+
 /** All posts, newest first. Each post file's frontmatter carries its own
  * `locale` — a post is written once, in whichever language it targets, not
  * translated in pairs like the rest of the site's UI copy. */
@@ -33,13 +45,7 @@ export function getAllBlogPosts(): BlogPostMeta[] {
     .map((slug) => {
       const raw = fs.readFileSync(path.join(BLOG_DIR, `${slug}.md`), "utf8");
       const { data } = matter(raw);
-      return {
-        slug,
-        title: String(data.title),
-        excerpt: String(data.excerpt),
-        date: String(data.date),
-        locale: data.locale === "en" ? "en" : "es",
-      } satisfies BlogPostMeta;
+      return toMeta(slug, data);
     })
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
@@ -52,11 +58,7 @@ export function getBlogPost(slug: string): BlogPost | null {
   const { data, content } = matter(raw);
 
   return {
-    slug,
-    title: String(data.title),
-    excerpt: String(data.excerpt),
-    date: String(data.date),
-    locale: data.locale === "en" ? "en" : "es",
+    ...toMeta(slug, data),
     html: marked.parse(content, { async: false }) as string,
   };
 }

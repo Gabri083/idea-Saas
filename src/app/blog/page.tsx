@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components/landing/navbar";
 import { Footer } from "@/components/landing/footer";
@@ -33,11 +34,22 @@ export default async function BlogIndexPage() {
             <div className="flex flex-col gap-4">
               {posts.map((post) => (
                 <Link key={post.slug} href={`/blog/${post.slug}`}>
-                  <Card className="p-6 transition-colors hover:border-cobalt/40">
-                    <p className="text-xs text-muted">{formatDate(post.date, post.locale)}</p>
-                    <h2 className="mt-1.5 text-xl font-medium tracking-tight">{post.title}</h2>
-                    <p className="mt-2 text-sm text-muted">{post.excerpt}</p>
-                    <span className="mt-3 inline-block text-sm font-medium text-cobalt">{t.readMore} →</span>
+                  <Card className="overflow-hidden p-0 transition-colors hover:border-cobalt/40">
+                    {post.coverImage && (
+                      <Image
+                        src={post.coverImage}
+                        alt=""
+                        width={1200}
+                        height={630}
+                        className="aspect-[1200/630] w-full object-cover"
+                      />
+                    )}
+                    <div className="p-6">
+                      <p className="text-xs text-muted">{formatDate(post.date, post.locale)}</p>
+                      <h2 className="mt-1.5 text-xl font-medium tracking-tight">{post.title}</h2>
+                      <p className="mt-2 text-sm text-muted">{post.excerpt}</p>
+                      <span className="mt-3 inline-block text-sm font-medium text-cobalt">{t.readMore} →</span>
+                    </div>
                   </Card>
                 </Link>
               ))}

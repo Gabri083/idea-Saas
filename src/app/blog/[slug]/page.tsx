@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -20,7 +21,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = getBlogPost(slug);
   if (!post) return {};
-  return { title: post.title, description: post.excerpt };
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: post.coverImage ? { images: [post.coverImage] } : undefined,
+  };
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -45,6 +50,17 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
           <p className="mt-6 text-xs text-muted">{formatDate(post.date, post.locale)}</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{post.title}</h1>
+
+          {post.coverImage && (
+            <Image
+              src={post.coverImage}
+              alt=""
+              width={1200}
+              height={630}
+              className="mt-8 w-full rounded-2xl border border-border"
+              priority
+            />
+          )}
 
           <div className="blog-content mt-10" dangerouslySetInnerHTML={{ __html: post.html }} />
         </article>
