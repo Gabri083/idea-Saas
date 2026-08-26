@@ -166,16 +166,6 @@ export interface WidgetConfig {
   show_branding: boolean; // "Verificado por Kelsira" footer; forced true on free/starter regardless of this value
 }
 
-export type TeamRole = "owner" | "staff";
-
-export interface TeamMember {
-  id: string;
-  full_name: string | null;
-  role: TeamRole;
-  email: string;
-  created_at: string;
-}
-
 /** Structured output contract for the OpenAI JSON-mode scoring call. */
 export interface AiReviewAnalysis {
   is_valid_review: boolean;

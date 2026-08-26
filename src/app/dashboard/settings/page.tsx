@@ -1,17 +1,15 @@
 import { Card } from "@/components/ui/card";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { PlanSection } from "@/components/dashboard/plan-section";
-import { TeamSection } from "@/components/dashboard/team-section";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
-import { getBusiness, getTeamMembers } from "@/lib/data";
+import { getBusiness } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
 import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 
 export default async function SettingsPage() {
   const businessId = await requireBusinessId();
-  const [business, teamMembers, dict, locale] = await Promise.all([
+  const [business, dict, locale] = await Promise.all([
     getBusiness(businessId),
-    getTeamMembers(businessId),
     getDictionary(),
     getLocale(),
   ]);
@@ -36,8 +34,6 @@ export default async function SettingsPage() {
           <LanguageSwitcher locale={locale} />
         </div>
       </Card>
-
-      <TeamSection initialMembers={teamMembers} dict={dict.dashboard.team} />
 
       <PlanSection
         currentPlan={business.plan}
