@@ -15,6 +15,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const GA_MEASUREMENT_ID = "G-BGKBW47HCV";
+
 // Static metadata can't read the locale cookie (it isn't per-request), so it
 // defaults to English to match DEFAULT_LOCALE — most crawlers and unfurlers
 // don't send Accept-Language anyway. Page-level metadata can still override
@@ -61,6 +63,14 @@ export default async function RootLayout({
           {`window.lemonSqueezyAffiliateConfig = { store: "kelsira" };`}
         </Script>
         <Script src="https://lmsqueezy.com/affiliate.js" strategy="afterInteractive" />
+
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');`}
+        </Script>
       </body>
     </html>
   );
