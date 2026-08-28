@@ -73,6 +73,7 @@ export interface Business {
   customer_portal_url: string | null;
   is_founder: boolean;
   store_domain: string | null;
+  logo_url: string | null;
   created_at: string;
 }
 
@@ -166,6 +167,8 @@ export interface WidgetConfig {
   card_style: "recibo" | "medidor"; // per-review card look, used by grid/wall/carousel
   show_breakdown: boolean;
   show_branding: boolean; // "Verificado por Kelsira" footer; forced true on free/starter regardless of this value
+  review_form_welcome: string | null; // overrides the default copy above the review form on /review; null = default
+  review_form_thanks: string | null; // overrides the default copy on the post-submit confirmation; null = default
 }
 
 /** Structured output contract for the OpenAI JSON-mode scoring call. */

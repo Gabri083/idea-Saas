@@ -9,7 +9,15 @@ import { cn } from "@/lib/utils";
 import type { Review } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
-export function ReviewForm({ businessId, dict }: { businessId: string; dict: Dictionary["publicReview"] }) {
+export function ReviewForm({
+  businessId,
+  thanksMessage,
+  dict,
+}: {
+  businessId: string;
+  thanksMessage?: string | null;
+  dict: Dictionary["publicReview"];
+}) {
   const [status, setStatus] = useState<"form" | "submitting" | "done" | "error">("form");
   const [errorMessage, setErrorMessage] = useState("");
   const [gutRating, setGutRating] = useState(0);
@@ -56,6 +64,7 @@ export function ReviewForm({ businessId, dict }: { businessId: string; dict: Dic
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col gap-6"
       >
+        {thanksMessage && <p className="text-sm text-foreground/90">{thanksMessage}</p>}
         <div className="rounded-2xl border border-border bg-surface p-6">
           <p className="text-xs text-muted">{dict.publishedAsWritten}</p>
           <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/90">

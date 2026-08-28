@@ -1,10 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
-import { getBusiness, getReviews } from "@/lib/data";
+import { getBusiness, getReviews, getWidgetConfig } from "@/lib/data";
 import { resolveBusinessId } from "@/lib/demo";
 import { getCategoryLabels, type Review } from "@/lib/types";
 import { formatDate, isConfirmed, recencyWeightedAverage } from "@/lib/utils";
+import { publicPageThemeStyle } from "@/lib/public-page-theme";
 import { StarRating } from "@/components/ui/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -34,9 +36,13 @@ function isAttribute(value: string | undefined): value is Attribute {
 
 async function loadData(businessIdParam: string) {
   const businessId = resolveBusinessId(businessIdParam);
-  const [business, reviews] = await Promise.all([getBusiness(businessId), getReviews(businessId)]);
+  const [business, reviews, config] = await Promise.all([
+    getBusiness(businessId),
+    getReviews(businessId),
+    getWidgetConfig(businessId),
+  ]);
   const publicReviews = reviews.filter((r) => r.status === "published" || r.status === "resolved");
-  return { business, publicReviews };
+  return { business, publicReviews, config };
 }
 
 export async function generateMetadata({
@@ -64,7 +70,7 @@ export default async function PublicReviewsPage({
 }) {
   const { businessId } = await params;
   const { page: pageParam, filter: filterParam } = await searchParams;
-  const [{ business, publicReviews }, dict, locale] = await Promise.all([
+  const [{ business, publicReviews, config }, dict, locale] = await Promise.all([
     loadData(businessId),
     getDictionary(),
     getLocale(),
@@ -124,7 +130,10 @@ export default async function PublicReviewsPage({
   };
 
   return (
-    <main className="flex flex-1 flex-col items-center bg-grid px-4 py-12 sm:py-20">
+    <main
+      className="flex flex-1 flex-col items-center bg-background bg-grid px-4 py-12 text-foreground sm:py-20"
+      style={publicPageThemeStyle(config)}
+    >
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <div className="w-full max-w-2xl">
@@ -138,11 +147,22 @@ export default async function PublicReviewsPage({
 
         <div className="mt-8 rounded-2xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">{business.name}</h1>
-              {business.category && (
-                <p className="mt-1 text-sm text-muted">{getCategoryLabels(locale)[business.category]}</p>
+            <div className="flex items-start gap-3">
+              {business.logo_url && (
+                <Image
+                  src={business.logo_url}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="mt-0.5 shrink-0 rounded-lg object-contain"
+                />
               )}
+              <div>
+                <h1 className="text-xl font-semibold tracking-tight">{business.name}</h1>
+                {business.category && (
+                  <p className="mt-1 text-sm text-muted">{getCategoryLabels(locale)[business.category]}</p>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-1.5 rounded-full border border-cobalt/30 bg-cobalt/[0.06] px-3 py-1.5 text-xs text-cobalt">
               <ShieldCheck size={13} /> {t.verifiedBadge}

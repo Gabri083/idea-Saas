@@ -1203,6 +1203,32 @@ export function WidgetConfigurator({
           {dict.hideBrandingLabel}
         </label>
 
+        <div>
+          <p className="text-sm font-medium">{dict.welcomeMessageLabel}</p>
+          <textarea
+            value={config.review_form_welcome ?? ""}
+            onChange={(e) => setConfig((p) => ({ ...p, review_form_welcome: e.target.value }))}
+            maxLength={200}
+            rows={2}
+            placeholder={dict.welcomeMessagePlaceholder}
+            className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
+          />
+          <p className="mt-1 text-xs text-muted">{dict.welcomeMessageHint}</p>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium">{dict.thanksMessageLabel}</p>
+          <textarea
+            value={config.review_form_thanks ?? ""}
+            onChange={(e) => setConfig((p) => ({ ...p, review_form_thanks: e.target.value }))}
+            maxLength={200}
+            rows={2}
+            placeholder={dict.thanksMessagePlaceholder}
+            className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
+          />
+          <p className="mt-1 text-xs text-muted">{dict.thanksMessageHint}</p>
+        </div>
+
         <Button onClick={save} disabled={saveStatus === "saving"} className="w-full">
           {saveStatus === "saving" ? (
             <>

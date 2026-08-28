@@ -30,6 +30,8 @@ const BodySchema = z.object({
   card_style: z.enum(["recibo", "medidor"]),
   show_breakdown: z.boolean(),
   show_branding: z.boolean(),
+  review_form_welcome: z.string().trim().max(200).optional().or(z.literal("")),
+  review_form_thanks: z.string().trim().max(200).optional().or(z.literal("")),
 });
 
 export async function PUT(request: NextRequest) {
@@ -54,14 +56,20 @@ export async function PUT(request: NextRequest) {
     );
   }
 
+  const payload = {
+    ...parsed.data,
+    review_form_welcome: parsed.data.review_form_welcome || null,
+    review_form_thanks: parsed.data.review_form_thanks || null,
+  };
+
   if (!isSupabaseConfigured()) {
-    return NextResponse.json({ demo: true, config: { ...parsed.data, business_id: businessId } });
+    return NextResponse.json({ demo: true, config: { ...payload, business_id: businessId } });
   }
 
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("widget_configs")
-    .upsert({ business_id: businessId, ...parsed.data, updated_at: new Date().toISOString() })
+    .upsert({ business_id: businessId, ...payload, updated_at: new Date().toISOString() })
     .select()
     .single();
 

@@ -32,6 +32,7 @@ create table if not exists businesses (
   cap_alert_sent_month text, -- "YYYY-MM" of the last review-cap-reached email sent, so it fires once/month
   is_founder         boolean not null default false, -- claimed one of the 40 Founding Member discount spots
   store_domain       text, -- normalized store domain, set for founder signups only — dedupes real businesses, not just emails
+  logo_url           text, -- public URL in the business-logos bucket, shown on /review and /resenas (Kelsira's own branding stays alongside it)
   created_at         timestamptz not null default now()
 );
 
@@ -62,6 +63,11 @@ create table if not exists widget_configs (
   card_style     text not null default 'recibo' check (card_style in ('recibo', 'medidor')),
   show_breakdown boolean not null default true,
   show_branding  boolean not null default true, -- "Verificado por Kelsira" footer; forced true on free/starter regardless of this value
+  -- optional overrides for the copy on /review (review_form_welcome) and its
+  -- post-submit confirmation (review_form_thanks) — null falls back to
+  -- Kelsira's own default copy in each locale.
+  review_form_welcome text,
+  review_form_thanks  text,
   updated_at     timestamptz not null default now()
 );
 
@@ -311,5 +317,36 @@ create policy "members read their own appeal evidence"
   to authenticated
   using (
     bucket_id = 'appeal-evidence'
+    and is_business_member((storage.foldername(name))[1]::uuid)
+  );
+
+-- ============================================================================
+-- Storage bucket for business logos — public (shown on /review and /resenas),
+-- one fixed object per business at `${business_id}/logo` (no extension in the
+-- key, so re-uploading overwrites in place instead of leaving orphaned files
+-- and the public URL never changes).
+-- ============================================================================
+insert into storage.buckets (id, name, public)
+values ('business-logos', 'business-logos', true)
+on conflict (id) do nothing;
+
+create policy "anyone can view business logos"
+  on storage.objects for select
+  to public
+  using (bucket_id = 'business-logos');
+
+create policy "members upload their own logo"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'business-logos'
+    and is_business_member((storage.foldername(name))[1]::uuid)
+  );
+
+create policy "members replace their own logo"
+  on storage.objects for update
+  to authenticated
+  using (
+    bucket_id = 'business-logos'
     and is_business_member((storage.foldername(name))[1]::uuid)
   );

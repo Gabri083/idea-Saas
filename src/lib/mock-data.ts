@@ -31,6 +31,7 @@ export const mockBusiness: Business = {
   customer_portal_url: null,
   is_founder: false,
   store_domain: null,
+  logo_url: null,
   created_at: daysAgo(120),
 };
 
@@ -175,4 +176,6 @@ export const mockWidgetConfig: WidgetConfig = {
   card_style: "recibo",
   show_breakdown: true,
   show_branding: true,
+  review_form_welcome: null,
+  review_form_thanks: null,
 };
