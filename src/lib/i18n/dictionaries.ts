@@ -426,6 +426,9 @@ const es = {
       requestSent: "Solicitud enviada — quedará pendiente de revisión.",
       evidencePlaceholder:
         "Describe qué corregiste (ej. cambiamos de transportista el 12/07) y adjunta evidencia de respaldo.",
+      discountCodePlaceholder: "Código de descuento para invitarlos a volver (opcional)",
+      discountCodeHint:
+        "Si se aprueba, invitamos por correo a los clientes afectados a volver a probarte y les ofrecemos este código, sacado de tu propia tienda. Si lo dejas vacío, igual los invitamos a volver, sin descuento.",
       submitting: "Enviando…",
       requestRecalibration: "Solicitar recalibración",
       submitError: "No se pudo enviar. Intenta de nuevo.",
@@ -795,6 +798,8 @@ const es = {
       occurrencesLabel: "({n} quejas)",
       evidenceLabel: "Evidencia de corrección: ",
       affectedReviews: "{n} reseñas históricas asociadas.",
+      discountCodeLabel: "Código ofrecido a los clientes: ",
+      reinviteSent: "Invitación de reseña enviada a los clientes afectados.",
       approve: "Aprobar (marca el problema como resuelto)",
       reject: "Rechazar",
     },
@@ -1219,6 +1224,9 @@ const en: typeof es = {
       requestSent: "Request submitted — pending review.",
       evidencePlaceholder:
         "Describe what you fixed (e.g. we switched carriers on 07/12) and attach supporting evidence.",
+      discountCodePlaceholder: "Discount code to invite them back with (optional)",
+      discountCodeHint:
+        "If approved, we email the affected customers inviting them to give you another try, offering this code from your own store. Leave it blank and we still invite them back, just without a discount.",
       submitting: "Submitting…",
       requestRecalibration: "Request recalibration",
       submitError: "Couldn't submit. Try again.",
@@ -1581,6 +1589,8 @@ const en: typeof es = {
       occurrencesLabel: "({n} complaints)",
       evidenceLabel: "Correction evidence: ",
       affectedReviews: "{n} historical reviews affected.",
+      discountCodeLabel: "Code offered to customers: ",
+      reinviteSent: "Re-review invitation sent to the affected customers.",
       approve: "Approve (marks the issue as resolved)",
       reject: "Reject",
     },

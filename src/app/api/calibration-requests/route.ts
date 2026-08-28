@@ -9,6 +9,7 @@ const BodySchema = z.object({
   recurring_issue_id: uuidSchema,
   affected_review_ids: z.array(uuidSchema).default([]),
   evidence: z.string().min(10).max(2000),
+  discount_code: z.string().trim().max(60).optional().or(z.literal("")),
 });
 
 export async function POST(request: NextRequest) {
@@ -25,7 +26,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Debes iniciar sesión." }, { status: 401 });
   }
 
-  const payload = { ...parsed.data, business_id: businessId };
+  const payload = {
+    ...parsed.data,
+    discount_code: parsed.data.discount_code || null,
+    business_id: businessId,
+  };
 
   if (!isSupabaseConfigured()) {
     return NextResponse.json({
@@ -33,6 +38,7 @@ export async function POST(request: NextRequest) {
       calibration_request: {
         id: crypto.randomUUID(),
         ...payload,
+        reinvite_sent_at: null,
         status: "pending",
         requested_at: new Date().toISOString(),
         resolved_at: null,

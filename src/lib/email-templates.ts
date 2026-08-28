@@ -171,6 +171,56 @@ export function recurringIssueAlertEmail(params: {
   };
 }
 
+/** Sent to a customer whose review flagged an issue the business just proved it fixed — locale follows the business's saved preference, since we don't track the customer's own. */
+export function reinviteToReReviewEmail(params: {
+  locale: Locale;
+  customerName: string;
+  businessName: string;
+  issueLabel: string;
+  discountCode: string | null;
+  reviewUrl: string;
+}): { subject: string; html: string } {
+  const name = escapeHtml(params.customerName);
+  const business = escapeHtml(params.businessName);
+  const issue = escapeHtml(params.issueLabel);
+  const discountHtml = params.discountCode
+    ? params.locale === "en"
+      ? `<p>As a thank-you, use the code <strong>${escapeHtml(params.discountCode)}</strong> on your next order with them.</p>`
+      : `<p>Como agradecimiento, usa el código <strong>${escapeHtml(params.discountCode)}</strong> en tu próxima compra con ellos.</p>`
+    : "";
+
+  if (params.locale === "en") {
+    return {
+      subject: `${params.businessName} fixed what you told them about`,
+      html: shell(
+        "en",
+        "We fixed it",
+        `<p>Hi ${name},</p>
+         <p><strong>${business}</strong> read your review and fixed the issue you flagged: <strong>${issue}</strong>.</p>
+         ${discountHtml}
+         <p>We'd love for you to give them another try — and if your experience is different this time,
+         you're welcome to leave a new review.</p>
+         <p><a href="${params.reviewUrl}" style="color:#4f7cff;font-weight:600;">Leave a new review</a></p>
+         <p style="color:#8a8f98;font-size:12px;">This is a one-time invitation — there's no obligation to respond, and your original review stays exactly as you wrote it either way.</p>`,
+      ),
+    };
+  }
+  return {
+    subject: `${params.businessName} solucionó lo que nos comentaste`,
+    html: shell(
+      "es",
+      "Ya lo solucionamos",
+      `<p>Hola ${name},</p>
+       <p><strong>${business}</strong> leyó tu reseña y solucionó el problema que marcaste: <strong>${issue}</strong>.</p>
+       ${discountHtml}
+       <p>Nos encantaría que le des otra oportunidad — y si esta vez tu experiencia es distinta,
+       puedes dejar una nueva reseña.</p>
+       <p><a href="${params.reviewUrl}" style="color:#4f7cff;font-weight:600;">Dejar una nueva reseña</a></p>
+       <p style="color:#8a8f98;font-size:12px;">Esta es una invitación única — no hay obligación de responder, y tu reseña original queda exactamente como la escribiste de todas formas.</p>`,
+    ),
+  };
+}
+
 /** Sent to the business owner — locale follows the business's saved preference (Settings). */
 export function reviewCapReachedEmail(params: {
   locale: Locale;

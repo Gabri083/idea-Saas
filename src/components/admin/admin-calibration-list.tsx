@@ -59,6 +59,17 @@ function CalibrationCard({ request, dict }: { request: AdminCalibrationRow; dict
         {t.affectedReviews.replace("{n}", String(request.affected_review_ids.length))}
       </p>
 
+      {request.discount_code && (
+        <p className="mt-1 text-xs text-muted">
+          <span className="font-medium">{t.discountCodeLabel}</span>
+          {request.discount_code}
+        </p>
+      )}
+
+      {request.reinvite_sent_at && (
+        <p className="mt-1 text-xs text-emerald">{t.reinviteSent}</p>
+      )}
+
       {status === "pending" && (
         <div className="mt-4 flex gap-2">
           <button

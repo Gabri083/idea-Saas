@@ -24,6 +24,7 @@ function IssueCalibrationCard({
   dict: Dictionary["dashboard"]["calibration"];
 }) {
   const [evidence, setEvidence] = useState("");
+  const [discountCode, setDiscountCode] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -38,6 +39,7 @@ function IssueCalibrationCard({
           recurring_issue_id: issue.id,
           affected_review_ids: matchedReviews.map((r) => r.id),
           evidence,
+          discount_code: discountCode,
         }),
       });
       if (!res.ok) throw new Error();
@@ -71,6 +73,16 @@ function IssueCalibrationCard({
             placeholder={dict.evidencePlaceholder}
             className="resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
           />
+          <div>
+            <input
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              maxLength={60}
+              placeholder={dict.discountCodePlaceholder}
+              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
+            />
+            <p className="mt-1.5 text-xs text-muted">{dict.discountCodeHint}</p>
+          </div>
           <Button type="submit" size="sm" variant="secondary" className="w-fit" disabled={status === "submitting"}>
             {status === "submitting" ? (
               <>

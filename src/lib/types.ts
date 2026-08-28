@@ -134,6 +134,8 @@ export interface CalibrationRequest {
   recurring_issue_id: string;
   affected_review_ids: string[];
   evidence: string;
+  discount_code: string | null;
+  reinvite_sent_at: string | null;
   status: CalibrationStatus;
   requested_at: string;
   resolved_at: string | null;
