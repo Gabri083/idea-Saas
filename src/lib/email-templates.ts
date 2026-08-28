@@ -171,6 +171,48 @@ export function recurringIssueAlertEmail(params: {
   };
 }
 
+/** Sent to the customer whose review was removed after a business appeal was approved —
+ * locale follows the business's saved preference, since we don't track the customer's own.
+ * Never includes the business's evidence, only the category of guideline violated. */
+export function reviewRemovedEmail(params: {
+  locale: Locale;
+  customerName: string;
+  businessName: string;
+}): { subject: string; html: string } {
+  const name = escapeHtml(params.customerName);
+  const business = escapeHtml(params.businessName);
+
+  if (params.locale === "en") {
+    return {
+      subject: `Your review for ${params.businessName} was removed`,
+      html: shell(
+        "en",
+        "Your review was removed",
+        `<p>Hi ${name},</p>
+         <p>Your review for <strong>${business}</strong> was removed for violating Kelsira's
+         guidelines (e.g. not tied to a real purchase, personal data, abusive language, or spam).</p>
+         <p>This is never a scoring decision — Kelsira's AI never edits or corrects a review's
+         score. A review either stays exactly as you wrote it, or gets removed entirely for a
+         guideline violation like this one.</p>`,
+      ),
+    };
+  }
+  return {
+    subject: `Tu reseña para ${params.businessName} fue eliminada`,
+    html: shell(
+      "es",
+      "Tu reseña fue eliminada",
+      `<p>Hola ${name},</p>
+       <p>Tu reseña para <strong>${business}</strong> fue eliminada por infringir las normas de
+       Kelsira (por ejemplo: no estar ligada a una compra real, datos personales, lenguaje
+       abusivo o spam).</p>
+       <p>Esto nunca es una decisión de puntaje — la IA de Kelsira nunca edita ni corrige el
+       puntaje de una reseña. Una reseña se queda tal cual la escribiste, o se elimina por
+       completo por infringir una norma como esta.</p>`,
+    ),
+  };
+}
+
 /** Sent to a customer whose review flagged an issue the business just proved it fixed — locale follows the business's saved preference, since we don't track the customer's own. */
 export function reinviteToReReviewEmail(params: {
   locale: Locale;

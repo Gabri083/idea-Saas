@@ -3,7 +3,7 @@ import { getClient } from "@/lib/ai/scoring";
 import type { BusinessCategory } from "@/lib/types";
 
 const TriageSchema = z.object({
-  recommendation: z.enum(["archive", "correct", "reject", "uncertain"]),
+  recommendation: z.enum(["archive", "reject", "uncertain"]),
   confidence: z.enum(["high", "medium", "low"]),
   reasoning: z.string(),
 });
@@ -32,28 +32,35 @@ los ambiguos.
 No puedes ver los archivos de evidencia adjuntos (fotos, capturas, etc.), solo su cantidad
 — tenlo en cuenta y no asumas su contenido.
 
+Importante: una apelación aprobada elimina la reseña por completo — Kelsira nunca corrige o
+reescribe el puntaje de una reseña que se queda publicada, solo decide si se queda tal cual
+o se elimina. Que un puntaje parezca "duro" o no coincidir del todo con el tono del texto NO
+es, por sí solo, motivo de eliminación — eso es una diferencia de opinión sobre el puntaje,
+no una infracción.
+
 Evalúa señales textuales:
 - ¿El texto de la reseña describe hechos específicos y verificables (fechas, nombres de
   productos, detalles concretos), o es vago/genérico/tipo plantilla? Un texto genérico sin
   ningún detalle concreto es una señal (no una prueba) de reseña posiblemente falsa.
 - ¿El motivo de la apelación del negocio es consistente con lo que dice el texto de la
   reseña, o el negocio está negando algo que el cliente describe con detalle?
-- ¿Los puntajes (producto/atención/envío) parecen coherentes con lo que describe el texto,
-  o hay una dimensión que parece mal evaluada dado lo que el cliente realmente cuenta?
+- ¿Hay señales de una infracción real (reseña falsa, sin relación con una compra real, datos
+  personales, lenguaje de odio o abuso, spam) más allá de un simple desacuerdo con el
+  puntaje?
 
 Responde con un JSON:
 {
-  "recommendation": "archive" | "correct" | "reject" | "uncertain",
+  "recommendation": "archive" | "reject" | "uncertain",
   "confidence": "high" | "medium" | "low",
   "reasoning": string (máximo 3 oraciones, en español, explicando tu recomendación)
 }
 
 Usa "archive" cuando el texto de la reseña no describe ningún hecho concreto verificable
-(vacío de contenido real) o contradice frontalmente algo objetivo mencionado en el motivo de
-la apelación. Usa "correct" cuando el texto SÍ parece describir una experiencia real, pero
-uno o más puntajes parecen no coincidir con lo que el cliente relata. Usa "reject" cuando el
-texto de la reseña es específico, coherente y consistente con los puntajes — es decir, la
-apelación no tiene fundamento textual. Usa "uncertain" cuando la evidencia textual es
+(vacío de contenido real), contradice frontalmente algo objetivo mencionado en el motivo de
+la apelación, o muestra una señal clara de infracción (dato personal, odio/abuso, spam). Usa
+"reject" cuando el texto de la reseña es específico, coherente y consistente con una
+experiencia real — incluyendo los casos donde el negocio solo está en desacuerdo con el
+puntaje, ya que eso no es una infracción. Usa "uncertain" cuando la evidencia textual es
 insuficiente o contradictoria y de verdad se necesita juicio humano cuidadoso (ej. depende
 del contenido de la evidencia adjunta, que no puedes ver).
 

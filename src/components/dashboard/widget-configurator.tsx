@@ -261,6 +261,11 @@ function TicketCard({
   const starBg = isDark ? "#3a3d44" : "#e2e4e8";
   const pillBg = isDark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)";
   const confirmed = isConfirmed(review);
+  // Same rule as the embeddable widget and the public reviews page: the
+  // number shown by default is always the customer's own pick — Kelsira
+  // never swaps in a different one. When the AI reads the text differently,
+  // a small "!" appears next to it; its own take is one tap/hover away.
+  const big = review.customer_star_rating ?? review.overall_ai_rating;
   const cut = TICKET_CUT_PX;
   const clipPath = `polygon(0 ${cut}px, ${cut}px 0, calc(100% - ${cut}px) 0, 100% ${cut}px, 100% 100%, 0 100%)`;
   return (
@@ -269,26 +274,30 @@ function TicketCard({
       style={{ borderColor, clipPath }}
     >
       <div className="px-4 pt-4 pb-3">
-        <div className="flex flex-wrap items-baseline gap-2">
+        <div className="mb-2.5 flex flex-wrap items-baseline gap-2">
+          <span className="text-lg font-bold" style={{ color: accent }}>
+            {big.toFixed(1)}
+          </span>
           {confirmed ? (
-            <span className="text-lg font-bold" style={{ color: accent }}>
-              {review.overall_ai_rating.toFixed(1)}
-            </span>
+            <AiTag dict={dict} />
           ) : (
-            <>
-              <span className="text-[13px] opacity-50 line-through">{review.customer_star_rating!.toFixed(1)}★</span>
-              <span className="text-xs opacity-40">→</span>
-              <span className="text-lg font-bold" style={{ color: accent }}>
-                {review.overall_ai_rating.toFixed(1)}
-              </span>
-            </>
+            <details className="group relative inline-block align-middle">
+              <summary
+                className="flex h-[18px] w-[18px] list-none items-center justify-center rounded-full border border-current text-[11px] font-extrabold opacity-55 [&::-webkit-details-marker]:hidden [&::marker]:hidden group-hover:opacity-90 group-open:opacity-90"
+                title={dict.fairIconTitle}
+              >
+                !
+              </summary>
+              <div
+                className="absolute left-0 top-[calc(100%+6px)] z-10 hidden w-[210px] rounded-lg border px-2.5 py-2 text-[11.5px] font-normal leading-snug shadow-lg group-hover:block group-open:block"
+                style={{ background: isDark ? "#101114" : "#ffffff", borderColor }}
+              >
+                {dict.fairNoteText.replace("{score}", review.overall_ai_rating.toFixed(1))}
+              </div>
+            </details>
           )}
-          <AiTag dict={dict} />
         </div>
-        <p className="mt-1 mb-2.5 text-[10px] uppercase tracking-wide opacity-45">
-          {confirmed ? dict.confirmedByAi : dict.correctionByFacts}
-        </p>
-        <Stars value={review.overall_ai_rating} size={14} accent={accent} bg={starBg} />
+        <Stars value={big} size={14} accent={accent} bg={starBg} />
       </div>
       <div style={{ margin: "0 16px", borderTop: `1.5px dashed ${borderColor}` }} />
       <div className="px-4 pt-3.5 pb-4">

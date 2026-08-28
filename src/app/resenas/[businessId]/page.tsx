@@ -154,11 +154,11 @@ export default async function PublicReviewsPage({
               <span className="text-3xl font-semibold tracking-tight">{average.toFixed(1)}</span>
               <div>
                 <StarRating value={average} size={16} />
-                <p className="mt-0.5 text-xs text-muted">
+                <Link href="/legal/transparencia-ia" className="mt-0.5 block text-xs text-muted hover:text-cobalt hover:underline">
                   {publicReviews.length === 1
                     ? t.reviewCountSingular
                     : t.reviewCountPlural.replace("{n}", String(publicReviews.length))}
-                </p>
+                </Link>
               </div>
             </div>
           ) : (
@@ -272,27 +272,36 @@ function ReviewEntry({
   dict: Dictionary["publicReviews"];
 }) {
   const confirmed = isConfirmed(review);
+  // Same rule as the embeddable widget: the number shown by default is
+  // always the customer's own pick, like any other review platform — never
+  // a different number swapped in. When the AI reads the text differently,
+  // a small "!" appears next to it; its own take is one tap/hover away
+  // (native <details>), never pushed in front of anyone.
+  const big = review.customer_star_rating ?? review.overall_ai_rating;
   return (
     <Card className="p-5">
       <div className="flex flex-wrap items-baseline gap-2">
+        <span className="text-lg font-bold text-cobalt">{big.toFixed(1)}</span>
         {confirmed ? (
-          <span className="text-lg font-bold text-cobalt">{review.overall_ai_rating.toFixed(1)}</span>
+          <span className="rounded border border-current px-1 py-px text-[9px] font-bold uppercase leading-tight tracking-wide text-muted opacity-80">
+            {dict.aiTag}
+          </span>
         ) : (
-          <>
-            <span className="text-[13px] text-muted line-through">{review.customer_star_rating!.toFixed(1)}★</span>
-            <span className="text-xs text-muted">→</span>
-            <span className="text-lg font-bold text-cobalt">{review.overall_ai_rating.toFixed(1)}</span>
-          </>
+          <details className="group relative inline-block align-middle">
+            <summary
+              className="flex h-[18px] w-[18px] list-none items-center justify-center rounded-full border border-current text-[11px] font-extrabold text-muted opacity-60 [&::-webkit-details-marker]:hidden [&::marker]:hidden group-hover:opacity-90 group-open:opacity-90"
+              title={dict.fairIconTitle}
+            >
+              !
+            </summary>
+            <div className="absolute left-0 top-[calc(100%+6px)] z-10 hidden w-[210px] rounded-lg border border-border bg-surface px-2.5 py-2 text-[11.5px] font-normal leading-snug text-foreground/90 shadow-lg group-hover:block group-open:block">
+              {dict.fairNoteText.replace("{score}", review.overall_ai_rating.toFixed(1))}
+            </div>
+          </details>
         )}
-        <span className="rounded border border-current px-1 py-px text-[9px] font-bold uppercase leading-tight tracking-wide text-muted opacity-80">
-          {dict.aiTag}
-        </span>
       </div>
-      <p className="mt-0.5 text-[10.5px] uppercase tracking-wide text-muted opacity-70">
-        {confirmed ? dict.confirmedCaption : dict.correctedCaption}
-      </p>
       <div className="mt-2">
-        <StarRating value={review.overall_ai_rating} size={14} />
+        <StarRating value={big} size={14} />
       </div>
       <p className="mt-3 text-sm text-foreground/90">{review.review_text}</p>
       {review.detected_issues.length > 0 && (

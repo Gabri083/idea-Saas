@@ -21,9 +21,9 @@ const GA_MEASUREMENT_ID = "G-BGKBW47HCV";
 // defaults to English to match DEFAULT_LOCALE — most crawlers and unfurlers
 // don't send Accept-Language anyway. Page-level metadata can still override
 // this per-locale where it matters (see app/opengraph-image.tsx).
-const TITLE = "Kelsira — Fair Reputation, AI-Assisted Reviews";
+const TITLE = "Kelsira — Real Reviews, Fairly Scored";
 const DESCRIPTION =
-  "The first unbiased review platform powered by AI. Protect your brand from anger bias and turn unfair criticism into operational growth.";
+  "Every review is published exactly as your customer wrote it — never hidden, edited, or filtered. Kelsira adds an impartial fairness check on the score, so one angry moment doesn't unfairly define your business.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

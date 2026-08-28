@@ -63,8 +63,11 @@ export function recencyWeightedAverage<T extends { created_at: string }>(
 
 /** Below this gap between the customer's own star pick and the AI score, the
  * two are treated as "the same" — the AI confirmed the customer's take
- * rather than correcting it, so copy should never read like a correction. */
-const CONFIRM_EPSILON = 0.15;
+ * rather than correcting it, so copy should never read like a correction.
+ * Kept wide (half a star) so ordinary decimal rounding never reads as a
+ * disagreement — only a real, meaningful gap does. Mirrored in
+ * public/widget.js, which can't import this module. */
+const CONFIRM_EPSILON = 0.5;
 
 export function isConfirmed(review: { customer_star_rating: number | null; overall_ai_rating: number }): boolean {
   return (

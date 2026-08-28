@@ -21,8 +21,10 @@
   var SPOTLIGHT_INTERVAL_MS = 5000;
   // Below this gap between the customer's own star pick and the AI score, we
   // treat them as "the same" — the AI confirmed the customer, it didn't correct
-  // them, so the copy shouldn't read like a correction happened.
-  var CONFIRM_EPSILON = 0.15;
+  // them, so the copy shouldn't read like a correction happened. Kept wide
+  // (half a star) so ordinary decimal rounding never reads as a disagreement.
+  // Mirrored in src/lib/utils.ts, which this standalone script can't import.
+  var CONFIRM_EPSILON = 0.5;
 
   // Every UI string the widget itself renders (not the review text, which is
   // never touched) — keyed off the embedding business's own locale, since a
@@ -31,8 +33,8 @@
     en: {
       aiTagTitle: "Score calculated by AI from the review's text",
       aiTag: "AI",
-      confirmedCaption: "Confirmed by AI",
-      correctedCaption: "Corrected on facts, not anger",
+      fairIconTitle: "Kelsira's AI reads this one differently",
+      fairNoteText: "Based on what the review describes, Kelsira's AI would score this {score}/5.",
       product: "Product",
       service: "Service",
       delivery: "Shipping",
@@ -59,8 +61,8 @@
     es: {
       aiTagTitle: "Puntaje calculado por IA a partir del texto de la reseña",
       aiTag: "IA",
-      confirmedCaption: "Confirmado por IA",
-      correctedCaption: "Corrección por hechos, no por enojo",
+      fairIconTitle: "La IA de Kelsira lee esta reseña distinto",
+      fairNoteText: "Según lo que describe la reseña, la IA de Kelsira le daría {score}/5.",
       product: "Producto",
       service: "Atención",
       delivery: "Envío",
@@ -185,25 +187,31 @@
     return '<span class="kelsira-ai-tag" title="' + T.aiTagTitle + '">' + T.aiTag + "</span>";
   }
 
-  // The signature "correction line" shared by El Recibo and El Medidor: a
-  // struck-through customer pick → the AI's final score, like a discounted
-  // price — or, when they agree, a single confirmed number.
-  function correctionRowHtml(review, accent) {
+  // El Recibo's headline number: the customer's own star pick, same as any
+  // other review platform — Kelsira never swaps in a different number by
+  // default. When the AI reads the text differently, a small "!" appears
+  // next to it; its own take is one tap/hover away inside a <details>
+  // element, never pushed in front of anyone. El Medidor (below) is the
+  // opposite, deliberately-always-visible style for businesses that want the
+  // comparison shown up front — this function doesn't touch it.
+  function ratingRowHtml(review, accent) {
+    var big = review.customer_star_rating != null ? review.customer_star_rating : review.overall_ai_rating;
     if (isConfirmed(review)) {
       return {
-        row:
-          '<span class="kelsira-final" style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</span>" +
-          aiTagHtml(),
-        caption: T.confirmedCaption,
+        value: big,
+        row: '<span class="kelsira-final" style="color:' + accent + '">' + big.toFixed(1) + "</span>" + aiTagHtml(),
       };
     }
     return {
+      value: big,
       row:
-        '<span class="kelsira-raw">' + review.customer_star_rating.toFixed(1) + "★</span>" +
-        '<span class="kelsira-arrow">→</span>' +
-        '<span class="kelsira-final" style="color:' + accent + '">' + review.overall_ai_rating.toFixed(1) + "</span>" +
-        aiTagHtml(),
-      caption: T.correctedCaption,
+        '<span class="kelsira-final" style="color:' + accent + '">' + big.toFixed(1) + "</span>" +
+        '<details class="kelsira-fair">' +
+        '<summary class="kelsira-fair-icon" title="' + T.fairIconTitle + '">!</summary>' +
+        '<div class="kelsira-fair-note">' +
+        T.fairNoteText.replace("{score}", review.overall_ai_rating.toFixed(1)) +
+        "</div>" +
+        "</details>",
     };
   }
 
@@ -237,15 +245,14 @@
     );
   }
 
-  // ---------- El Recibo: ticket-shaped card, correction line up top ----------
+  // ---------- El Recibo: ticket-shaped card, customer's own rating up top ----------
   function reciboCardHtml(review, showBreakdown, accent, businessName) {
-    var c = correctionRowHtml(review, accent);
+    var r = ratingRowHtml(review, accent);
     return (
       '<div class="kelsira-ticket">' +
       '<div class="kelsira-ticket-head">' +
-      '<div class="kelsira-correction-row">' + c.row + "</div>" +
-      '<div class="kelsira-correction-caption">' + c.caption + "</div>" +
-      starsHtml(review.overall_ai_rating, 14, accent) +
+      '<div class="kelsira-correction-row">' + r.row + "</div>" +
+      starsHtml(r.value, 14, accent) +
       "</div>" +
       '<div class="kelsira-perforation"></div>' +
       '<div class="kelsira-ticket-body">' +
@@ -738,11 +745,21 @@
       ".kelsira-ticket:hover{transform:translateY(-3px);}" +
       ".kelsira-carousel .kelsira-ticket{flex:0 0 270px;scroll-snap-align:start;}" +
       ".kelsira-ticket-head{padding:16px 18px 13px;}" +
-      ".kelsira-correction-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}" +
+      ".kelsira-correction-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px;}" +
       ".kelsira-raw{font-size:13px;opacity:.5;text-decoration:line-through;}" +
       ".kelsira-arrow{font-size:12px;opacity:.4;}" +
       ".kelsira-final{font-weight:700;font-size:19px;}" +
-      ".kelsira-correction-caption{margin:5px 0 10px;font-size:10px;letter-spacing:.03em;text-transform:uppercase;opacity:.45;}" +
+      // The "!" flag on a review the AI reads differently — closed by default,
+      // opens on tap (native <details>) or on hover (CSS below), never both
+      // forced. Its note is absolutely positioned so opening it never
+      // reflows the card around it.
+      ".kelsira-fair{position:relative;display:inline-block;vertical-align:middle;}" +
+      ".kelsira-fair summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;opacity:.55;font-size:11px;font-weight:800;line-height:1;}" +
+      ".kelsira-fair summary::-webkit-details-marker{display:none;}" +
+      ".kelsira-fair summary::marker{content:'';}" +
+      ".kelsira-fair:hover summary,.kelsira-fair[open] summary{opacity:.9;}" +
+      ".kelsira-fair-note{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:5;width:210px;padding:9px 11px;border-radius:8px;background:var(--kelsira-bg);border:1px solid var(--kelsira-border);box-shadow:0 8px 20px -8px rgba(0,0,0,.25);font-size:11.5px;line-height:1.45;font-weight:400;}" +
+      ".kelsira-fair:hover .kelsira-fair-note,.kelsira-fair[open] .kelsira-fair-note{display:block;}" +
       ".kelsira-perforation{height:0;border-top:1.5px dashed var(--kelsira-border);margin:0 18px;}" +
       ".kelsira-ticket-body{padding:14px 18px 16px;}" +
       // El Medidor — comparative gauge.
@@ -987,7 +1004,10 @@
         ) {
           var footer = document.createElement("div");
           footer.className = "kelsira-powered";
-          footer.textContent = T.poweredFooter;
+          footer.innerHTML =
+            '<a href="' + origin + '/legal/transparencia-ia" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">' +
+            T.poweredFooter +
+            "</a>";
           container.appendChild(footer);
         }
       })

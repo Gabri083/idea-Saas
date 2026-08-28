@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, Loader2, SlidersHorizontal, Paperclip, Sparkles } from "lucide-react";
+import { Check, X, Loader2, Paperclip, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
@@ -12,49 +12,15 @@ import type { AppealTriageResult } from "@/lib/ai/appeal-triage";
 
 type AdminDict = Dictionary["admin"];
 
-const triageTone = { archive: "rose", correct: "cobalt", reject: "neutral", uncertain: "amber" } as const;
+const triageTone = { archive: "rose", reject: "neutral", uncertain: "amber" } as const;
 
 const statusTone = { pending: "amber", approved: "emerald", rejected: "rose" } as const;
-
-function ScoreInput({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-}) {
-  return (
-    <label className="flex flex-col gap-1 text-xs">
-      {label}
-      <input
-        type="number"
-        min={1}
-        max={5}
-        step={0.1}
-        value={value}
-        onChange={(e) => {
-          const n = Number(e.target.value);
-          if (!Number.isNaN(n)) onChange(Math.min(5, Math.max(1, Math.round(n * 10) / 10)));
-        }}
-        className="w-20 rounded-lg border border-border bg-background px-2 py-1.5 text-sm outline-none ring-cobalt/40 focus:ring-2"
-      />
-    </label>
-  );
-}
 
 function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict }) {
   const t = dict.appeals;
   const [status, setStatus] = useState(appeal.status);
   const [notes, setNotes] = useState("");
   const [pending, setPending] = useState<"approved" | "rejected" | null>(null);
-  const [correcting, setCorrecting] = useState(false);
-  const [scores, setScores] = useState({
-    product_score: appeal.review?.product_score ?? 3,
-    service_score: appeal.review?.service_score ?? 3,
-    delivery_score: appeal.review?.delivery_score ?? 3,
-  });
   const [triage, setTriage] = useState<AppealTriageResult | null>(null);
   const [triageLoading, setTriageLoading] = useState(false);
   const [triageError, setTriageError] = useState(false);
@@ -73,7 +39,7 @@ function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict 
     }
   }
 
-  async function resolve(nextStatus: "approved" | "rejected", withCorrection = false) {
+  async function resolve(nextStatus: "approved" | "rejected") {
     setPending(nextStatus);
     try {
       const res = await fetch(`/api/admin/appeals/${appeal.id}`, {
@@ -82,7 +48,6 @@ function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict 
         body: JSON.stringify({
           status: nextStatus,
           resolution_notes: notes || undefined,
-          corrected_scores: withCorrection ? scores : undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -177,37 +142,9 @@ function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict 
             className="resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
           />
 
-          {correcting && (
-            <div className="flex flex-wrap items-end gap-3 rounded-lg border border-cobalt/30 bg-cobalt/[0.05] p-3">
-              <ScoreInput
-                label={t.scoreProduct}
-                value={scores.product_score}
-                onChange={(v) => setScores((s) => ({ ...s, product_score: v }))}
-              />
-              <ScoreInput
-                label={t.scoreService}
-                value={scores.service_score}
-                onChange={(v) => setScores((s) => ({ ...s, service_score: v }))}
-              />
-              <ScoreInput
-                label={t.scoreDelivery}
-                value={scores.delivery_score}
-                onChange={(v) => setScores((s) => ({ ...s, delivery_score: v }))}
-              />
-              <button
-                onClick={() => resolve("approved", true)}
-                disabled={pending !== null}
-                className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-emerald/30 bg-emerald/10 px-3 py-1.5 text-xs font-medium text-emerald transition-colors hover:bg-emerald/20 disabled:opacity-50"
-              >
-                {pending === "approved" ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                {t.confirmCorrected}
-              </button>
-            </div>
-          )}
-
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => resolve("approved", false)}
+              onClick={() => resolve("approved")}
               disabled={pending !== null}
               className={
                 "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 " +
@@ -216,25 +153,8 @@ function AppealCard({ appeal, dict }: { appeal: AdminAppealRow; dict: AdminDict 
                   : "border-rose/30 bg-rose/10 text-rose hover:bg-rose/20")
               }
             >
-              {pending === "approved" && !correcting ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <Check size={14} />
-              )}
+              {pending === "approved" ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
               {t.approveFalse}
-            </button>
-            <button
-              onClick={() => setCorrecting((v) => !v)}
-              disabled={pending !== null}
-              className={
-                "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 " +
-                (triage?.recommendation === "correct"
-                  ? "border-cobalt bg-cobalt/20 text-cobalt ring-2 ring-cobalt/40"
-                  : "border-cobalt/30 bg-cobalt/10 text-cobalt hover:bg-cobalt/20")
-              }
-            >
-              <SlidersHorizontal size={14} />
-              {t.approveMisrated}
             </button>
             <button
               onClick={() => resolve("rejected")}
