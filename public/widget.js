@@ -19,12 +19,14 @@
     "M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z";
   var AVATAR_HUES = [210, 260, 330, 20, 160, 40, 280, 190];
   var SPOTLIGHT_INTERVAL_MS = 5000;
-  // Below this gap between the customer's own star pick and the AI score, we
-  // treat them as "the same" — the AI confirmed the customer, it didn't correct
-  // them, so the copy shouldn't read like a correction happened. Kept wide
-  // (half a star) so ordinary decimal rounding never reads as a disagreement.
-  // Mirrored in src/lib/utils.ts, which this standalone script can't import.
-  var CONFIRM_EPSILON = 0.5;
+  // Fallback threshold for reviews from before per-category ratings existed
+  // (nothing more specific to compare against). Mirrored in src/lib/utils.ts,
+  // which this standalone script can't import.
+  var OVERALL_CONFIRM_EPSILON = 0.5;
+  // A full star of disagreement on one specific category (product/service/
+  // delivery) is a real, meaningful gap between the customer's own tap and
+  // the AI's read of that same aspect.
+  var CATEGORY_CONFIRM_EPSILON = 1;
 
   // Every UI string the widget itself renders (not the review text, which is
   // never touched) — keyed off the embedding business's own locale, since a
@@ -174,13 +176,32 @@
     return html;
   }
 
-  // Is the AI score effectively the same as what the customer picked? If so,
-  // the copy/visuals should read as "confirmed", never as a correction.
+  // Is the AI's read effectively the same as what the customer picked?
+  // Compares category by category (product/service/delivery) when the
+  // customer rated at least one — the fair comparison, since both sides are
+  // judging the same specific thing — falling back to the single overall
+  // composite only for older reviews that predate per-category ratings.
   function isConfirmed(review) {
-    return (
-      review.customer_star_rating == null ||
-      Math.abs(review.customer_star_rating - review.overall_ai_rating) < CONFIRM_EPSILON
-    );
+    if (review.customer_star_rating == null) return true;
+
+    var pairs = [
+      [review.customer_product_rating, review.product_score],
+      [review.customer_service_rating, review.service_score],
+      [review.customer_delivery_rating, review.delivery_score],
+    ];
+    var rated = [];
+    for (var i = 0; i < pairs.length; i++) {
+      if (pairs[i][0] != null && pairs[i][1] != null) rated.push(pairs[i]);
+    }
+
+    if (rated.length > 0) {
+      for (var j = 0; j < rated.length; j++) {
+        if (Math.abs(rated[j][0] - rated[j][1]) >= CATEGORY_CONFIRM_EPSILON) return false;
+      }
+      return true;
+    }
+
+    return Math.abs(review.customer_star_rating - review.overall_ai_rating) < OVERALL_CONFIRM_EPSILON;
   }
 
   function aiTagHtml() {

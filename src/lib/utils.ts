@@ -64,14 +64,50 @@ export function recencyWeightedAverage<T extends { created_at: string }>(
 /** Below this gap between the customer's own star pick and the AI score, the
  * two are treated as "the same" — the AI confirmed the customer's take
  * rather than correcting it, so copy should never read like a correction.
- * Kept wide (half a star) so ordinary decimal rounding never reads as a
- * disagreement — only a real, meaningful gap does. Mirrored in
+ * Only used as a fallback for reviews submitted before per-category ratings
+ * existed, where there's nothing more specific to compare. Mirrored in
  * public/widget.js, which can't import this module. */
-const CONFIRM_EPSILON = 0.5;
+const OVERALL_CONFIRM_EPSILON = 0.5;
 
-export function isConfirmed(review: { customer_star_rating: number | null; overall_ai_rating: number }): boolean {
-  return (
-    review.customer_star_rating == null ||
-    Math.abs(review.customer_star_rating - review.overall_ai_rating) < CONFIRM_EPSILON
+/** Same idea, but per category — a full star of disagreement on one specific
+ * aspect (product/service/delivery) is a real, meaningful gap; anything
+ * under that is ordinary rounding between a coarse 1-5 tap and the AI's own
+ * decimal read of the same aspect. */
+const CATEGORY_CONFIRM_EPSILON = 1;
+
+/**
+ * Is the AI's read effectively the same as what the customer picked? Compares
+ * category by category (product/service/delivery) when the customer rated at
+ * least one — the fair comparison, since both sides are judging the same
+ * specific thing — and falls back to the single overall composite only for
+ * older reviews that predate per-category ratings.
+ */
+export function isConfirmed(review: {
+  customer_star_rating: number | null;
+  overall_ai_rating: number;
+  customer_product_rating?: number | null;
+  customer_service_rating?: number | null;
+  customer_delivery_rating?: number | null;
+  product_score?: number;
+  service_score?: number;
+  delivery_score?: number;
+}): boolean {
+  if (review.customer_star_rating == null) return true;
+
+  const categoryPairs: Array<[number | null | undefined, number | undefined]> = [
+    [review.customer_product_rating, review.product_score],
+    [review.customer_service_rating, review.service_score],
+    [review.customer_delivery_rating, review.delivery_score],
+  ];
+  const ratedCategories = categoryPairs.filter(
+    (pair): pair is [number, number] => pair[0] != null && pair[1] != null,
   );
+
+  if (ratedCategories.length > 0) {
+    return ratedCategories.every(
+      ([customerPick, aiScore]) => Math.abs(customerPick - aiScore) < CATEGORY_CONFIRM_EPSILON,
+    );
+  }
+
+  return Math.abs(review.customer_star_rating - review.overall_ai_rating) < OVERALL_CONFIRM_EPSILON;
 }

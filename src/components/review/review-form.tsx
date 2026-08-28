@@ -9,6 +9,43 @@ import { cn } from "@/lib/utils";
 import type { Review } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+function StarPicker({
+  label,
+  value,
+  onChange,
+  starAriaLabel,
+}: {
+  label: string;
+  value: number;
+  onChange: (n: number) => void;
+  starAriaLabel: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-sm">{label}</span>
+      <div className="flex gap-0.5">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            type="button"
+            key={n}
+            onClick={() => onChange(n === value ? 0 : n)}
+            className="p-1"
+            aria-label={starAriaLabel.replace("{n}", String(n))}
+          >
+            <Star
+              size={22}
+              className={cn(
+                "transition-colors",
+                n <= value ? "fill-amber text-amber" : "text-border hover:text-amber/60",
+              )}
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ReviewForm({
   businessId,
   thanksMessage,
@@ -20,7 +57,9 @@ export function ReviewForm({
 }) {
   const [status, setStatus] = useState<"form" | "submitting" | "done" | "error">("form");
   const [errorMessage, setErrorMessage] = useState("");
-  const [gutRating, setGutRating] = useState(0);
+  const [productRating, setProductRating] = useState(0);
+  const [serviceRating, setServiceRating] = useState(0);
+  const [deliveryRating, setDeliveryRating] = useState(0);
   const [review, setReview] = useState<Review | null>(null);
   const [startedAt] = useState(() => Date.now());
 
@@ -40,7 +79,9 @@ export function ReviewForm({
           customer_name: formData.get("customer_name"),
           customer_email: formData.get("customer_email"),
           review_text: formData.get("review_text"),
-          customer_star_rating: gutRating || undefined,
+          customer_product_rating: productRating || undefined,
+          customer_service_rating: serviceRating || undefined,
+          customer_delivery_rating: deliveryRating || undefined,
           website: formData.get("website") || "",
           started_at: startedAt,
         }),
@@ -131,30 +172,29 @@ export function ReviewForm({
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface px-4 py-3.5">
         <span className="text-sm font-medium">
-          {dict.gutRatingLabel} <span className="text-muted">{dict.gutRatingOptional}</span>
+          {dict.categoryRatingLabel} <span className="text-muted">{dict.categoryRatingOptional}</span>
         </span>
-        <div className="flex gap-1">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button
-              type="button"
-              key={n}
-              onClick={() => setGutRating(n === gutRating ? 0 : n)}
-              className="p-1"
-              aria-label={dict.starAriaLabel.replace("{n}", String(n))}
-            >
-              <Star
-                size={26}
-                className={cn(
-                  "transition-colors",
-                  n <= gutRating ? "fill-amber text-amber" : "text-border hover:text-amber/60",
-                )}
-              />
-            </button>
-          ))}
-        </div>
-        <p className="text-xs text-muted">{dict.gutRatingHint}</p>
+        <StarPicker
+          label={dict.categoryProductLabel}
+          value={productRating}
+          onChange={setProductRating}
+          starAriaLabel={dict.starAriaLabel}
+        />
+        <StarPicker
+          label={dict.categoryServiceLabel}
+          value={serviceRating}
+          onChange={setServiceRating}
+          starAriaLabel={dict.starAriaLabel}
+        />
+        <StarPicker
+          label={dict.categoryDeliveryLabel}
+          value={deliveryRating}
+          onChange={setDeliveryRating}
+          starAriaLabel={dict.starAriaLabel}
+        />
+        <p className="text-xs text-muted">{dict.categoryRatingHint}</p>
       </div>
 
       {status === "error" && (

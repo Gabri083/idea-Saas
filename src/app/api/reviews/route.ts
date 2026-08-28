@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { analyzeReviewText, clampRating, computeWeightedRating } from "@/lib/ai/scoring";
+import { analyzeReviewText, clampRating, computeCustomerWeightedRating, computeWeightedRating } from "@/lib/ai/scoring";
 import { syncRecurringIssuesAndGetPenalty } from "@/lib/ai/recurring-issues";
 import { uuidSchema } from "@/lib/validation";
 import { sendEmail } from "@/lib/email";
@@ -17,7 +17,9 @@ const RequestSchema = z.object({
   customer_name: z.string().min(1).max(120),
   customer_email: z.string().email(),
   review_text: z.string().min(10).max(4000),
-  customer_star_rating: z.number().int().min(1).max(5).optional(),
+  customer_product_rating: z.number().int().min(1).max(5).optional(),
+  customer_service_rating: z.number().int().min(1).max(5).optional(),
+  customer_delivery_rating: z.number().int().min(1).max(5).optional(),
   // anti-spam signals, invisible to real users — see ReviewForm
   website: z.string().max(0).optional().or(z.literal("")),
   started_at: z.number().optional(),
@@ -43,7 +45,9 @@ export async function POST(request: NextRequest) {
     customer_name,
     customer_email,
     review_text,
-    customer_star_rating,
+    customer_product_rating,
+    customer_service_rating,
+    customer_delivery_rating,
     website,
     started_at,
   } = parsed.data;
@@ -146,6 +150,15 @@ export async function POST(request: NextRequest) {
 
   const overallAiRating = clampRating(weighted - penalty);
 
+  // The customer's own composite, same 40/30/30 weighting as the AI's —
+  // renormalized over whichever categories they actually rated, so a fair,
+  // like-for-like number to compare against overall_ai_rating.
+  const customerStarRating = computeCustomerWeightedRating({
+    product: customer_product_rating ?? null,
+    service: customer_service_rating ?? null,
+    delivery: customer_delivery_rating ?? null,
+  });
+
   const { data: review, error: insertError } = await admin
     .from("reviews")
     .insert({
@@ -153,7 +166,10 @@ export async function POST(request: NextRequest) {
       customer_name,
       customer_email,
       review_text,
-      customer_star_rating: customer_star_rating ?? null,
+      customer_product_rating: customer_product_rating ?? null,
+      customer_service_rating: customer_service_rating ?? null,
+      customer_delivery_rating: customer_delivery_rating ?? null,
+      customer_star_rating: customerStarRating,
       product_score: analysis.product_score,
       service_score: analysis.service_score,
       delivery_score: analysis.delivery_score,

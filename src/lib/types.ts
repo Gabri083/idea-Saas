@@ -83,7 +83,10 @@ export interface Review {
   customer_name: string;
   customer_email: string;
   review_text: string;
-  customer_star_rating: number | null;
+  customer_product_rating: number | null;
+  customer_service_rating: number | null;
+  customer_delivery_rating: number | null;
+  customer_star_rating: number | null; // customer's own 40/30/30-weighted composite, computed server-side — never typed in directly
   product_score: number;
   service_score: number;
   delivery_score: number;

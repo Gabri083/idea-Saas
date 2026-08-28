@@ -81,9 +81,18 @@ create table if not exists reviews (
   customer_email        text not null,
   review_text           text not null, -- verbatim, never edited or censored
 
-  -- customer's own emotional/gut star pick, captured optionally at submit time.
-  -- this is what powers the "IA vs Cliente" contrast on the dashboard header.
-  customer_star_rating  smallint check (customer_star_rating between 1 and 5),
+  -- customer's own per-category star picks, captured optionally at submit
+  -- time, each compared against the AI's own product/service/delivery_score
+  -- so a mismatch means something real instead of comparing a single gut
+  -- number against a 3-way computed average.
+  customer_product_rating  smallint check (customer_product_rating between 1 and 5),
+  customer_service_rating  smallint check (customer_service_rating between 1 and 5),
+  customer_delivery_rating smallint check (customer_delivery_rating between 1 and 5),
+  -- the customer's own 40/30/30-weighted composite of whichever category
+  -- picks above they gave (renormalized over just those), computed server
+  -- side the same way overall_ai_rating is — never typed in directly. Powers
+  -- the "IA vs Cliente" contrast shown throughout. Null if they skipped all 3.
+  customer_star_rating  numeric(2,1) check (customer_star_rating between 1 and 5),
 
   -- AI-computed structured analysis (OpenAI JSON mode output). One decimal
   -- of precision (e.g. 4.7) reads as far less "blocky" than whole stars.

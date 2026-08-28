@@ -178,17 +178,43 @@ export async function analyzeReviewText(
   };
 }
 
-/** 40% producto, 30% atención, 30% envíos — ponderación del puntaje final. */
+/** 40% producto, 30% atención, 30% envíos — ponderación del puntaje final,
+ * usada tanto para el puntaje de la IA como para el compuesto del cliente. */
+const CATEGORY_WEIGHTS = { product: 0.4, service: 0.3, delivery: 0.3 };
+
 export function computeWeightedRating(analysis: {
   product_score: number;
   service_score: number;
   delivery_score: number;
 }): number {
   const raw =
-    analysis.product_score * 0.4 +
-    analysis.service_score * 0.3 +
-    analysis.delivery_score * 0.3;
+    analysis.product_score * CATEGORY_WEIGHTS.product +
+    analysis.service_score * CATEGORY_WEIGHTS.service +
+    analysis.delivery_score * CATEGORY_WEIGHTS.delivery;
   return Math.round(raw * 10) / 10;
+}
+
+/**
+ * Same 40/30/30 weighting, but for the customer's own per-category picks —
+ * tolerates them skipping one or two, renormalizing over whichever they
+ * actually rated instead of forcing all three. Returns null if they rated
+ * none, so the review is treated the same as if they'd skipped rating
+ * entirely (no composite to compare against the AI's).
+ */
+export function computeCustomerWeightedRating(picks: {
+  product: number | null;
+  service: number | null;
+  delivery: number | null;
+}): number | null {
+  const parts: Array<[number, number]> = [];
+  if (picks.product != null) parts.push([picks.product, CATEGORY_WEIGHTS.product]);
+  if (picks.service != null) parts.push([picks.service, CATEGORY_WEIGHTS.service]);
+  if (picks.delivery != null) parts.push([picks.delivery, CATEGORY_WEIGHTS.delivery]);
+  if (parts.length === 0) return null;
+
+  const totalWeight = parts.reduce((sum, [, weight]) => sum + weight, 0);
+  const weightedSum = parts.reduce((sum, [value, weight]) => sum + value * weight, 0);
+  return Math.round((weightedSum / totalWeight) * 10) / 10;
 }
 
 /** Clamp the final published rating to the valid 1.0–5.0 range. */
