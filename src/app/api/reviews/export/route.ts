@@ -37,9 +37,9 @@ export async function GET() {
       r.review_text,
       r.customer_star_rating ?? "",
       r.overall_ai_rating,
-      r.product_score,
-      r.service_score,
-      r.delivery_score,
+      r.product_score ?? "",
+      r.service_score ?? "",
+      r.delivery_score ?? "",
       r.status,
     ]
       .map(csvField)

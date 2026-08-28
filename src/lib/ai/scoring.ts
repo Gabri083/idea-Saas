@@ -5,14 +5,14 @@ import type { AiReviewAnalysis, BusinessCategory } from "@/lib/types";
 const AiAnalysisSchema = z.object({
   is_valid_review: z.boolean(),
   rejection_reason: z.string().nullable(),
-  product_score: z.number().min(1).max(5),
-  service_score: z.number().min(1).max(5),
-  delivery_score: z.number().min(1).max(5),
+  product_score: z.number().min(1).max(5).nullable(),
+  service_score: z.number().min(1).max(5).nullable(),
+  delivery_score: z.number().min(1).max(5).nullable(),
   detected_issues: z.array(z.string()),
   summary: z.string(),
 });
 
-const round1 = (n: number) => Math.round(n * 10) / 10;
+const round1 = (n: number | null) => (n == null ? null : Math.round(n * 10) / 10);
 
 const CATEGORY_DIMENSION_HINTS: Record<BusinessCategory, string> = {
   restaurante:
@@ -82,11 +82,12 @@ enojo del cliente NO son motivo de rechazo por sí solos.
 Si is_valid_review es true, continúa con la evaluación normal descrita abajo.
 
 Evalúa tres dimensiones de forma independiente, cada una de 1.0 a 5.0 CON UN
-DECIMAL de precisión (ej. 4.7, 3.2, 2.8) — evita en lo posible números
-redondos como 4 o 5 en punto; los clientes reales rara vez viven una
-experiencia perfectamente pareja, así que usa el decimal para reflejar
-matices (ej. el producto fue excelente pero no absolutamente perfecto → 4.8,
-no 5.0):
+DECIMAL de precisión cuando el texto realmente da pie a un matiz (ej. 4.7,
+3.2, 2.8) — pero un 5.0 o un 4.0 limpio son puntajes tan válidos como
+cualquier otro. NUNCA restes una décima solo por "sonar más creíble" o para
+evitar un número redondo: si el texto describe una experiencia genuinamente
+perfecta en una dimensión, esa dimensión es 5.0, sin excusas ni matices
+inventados.
 - product_score
 - service_score
 - delivery_score
@@ -96,18 +97,24 @@ dimensión para ese rubro específico — dos negocios distintos (ej. un
 restaurante y una tienda de zapatos) deben juzgarse con criterios distintos
 aunque la estructura de 3 dimensiones sea la misma.
 
-Si el texto no menciona una dimensión explícitamente, INFIÉRELA a partir del
-tono general de la experiencia, no la dejes en un valor neutral por defecto:
-- Si la experiencia general es positiva y el cliente no señala ningún
-  problema en absoluto, asume que esa dimensión no mencionada también fue
-  buena (alrededor de 4.3–4.6) — un cliente satisfecho normalmente lo
-  habría dicho si algo hubiera fallado.
-- Si el cliente sí señala un problema concreto en una dimensión específica,
-  esa dimensión debe reflejar ese problema puntual, sin arrastrar a la baja
-  las demás dimensiones que no tienen quejas asociadas.
-- Usa un valor neutral (alrededor de 3.0) solo cuando el tono general sea
-  genuinamente mixto o ambiguo y no puedas inferir razonablemente si esa
-  dimensión fue buena o mala.
+REGLA MÁS IMPORTANTE DE TODAS: nunca inventes un puntaje para una dimensión
+sobre la que el texto no da ninguna información, ni directa ni indirecta.
+Si no hay NADA en el texto (explícito o claramente implícito) que hable de
+esa dimensión, esa dimensión va como null — no la completes con el tono
+general de las otras dimensiones, no la promedies, no la dejes en un valor
+neutral "por si acaso". Un cliente que solo comenta el servicio no dijo nada
+sobre el envío, y "no dijo nada" nunca significa "fue más o menos" ni "fue
+bueno" — significa que no hay datos, y null es la única respuesta honesta.
+- Usa un número real (no null) cuando el texto SÍ da información sobre esa
+  dimensión, directa ("llegó rápido") o claramente implícita ("todo perfecto,
+  como lo pedí, tal cual" implica que el envío también estuvo bien porque el
+  cliente describe la experiencia completa como impecable).
+- Si el cliente señala un problema concreto en una dimensión específica, esa
+  dimensión refleja ese problema puntual, sin arrastrar a la baja las demás
+  dimensiones que no tienen quejas asociadas.
+- Ante la duda entre "hay una implicación real" y "estoy adivinando", elige
+  null. Es preferible calcular el puntaje final con menos dimensiones que
+  inventar una.
 
 detected_issues: lista corta (0 a 5) de problemas operativos concretos
 mencionados, en minúsculas y normalizados en el mismo idioma en que está
@@ -182,39 +189,53 @@ export async function analyzeReviewText(
  * usada tanto para el puntaje de la IA como para el compuesto del cliente. */
 const CATEGORY_WEIGHTS = { product: 0.4, service: 0.3, delivery: 0.3 };
 
-export function computeWeightedRating(analysis: {
-  product_score: number;
-  service_score: number;
-  delivery_score: number;
-}): number {
-  const raw =
-    analysis.product_score * CATEGORY_WEIGHTS.product +
-    analysis.service_score * CATEGORY_WEIGHTS.service +
-    analysis.delivery_score * CATEGORY_WEIGHTS.delivery;
-  return Math.round(raw * 10) / 10;
-}
-
 /**
- * Same 40/30/30 weighting, but for the customer's own per-category picks —
- * tolerates them skipping one or two, renormalizing over whichever they
- * actually rated instead of forcing all three. Returns null if they rated
- * none, so the review is treated the same as if they'd skipped rating
- * entirely (no composite to compare against the AI's).
+ * Weighted average over whichever of the three categories actually have a
+ * value, renormalizing the weights instead of forcing all three — a review
+ * (from the AI or the customer) that only speaks to one or two dimensions
+ * shouldn't have a missing one silently dragging the result toward some
+ * assumed number. Returns null only when none of the three are present.
  */
-export function computeCustomerWeightedRating(picks: {
+function weightedAverage(scores: {
   product: number | null;
   service: number | null;
   delivery: number | null;
 }): number | null {
   const parts: Array<[number, number]> = [];
-  if (picks.product != null) parts.push([picks.product, CATEGORY_WEIGHTS.product]);
-  if (picks.service != null) parts.push([picks.service, CATEGORY_WEIGHTS.service]);
-  if (picks.delivery != null) parts.push([picks.delivery, CATEGORY_WEIGHTS.delivery]);
+  if (scores.product != null) parts.push([scores.product, CATEGORY_WEIGHTS.product]);
+  if (scores.service != null) parts.push([scores.service, CATEGORY_WEIGHTS.service]);
+  if (scores.delivery != null) parts.push([scores.delivery, CATEGORY_WEIGHTS.delivery]);
   if (parts.length === 0) return null;
 
   const totalWeight = parts.reduce((sum, [, weight]) => sum + weight, 0);
   const weightedSum = parts.reduce((sum, [value, weight]) => sum + value * weight, 0);
   return Math.round((weightedSum / totalWeight) * 10) / 10;
+}
+
+/** The AI's own composite — null only in the rare case its analysis found
+ * nothing concrete about any of the three dimensions (the text is still a
+ * valid review, just not one that maps cleanly onto product/service/delivery). */
+export function computeWeightedRating(analysis: {
+  product_score: number | null;
+  service_score: number | null;
+  delivery_score: number | null;
+}): number | null {
+  return weightedAverage({
+    product: analysis.product_score,
+    service: analysis.service_score,
+    delivery: analysis.delivery_score,
+  });
+}
+
+/** Same weighting, for the customer's own per-category picks. Returns null
+ * if they rated none, so the review is treated the same as if they'd
+ * skipped rating entirely (no composite to compare against the AI's). */
+export function computeCustomerWeightedRating(picks: {
+  product: number | null;
+  service: number | null;
+  delivery: number | null;
+}): number | null {
+  return weightedAverage(picks);
 }
 
 /** Clamp the final published rating to the valid 1.0–5.0 range. */

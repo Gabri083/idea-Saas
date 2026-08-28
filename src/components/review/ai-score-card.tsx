@@ -61,19 +61,22 @@ export function AiScoreCard({ review, dict }: { review: Review; dict: Dictionary
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 flex flex-col gap-3">
-              {dimensionMeta.map(({ key, label, icon: Icon }) => (
-                <div
-                  key={key}
-                  className="flex items-center justify-between rounded-lg bg-surface px-4 py-3"
-                >
-                  <div className="flex items-center gap-2 text-sm">
-                    <Icon size={16} className="text-muted" />
-                    {label}
+            <p className="text-xs text-muted">{dict.dimensionsHint}</p>
+            <div className="mt-2 flex flex-col gap-3">
+              {dimensionMeta
+                .filter(({ key }) => review[key] != null)
+                .map(({ key, label, icon: Icon }) => (
+                  <div
+                    key={key}
+                    className="flex items-center justify-between rounded-lg bg-surface px-4 py-3"
+                  >
+                    <div className="flex items-center gap-2 text-sm">
+                      <Icon size={16} className="text-muted" />
+                      {label}
+                    </div>
+                    <StarRating value={review[key]!} size={14} />
                   </div>
-                  <StarRating value={review[key]} size={14} />
-                </div>
-              ))}
+                ))}
 
               {review.detected_issues.length > 0 && (
                 <div className="mt-1 flex flex-wrap gap-2">

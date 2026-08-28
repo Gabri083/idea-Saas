@@ -137,8 +137,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Step 2 — 40/30/30 weighted rating.
-  const weighted = computeWeightedRating(analysis);
+  // Step 2 — 40/30/30 weighted rating over whichever dimensions the AI
+  // actually found grounded in the text. Null only in the rare case a valid
+  // review says nothing that maps to product/service/delivery at all — a
+  // neutral 3.0 is the only honest fallback left when there's truly no
+  // dimension to weight.
+  const weighted = computeWeightedRating(analysis) ?? 3.0;
 
   // Step 3 — inaction penalty: subtract penalty_factor for any detected issue
   // that matches an `open` recurring_issues row past its 30-day deadline.

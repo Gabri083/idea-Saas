@@ -96,9 +96,11 @@ create table if not exists reviews (
 
   -- AI-computed structured analysis (OpenAI JSON mode output). One decimal
   -- of precision (e.g. 4.7) reads as far less "blocky" than whole stars.
-  product_score         numeric(2,1) not null check (product_score between 1 and 5),
-  service_score         numeric(2,1) not null check (service_score between 1 and 5),
-  delivery_score        numeric(2,1) not null check (delivery_score between 1 and 5),
+  -- Null means the review's text said nothing — direct or implied — about
+  -- that dimension; the AI never invents a number to fill the gap.
+  product_score         numeric(2,1) check (product_score between 1 and 5),
+  service_score         numeric(2,1) check (service_score between 1 and 5),
+  delivery_score        numeric(2,1) check (delivery_score between 1 and 5),
   detected_issues        text[] not null default '{}',
   ai_summary             text,
   ai_raw_response        jsonb, -- full model payload, kept for transparency/audits

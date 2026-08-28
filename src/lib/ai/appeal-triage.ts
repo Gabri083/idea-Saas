@@ -16,9 +16,9 @@ export interface AppealTriageInput {
   review: {
     reviewText: string;
     overallRating: number;
-    productScore: number;
-    serviceScore: number;
-    deliveryScore: number;
+    productScore: number | null;
+    serviceScore: number | null;
+    deliveryScore: number | null;
   };
   businessCategory: BusinessCategory | null;
 }
@@ -73,6 +73,8 @@ recomendación fuerte.`;
  * override — it never resolves the appeal itself.
  */
 export async function triageAppeal(input: AppealTriageInput): Promise<AppealTriageResult> {
+  const fmt = (n: number | null) => (n == null ? "no evaluado" : n.toFixed(1));
+
   const completion = await getClient().chat.completions.create({
     model: process.env.OPENAI_MODEL || "gpt-4o-mini",
     temperature: 0.2,
@@ -86,9 +88,9 @@ export async function triageAppeal(input: AppealTriageInput): Promise<AppealTria
           `Motivo de la apelación (dado por el negocio): "${input.appealReason}"\n` +
           `Archivos de evidencia adjuntos: ${input.evidenceCount}\n\n` +
           `Texto original de la reseña del cliente:\n"""${input.review.reviewText}"""\n\n` +
-          `Puntajes actuales — Producto: ${input.review.productScore.toFixed(1)}, ` +
-          `Atención: ${input.review.serviceScore.toFixed(1)}, ` +
-          `Envío: ${input.review.deliveryScore.toFixed(1)}, ` +
+          `Puntajes actuales — Producto: ${fmt(input.review.productScore)}, ` +
+          `Atención: ${fmt(input.review.serviceScore)}, ` +
+          `Envío: ${fmt(input.review.deliveryScore)}, ` +
           `Puntaje Objetivo IA: ${input.review.overallRating.toFixed(1)}.\n\n` +
           `Analiza y responde con el JSON solicitado.`,
       },

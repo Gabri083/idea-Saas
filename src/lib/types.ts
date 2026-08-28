@@ -87,9 +87,11 @@ export interface Review {
   customer_service_rating: number | null;
   customer_delivery_rating: number | null;
   customer_star_rating: number | null; // customer's own 40/30/30-weighted composite, computed server-side — never typed in directly
-  product_score: number;
-  service_score: number;
-  delivery_score: number;
+  // Null means the review's text said nothing — direct or implied — about
+  // that dimension; the AI never invents a number to fill the gap.
+  product_score: number | null;
+  service_score: number | null;
+  delivery_score: number | null;
   detected_issues: string[];
   ai_summary: string | null;
   overall_ai_rating: number;
@@ -178,9 +180,9 @@ export interface WidgetConfig {
 export interface AiReviewAnalysis {
   is_valid_review: boolean;
   rejection_reason: string | null;
-  product_score: number;
-  service_score: number;
-  delivery_score: number;
+  product_score: number | null;
+  service_score: number | null;
+  delivery_score: number | null;
   detected_issues: string[];
   summary: string;
 }

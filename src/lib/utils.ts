@@ -88,13 +88,13 @@ export function isConfirmed(review: {
   customer_product_rating?: number | null;
   customer_service_rating?: number | null;
   customer_delivery_rating?: number | null;
-  product_score?: number;
-  service_score?: number;
-  delivery_score?: number;
+  product_score?: number | null;
+  service_score?: number | null;
+  delivery_score?: number | null;
 }): boolean {
   if (review.customer_star_rating == null) return true;
 
-  const categoryPairs: Array<[number | null | undefined, number | undefined]> = [
+  const categoryPairs: Array<[number | null | undefined, number | null | undefined]> = [
     [review.customer_product_rating, review.product_score],
     [review.customer_service_rating, review.service_score],
     [review.customer_delivery_rating, review.delivery_score],

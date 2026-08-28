@@ -19,7 +19,7 @@ const PAGE_SIZE = 10;
 
 type Attribute = "producto" | "atencion" | "envio";
 
-const ATTRIBUTE_SCORE: Record<Attribute, (r: Review) => number> = {
+const ATTRIBUTE_SCORE: Record<Attribute, (r: Review) => number | null> = {
   producto: (r) => r.product_score,
   atencion: (r) => r.service_score,
   envio: (r) => r.delivery_score,
@@ -29,6 +29,12 @@ const ATTRIBUTE_SCORE: Record<Attribute, (r: Review) => number> = {
 // short there specifically — so this filters to actual complaints (score ≤ 3)
 // and sorts worst-first, instead of just re-sorting the full list.
 const ATTRIBUTE_COMPLAINT_THRESHOLD = 3;
+
+// null means the review said nothing about that dimension — never counts as
+// either a complaint or a compliment for it.
+function isAttributeComplaint(value: number | null): value is number {
+  return value != null && value <= ATTRIBUTE_COMPLAINT_THRESHOLD;
+}
 
 function isAttribute(value: string | undefined): value is Attribute {
   return value === "producto" || value === "atencion" || value === "envio";
@@ -86,14 +92,14 @@ export default async function PublicReviewsPage({
 
   const activeAttribute = isAttribute(filterParam) ? filterParam : null;
   const attributeCounts: Record<Attribute, number> = {
-    producto: publicReviews.filter((r) => r.product_score <= ATTRIBUTE_COMPLAINT_THRESHOLD).length,
-    atencion: publicReviews.filter((r) => r.service_score <= ATTRIBUTE_COMPLAINT_THRESHOLD).length,
-    envio: publicReviews.filter((r) => r.delivery_score <= ATTRIBUTE_COMPLAINT_THRESHOLD).length,
+    producto: publicReviews.filter((r) => isAttributeComplaint(r.product_score)).length,
+    atencion: publicReviews.filter((r) => isAttributeComplaint(r.service_score)).length,
+    envio: publicReviews.filter((r) => isAttributeComplaint(r.delivery_score)).length,
   };
   const visibleReviews = activeAttribute
     ? publicReviews
-        .filter((r) => ATTRIBUTE_SCORE[activeAttribute](r) <= ATTRIBUTE_COMPLAINT_THRESHOLD)
-        .sort((a, b) => ATTRIBUTE_SCORE[activeAttribute](a) - ATTRIBUTE_SCORE[activeAttribute](b))
+        .filter((r) => isAttributeComplaint(ATTRIBUTE_SCORE[activeAttribute](r)))
+        .sort((a, b) => ATTRIBUTE_SCORE[activeAttribute](a)! - ATTRIBUTE_SCORE[activeAttribute](b)!)
     : publicReviews;
 
   const totalPages = Math.max(1, Math.ceil(visibleReviews.length / PAGE_SIZE));
@@ -300,8 +306,9 @@ function ReviewEntry({
   const big = review.customer_star_rating ?? review.overall_ai_rating;
   return (
     <Card className="p-5">
-      <div className="flex flex-wrap items-baseline gap-2">
-        <span className="text-lg font-bold text-cobalt">{big.toFixed(1)}</span>
+      <div className="flex flex-wrap items-center gap-2">
+        <StarRating value={big} size={20} />
+        <span className="text-sm font-medium text-muted">{big.toFixed(1)}</span>
         {confirmed ? (
           <span className="rounded border border-current px-1 py-px text-[9px] font-bold uppercase leading-tight tracking-wide text-muted opacity-80">
             {dict.aiTag}
@@ -319,9 +326,6 @@ function ReviewEntry({
             </div>
           </details>
         )}
-      </div>
-      <div className="mt-2">
-        <StarRating value={big} size={14} />
       </div>
       <p className="mt-3 text-sm text-foreground/90">{review.review_text}</p>
       {review.detected_issues.length > 0 && (

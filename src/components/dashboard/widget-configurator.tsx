@@ -216,17 +216,21 @@ function formatDate(iso: string) {
 }
 
 function Breakdown({ review, pillBg, dict }: { review: Review; pillBg: string; dict: WidgetDict }) {
+  const pills = [
+    { value: review.product_score, label: dict.breakdownProduct },
+    { value: review.service_score, label: dict.breakdownService },
+    { value: review.delivery_score, label: dict.breakdownDelivery },
+  ].filter((p): p is { value: number; label: string } => p.value != null);
+
+  if (pills.length === 0) return null;
+
   return (
     <div className="mt-3 flex flex-wrap gap-1.5">
-      <span className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
-        {dict.breakdownProduct} {review.product_score}★
-      </span>
-      <span className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
-        {dict.breakdownService} {review.service_score}★
-      </span>
-      <span className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
-        {dict.breakdownDelivery} {review.delivery_score}★
-      </span>
+      {pills.map((p) => (
+        <span key={p.label} className="rounded-full px-2.5 py-0.5 text-[10.5px] opacity-85" style={{ background: pillBg }}>
+          {p.label} {p.value}★
+        </span>
+      ))}
     </div>
   );
 }
@@ -283,10 +287,9 @@ function TicketCard({
       style={{ borderColor, clipPath }}
     >
       <div className="px-4 pt-4 pb-3">
-        <div className="mb-2.5 flex flex-wrap items-baseline gap-2">
-          <span className="text-lg font-bold" style={{ color: accent }}>
-            {big.toFixed(1)}
-          </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <Stars value={big} size={20} accent={accent} bg={starBg} />
+          <span className="text-sm font-medium opacity-60">{big.toFixed(1)}</span>
           {confirmed ? (
             <AiTag dict={dict} />
           ) : (
@@ -306,7 +309,6 @@ function TicketCard({
             </details>
           )}
         </div>
-        <Stars value={big} size={14} accent={accent} bg={starBg} />
       </div>
       <div style={{ margin: "0 16px", borderTop: `1.5px dashed ${borderColor}` }} />
       <div className="px-4 pt-3.5 pb-4">

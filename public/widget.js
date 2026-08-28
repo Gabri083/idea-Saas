@@ -208,25 +208,25 @@
     return '<span class="kelsira-ai-tag" title="' + T.aiTagTitle + '">' + T.aiTag + "</span>";
   }
 
-  // El Recibo's headline number: the customer's own star pick, same as any
-  // other review platform — Kelsira never swaps in a different number by
-  // default. When the AI reads the text differently, a small "!" appears
-  // next to it; its own take is one tap/hover away inside a <details>
-  // element, never pushed in front of anyone. El Medidor (below) is the
-  // opposite, deliberately-always-visible style for businesses that want the
-  // comparison shown up front — this function doesn't touch it.
+  // El Recibo's headline is the star row, same as any other review platform
+  // — Kelsira never swaps in a different number by default, and the number
+  // itself is now secondary (small, next to the stars) instead of the
+  // dominant element, since a big bold digit reads as "this was calculated"
+  // in a way a star row doesn't. When the AI reads the text differently, a
+  // small "!" appears next to it; its own take is one tap/hover away inside
+  // a <details> element, never pushed in front of anyone. El Medidor (below)
+  // is the opposite, deliberately-always-visible style for businesses that
+  // want the comparison shown up front — this function doesn't touch it.
   function ratingRowHtml(review, accent) {
     var big = review.customer_star_rating != null ? review.customer_star_rating : review.overall_ai_rating;
+    var starsAndNumber = starsHtml(big, 20, accent) + '<span class="kelsira-final-secondary">' + big.toFixed(1) + "</span>";
     if (isConfirmed(review)) {
-      return {
-        value: big,
-        row: '<span class="kelsira-final" style="color:' + accent + '">' + big.toFixed(1) + "</span>" + aiTagHtml(),
-      };
+      return { value: big, row: starsAndNumber + aiTagHtml() };
     }
     return {
       value: big,
       row:
-        '<span class="kelsira-final" style="color:' + accent + '">' + big.toFixed(1) + "</span>" +
+        starsAndNumber +
         '<details class="kelsira-fair">' +
         '<summary class="kelsira-fair-icon" title="' + T.fairIconTitle + '">!</summary>' +
         '<div class="kelsira-fair-note">' +
@@ -237,19 +237,17 @@
   }
 
   function breakdownHtml(review) {
-    return (
-      '<div class="kelsira-breakdown">' +
-      '<span class="kelsira-pill">' + T.product + " " +
-      review.product_score +
-      "★</span>" +
-      '<span class="kelsira-pill">' + T.service + " " +
-      review.service_score +
-      "★</span>" +
-      '<span class="kelsira-pill">' + T.delivery + " " +
-      review.delivery_score +
-      "★</span>" +
-      "</div>"
-    );
+    var pills = [];
+    if (review.product_score != null) pills.push([T.product, review.product_score]);
+    if (review.service_score != null) pills.push([T.service, review.service_score]);
+    if (review.delivery_score != null) pills.push([T.delivery, review.delivery_score]);
+    if (pills.length === 0) return "";
+
+    var html = '<div class="kelsira-breakdown">';
+    for (var i = 0; i < pills.length; i++) {
+      html += '<span class="kelsira-pill">' + pills[i][0] + " " + pills[i][1] + "★</span>";
+    }
+    return html + "</div>";
   }
 
   function replyHtml(review, businessName) {
@@ -273,7 +271,6 @@
       '<div class="kelsira-ticket">' +
       '<div class="kelsira-ticket-head">' +
       '<div class="kelsira-correction-row">' + r.row + "</div>" +
-      starsHtml(r.value, 14, accent) +
       "</div>" +
       '<div class="kelsira-perforation"></div>' +
       '<div class="kelsira-ticket-body">' +
@@ -766,10 +763,11 @@
       ".kelsira-ticket:hover{transform:translateY(-3px);}" +
       ".kelsira-carousel .kelsira-ticket{flex:0 0 270px;scroll-snap-align:start;}" +
       ".kelsira-ticket-head{padding:16px 18px 13px;}" +
-      ".kelsira-correction-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px;}" +
+      ".kelsira-correction-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}" +
       ".kelsira-raw{font-size:13px;opacity:.5;text-decoration:line-through;}" +
       ".kelsira-arrow{font-size:12px;opacity:.4;}" +
       ".kelsira-final{font-weight:700;font-size:19px;}" +
+      ".kelsira-final-secondary{font-weight:500;font-size:13px;opacity:.65;}" +
       // The "!" flag on a review the AI reads differently — closed by default,
       // opens on tap (native <details>) or on hover (CSS below), never both
       // forced. Its note is absolutely positioned so opening it never

@@ -22,9 +22,9 @@ export interface AdminAppealRow {
     customer_name: string;
     review_text: string;
     overall_ai_rating: number;
-    product_score: number;
-    service_score: number;
-    delivery_score: number;
+    product_score: number | null;
+    service_score: number | null;
+    delivery_score: number | null;
   } | null;
 }
 
