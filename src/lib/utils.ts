@@ -65,9 +65,11 @@ export function recencyWeightedAverage<T extends { created_at: string }>(
  * two are treated as "the same" — the AI confirmed the customer's take
  * rather than correcting it, so copy should never read like a correction.
  * Only used as a fallback for reviews submitted before per-category ratings
- * existed, where there's nothing more specific to compare. Mirrored in
- * public/widget.js, which can't import this module. */
-const OVERALL_CONFIRM_EPSILON = 0.5;
+ * existed, where there's nothing more specific to compare. Same value as
+ * CATEGORY_CONFIRM_EPSILON below, for the same reason: a full star is a real
+ * gap, half a star is ordinary rounding noise, not a correction worth
+ * flagging. Mirrored in public/widget.js, which can't import this module. */
+const OVERALL_CONFIRM_EPSILON = 1;
 
 /** Same idea, but per category — a full star of disagreement on one specific
  * aspect (product/service/delivery) is a real, meaningful gap; anything

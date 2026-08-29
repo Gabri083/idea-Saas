@@ -20,9 +20,10 @@
   var AVATAR_HUES = [210, 260, 330, 20, 160, 40, 280, 190];
   var SPOTLIGHT_INTERVAL_MS = 5000;
   // Fallback threshold for reviews from before per-category ratings existed
-  // (nothing more specific to compare against). Mirrored in src/lib/utils.ts,
-  // which this standalone script can't import.
-  var OVERALL_CONFIRM_EPSILON = 0.5;
+  // (nothing more specific to compare against). Same value as
+  // CATEGORY_CONFIRM_EPSILON below, for the same reason. Mirrored in
+  // src/lib/utils.ts, which this standalone script can't import.
+  var OVERALL_CONFIRM_EPSILON = 1;
   // A full star of disagreement on one specific category (product/service/
   // delivery) is a real, meaningful gap between the customer's own tap and
   // the AI's read of that same aspect.
