@@ -752,6 +752,10 @@ const es = {
     activeFilterExplanation: "Mostrando reseñas con problemas de {attribute}, ordenadas de peor a mejor.",
     emptyFilterState: "Ningún cliente reportó problemas de {attribute} —",
     emptyFilterCta: "ver todas las reseñas",
+    correctedChip: "Corregidas ({n})",
+    correctedFilterExplanation:
+      "Solo las reseñas donde el puntaje de la IA no coincidió con lo que el cliente marcó — compáralas tú mismo.",
+    emptyCorrectedFilterState: "La IA no corrigió ninguna reseña de este negocio —",
     paginationPrev: "Anteriores",
     paginationNext: "Siguientes",
     paginationPage: "Página {page} de {total}",
@@ -1555,6 +1559,10 @@ const en: typeof es = {
     activeFilterExplanation: "Showing reviews with {attribute} issues, sorted worst to best.",
     emptyFilterState: "No customer reported {attribute} issues —",
     emptyFilterCta: "view all reviews",
+    correctedChip: "Corrected ({n})",
+    correctedFilterExplanation:
+      "Only reviews where the AI's score didn't match what the customer picked — compare them yourself.",
+    emptyCorrectedFilterState: "The AI hasn't corrected any review for this business —",
     paginationPrev: "Previous",
     paginationNext: "Next",
     paginationPage: "Page {page} of {total}",

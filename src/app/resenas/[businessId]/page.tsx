@@ -91,16 +91,24 @@ export default async function PublicReviewsPage({
   const average = recencyWeightedAverage(publicReviews, (r) => r.overall_ai_rating);
 
   const activeAttribute = isAttribute(filterParam) ? filterParam : null;
+  const showCorrectedOnly = filterParam === "corregidas";
+  const currentFilter: Attribute | "corregidas" | null = activeAttribute ?? (showCorrectedOnly ? "corregidas" : null);
   const attributeCounts: Record<Attribute, number> = {
     producto: publicReviews.filter((r) => isAttributeComplaint(r.product_score)).length,
     atencion: publicReviews.filter((r) => isAttributeComplaint(r.service_score)).length,
     envio: publicReviews.filter((r) => isAttributeComplaint(r.delivery_score)).length,
   };
+  // Lets a skeptical shopper verify the AI-calculated score for themselves,
+  // instead of just being told to trust it: every review where the AI's read
+  // didn't match the customer's own pick, in one place.
+  const correctedCount = publicReviews.filter((r) => !isConfirmed(r)).length;
   const visibleReviews = activeAttribute
     ? publicReviews
         .filter((r) => isAttributeComplaint(ATTRIBUTE_SCORE[activeAttribute](r)))
         .sort((a, b) => ATTRIBUTE_SCORE[activeAttribute](a)! - ATTRIBUTE_SCORE[activeAttribute](b)!)
-    : publicReviews;
+    : showCorrectedOnly
+      ? publicReviews.filter((r) => !isConfirmed(r))
+      : publicReviews;
 
   const totalPages = Math.max(1, Math.ceil(visibleReviews.length / PAGE_SIZE));
   const page = Math.min(Math.max(1, Number(pageParam) || 1), totalPages);
@@ -196,7 +204,7 @@ export default async function PublicReviewsPage({
           <div className="mt-6">
             <p className="mb-2 text-xs font-medium text-muted">{t.filterHeading}</p>
             <div className="flex flex-wrap gap-2">
-              <AttributeChip active={!activeAttribute} href="?">
+              <AttributeChip active={!activeAttribute && !showCorrectedOnly} href="?">
                 {t.allChip.replace("{n}", String(publicReviews.length))}
               </AttributeChip>
               {(Object.keys(attributeLabels) as Attribute[]).map((attr) => (
@@ -206,19 +214,25 @@ export default async function PublicReviewsPage({
                     .replace("{n}", String(attributeCounts[attr]))}
                 </AttributeChip>
               ))}
+              <AttributeChip active={showCorrectedOnly} href="?filter=corregidas">
+                {t.correctedChip.replace("{n}", String(correctedCount))}
+              </AttributeChip>
             </div>
             {activeAttribute && (
               <p className="mt-2 text-xs text-muted">
                 {t.activeFilterExplanation.replace("{attribute}", attributeLabels[activeAttribute].toLowerCase())}
               </p>
             )}
+            {showCorrectedOnly && <p className="mt-2 text-xs text-muted">{t.correctedFilterExplanation}</p>}
           </div>
         )}
 
         <div className="mt-4 flex flex-col gap-4">
-          {activeAttribute && visibleReviews.length === 0 ? (
+          {(activeAttribute || showCorrectedOnly) && visibleReviews.length === 0 ? (
             <Card className="p-6 text-center text-sm text-muted">
-              {t.emptyFilterState.replace("{attribute}", attributeLabels[activeAttribute].toLowerCase())}{" "}
+              {activeAttribute
+                ? t.emptyFilterState.replace("{attribute}", attributeLabels[activeAttribute].toLowerCase())
+                : t.emptyCorrectedFilterState}{" "}
               <Link href="?" className="text-cobalt hover:underline">
                 {t.emptyFilterCta}
               </Link>
@@ -233,13 +247,13 @@ export default async function PublicReviewsPage({
 
         {totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between text-sm">
-            <PageLink page={page - 1} disabled={page <= 1} filter={activeAttribute}>
+            <PageLink page={page - 1} disabled={page <= 1} filter={currentFilter}>
               <ChevronLeft size={15} /> {t.paginationPrev}
             </PageLink>
             <span className="text-xs text-muted">
               {t.paginationPage.replace("{page}", String(page)).replace("{total}", String(totalPages))}
             </span>
-            <PageLink page={page + 1} disabled={page >= totalPages} filter={activeAttribute}>
+            <PageLink page={page + 1} disabled={page >= totalPages} filter={currentFilter}>
               {t.paginationNext} <ChevronRight size={15} />
             </PageLink>
           </div>
@@ -272,7 +286,7 @@ function PageLink({
 }: {
   page: number;
   disabled: boolean;
-  filter: Attribute | null;
+  filter: Attribute | "corregidas" | null;
   children: React.ReactNode;
 }) {
   if (disabled) {
