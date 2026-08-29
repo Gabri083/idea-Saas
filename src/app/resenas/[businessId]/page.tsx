@@ -309,11 +309,7 @@ function ReviewEntry({
       <div className="flex flex-wrap items-center gap-2">
         <StarRating value={big} size={20} />
         <span className="text-sm font-medium text-muted">{big.toFixed(1)}</span>
-        {confirmed ? (
-          <span className="rounded border border-current px-1 py-px text-[9px] font-bold uppercase leading-tight tracking-wide text-muted opacity-80">
-            {dict.aiTag}
-          </span>
-        ) : (
+        {!confirmed && (
           <details className="group relative inline-block align-middle">
             <summary
               className="flex h-[18px] w-[18px] list-none items-center justify-center rounded-full border border-current text-[11px] font-extrabold text-muted opacity-60 [&::-webkit-details-marker]:hidden [&::marker]:hidden group-hover:opacity-90 group-open:opacity-90"

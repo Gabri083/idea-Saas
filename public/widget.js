@@ -220,8 +220,12 @@
   function ratingRowHtml(review, accent) {
     var big = review.customer_star_rating != null ? review.customer_star_rating : review.overall_ai_rating;
     var starsAndNumber = starsHtml(big, 20, accent) + '<span class="kelsira-final-secondary">' + big.toFixed(1) + "</span>";
+    // Confirmed means the AI's own read matched what the customer picked —
+    // it doesn't mean the AI skipped this one, it evaluates every review.
+    // But that agreement has nothing to add here once it's just a plain
+    // review like any other, so no tag at all, same as Trustpilot/Google.
     if (isConfirmed(review)) {
-      return { value: big, row: starsAndNumber + aiTagHtml() };
+      return { value: big, row: starsAndNumber };
     }
     return {
       value: big,

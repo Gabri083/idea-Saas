@@ -290,9 +290,7 @@ function TicketCard({
         <div className="flex flex-wrap items-center gap-2">
           <Stars value={big} size={20} accent={accent} bg={starBg} />
           <span className="text-sm font-medium opacity-60">{big.toFixed(1)}</span>
-          {confirmed ? (
-            <AiTag dict={dict} />
-          ) : (
+          {!confirmed && (
             <details className="group relative inline-block align-middle">
               <summary
                 className="flex h-[18px] w-[18px] list-none items-center justify-center rounded-full border border-current text-[11px] font-extrabold opacity-55 [&::-webkit-details-marker]:hidden [&::marker]:hidden group-hover:opacity-90 group-open:opacity-90"
