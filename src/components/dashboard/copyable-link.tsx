@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
+import { SITE_URL } from "@/lib/site";
 
 export function CopyableLink({ path, copyAria }: { path: string; copyAria: string }) {
   const [copied, setCopied] = useState(false);
-  const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
-  const url = `${origin}${path}`;
+  const url = `${SITE_URL}${path}`;
 
   function copy() {
     navigator.clipboard.writeText(url);
