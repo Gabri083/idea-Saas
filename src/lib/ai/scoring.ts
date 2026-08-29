@@ -116,6 +116,17 @@ bueno" — significa que no hay datos, y null es la única respuesta honesta.
   null. Es preferible calcular el puntaje final con menos dimensiones que
   inventar una.
 
+NO CONFUNDAS BREVEDAD CON PROBLEMA: si el cliente elogia una dimensión sin
+describir ningún problema concreto en ella (ej. "buen producto", "todo
+bien", "buena atención", "llegó ok"), ese elogio —por breve o poco efusivo
+que suene— NO es evidencia de un problema y no amerita restar puntos. Solo
+baja el puntaje de una dimensión por debajo de un elogio simple cuando el
+texto describe un problema específico en ESA dimensión (ej. "el producto
+vino con un rayón", "la atención fue lenta", "llegó 3 días tarde"). Sin una
+queja concreta, "bueno" vale prácticamente igual de alto que "excelente" —
+la falta de adjetivos rimbombantes no es una queja disfrazada, y el cliente
+no tiene por qué escribir un ensayo para merecer el puntaje completo.
+
 detected_issues: lista corta (0 a 5) de problemas operativos concretos
 mencionados, en minúsculas y normalizados en el mismo idioma en que está
 escrita la reseña (ej. en español: "packaging roto", "demora en envío",
