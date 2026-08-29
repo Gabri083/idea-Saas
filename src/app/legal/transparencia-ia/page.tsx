@@ -59,6 +59,11 @@ function TransparenciaEs() {
         Atención + 30% Envío</strong>. El objetivo es que un problema puntual en una sola
         dimensión (ej. un envío tardío) no borre una experiencia positiva en las demás.
       </P>
+      <P>
+        Si una reseña no menciona una de las tres dimensiones, esa dimensión no recibe un
+        puntaje inventado: queda sin calificar y se excluye del cálculo, que se reajusta
+        para ponderar solo entre las dimensiones que la reseña sí describe.
+      </P>
 
       <H2>3. Penalización por inacción operativa</H2>
       <P>
@@ -69,13 +74,16 @@ function TransparenciaEs() {
         conocido no se corrige.
       </P>
 
-      <H2>4. Apelaciones y corrección de errores</H2>
+      <H2>4. Apelaciones y revisión humana</H2>
       <P>
-        Ningún modelo de IA es perfecto. Si un negocio considera que una reseña es falsa o que
-        el puntaje no refleja los hechos, puede apelarla adjuntando evidencia. Un revisor
-        humano evalúa cada apelación y puede: archivar la reseña (si es falsa/difamatoria) o
-        corregir el puntaje (si la reseña es real pero se evaluó injustamente) — en ambos
-        casos, el texto original del cliente nunca se modifica.
+        Ningún modelo de IA es perfecto. Si un negocio considera que una reseña es falsa,
+        difamatoria o infringe las normas, puede apelarla adjuntando evidencia. Un revisor
+        humano evalúa cada apelación y solo puede tomar una de dos decisiones, siempre
+        binarias: eliminar la reseña (si la evidencia confirma que es falsa o difamatoria) o
+        rechazar la apelación, en cuyo caso la reseña se mantiene exactamente igual. No existe
+        una tercera opción para ajustar o corregir un puntaje a mano — el puntaje siempre sale
+        del mismo cálculo automático a partir del texto, nunca de una decisión humana caso a
+        caso.
       </P>
 
       <H2>5. Limitaciones conocidas</H2>
@@ -87,9 +95,13 @@ function TransparenciaEs() {
 
       <H2>6. Auditabilidad</H2>
       <P>
-        Cada reseña publicada muestra su desglose completo por dimensión, visible tanto en el
-        dashboard del negocio como en el widget público — cualquiera puede ver cómo se llegó
-        al puntaje final.
+        Cada reseña publicada muestra el desglose por dimensión de las que sí se calificaron,
+        visible tanto en el dashboard del negocio como en el widget público — cualquiera puede
+        ver cómo se llegó al puntaje final. En la página pública de reseñas de cada negocio,
+        el filtro &quot;Corregidas&quot; muestra exactamente cuáles reseñas tienen una
+        diferencia real entre lo que calificó el cliente y lo que leyó la IA, para que
+        cualquiera pueda comparar el puntaje contra el texto original y sacar sus propias
+        conclusiones.
       </P>
     </>
   );
@@ -134,6 +146,11 @@ function TransparenciaEn() {
         Shipping</strong>. The goal is that a single-dimension problem (e.g. a late shipment)
         doesn&apos;t erase a positive experience in the others.
       </P>
+      <P>
+        If a review doesn&apos;t mention one of the three dimensions, that dimension isn&apos;t
+        given an invented score: it&apos;s left unrated and excluded from the calculation,
+        which reweights across only the dimensions the review actually describes.
+      </P>
 
       <H2>3. Penalty for unresolved recurring issues</H2>
       <P>
@@ -144,13 +161,15 @@ function TransparenciaEn() {
         goes uncorrected.
       </P>
 
-      <H2>4. Appeals and error correction</H2>
+      <H2>4. Appeals and human review</H2>
       <P>
-        No AI model is perfect. If a business believes a review is fake or that its score
-        doesn&apos;t reflect the facts, it can appeal by attaching evidence. A human reviewer
-        evaluates each appeal and can either: archive the review (if it&apos;s fake or
-        defamatory) or correct the score (if the review is real but was rated unfairly) — in
-        both cases, the customer&apos;s original text is never modified.
+        No AI model is perfect. If a business believes a review is fake, defamatory, or
+        breaks the rules, it can appeal by attaching evidence. A human reviewer evaluates each
+        appeal and can only make one of two decisions, always binary: remove the review (if
+        the evidence confirms it&apos;s fake or defamatory) or reject the appeal, in which case
+        the review stays exactly as it is. There is no third option to manually adjust or
+        correct a score — the score always comes from the same automated calculation based on
+        the text, never from a case-by-case human decision.
       </P>
 
       <H2>5. Known limitations</H2>
@@ -162,9 +181,12 @@ function TransparenciaEn() {
 
       <H2>6. Auditability</H2>
       <P>
-        Every published review shows its full per-dimension breakdown, visible both in the
-        business&apos;s dashboard and in the public widget — anyone can see how the final
-        score was reached.
+        Every published review shows the per-dimension breakdown for whichever dimensions
+        were actually scored, visible both in the business&apos;s dashboard and in the public
+        widget — anyone can see how the final score was reached. On each business&apos;s public
+        reviews page, the &quot;Corrected&quot; filter shows exactly which reviews have a real
+        gap between what the customer rated and what the AI read, so anyone can compare the
+        score against the original text and draw their own conclusions.
       </P>
     </>
   );

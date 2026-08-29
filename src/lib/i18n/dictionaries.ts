@@ -129,7 +129,7 @@ const es = {
     },
   },
   footer: {
-    tagline: "Reputación justa y reseñas asistidas por IA para e-commerce.",
+    tagline: "Reputación justa con Puntaje Objetivo IA para e-commerce.",
     columns: {
       product: {
         title: "Producto",
@@ -948,7 +948,7 @@ const en: typeof es = {
     },
   },
   footer: {
-    tagline: "Fair reputation and AI-assisted reviews for e-commerce.",
+    tagline: "Fair reputation with an AI Objective Score for e-commerce.",
     columns: {
       product: {
         title: "Product",
