@@ -91,16 +91,23 @@ export async function createCheckout(params: {
  * moment they click "manage subscription", no matter how old the
  * subscription is.
  */
-export async function getFreshCustomerPortalUrl(subscriptionId: string): Promise<string | null> {
+export async function getFreshCustomerPortalUrl(
+  subscriptionId: string,
+): Promise<{ url: string } | { error: string }> {
   const res = await fetch(`${API_BASE}/subscriptions/${subscriptionId}`, {
     headers: {
       Authorization: `Bearer ${process.env.LEMONSQUEEZY_API_KEY}`,
       Accept: "application/vnd.api+json",
     },
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const body = await res.text();
+    return { error: `Lemon Squeezy respondió ${res.status}: ${body.slice(0, 300)}` };
+  }
   const json = await res.json();
-  return json?.data?.attributes?.urls?.customer_portal ?? null;
+  const url = json?.data?.attributes?.urls?.customer_portal;
+  if (!url) return { error: "La respuesta no traía urls.customer_portal." };
+  return { url };
 }
 
 /** Verifies the X-Signature header against the raw request body (HMAC SHA-256). */

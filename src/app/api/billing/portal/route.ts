@@ -40,11 +40,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(settingsUrl);
   }
 
-  const portalUrl = await getFreshCustomerPortalUrl(business.lemonsqueezy_subscription_id);
-  if (!portalUrl) {
+  const result = await getFreshCustomerPortalUrl(business.lemonsqueezy_subscription_id);
+  if ("error" in result) {
+    console.error("billing/portal: getFreshCustomerPortalUrl failed", result.error);
     settingsUrl.searchParams.set("portal_error", "unavailable");
+    settingsUrl.searchParams.set("portal_error_detail", result.error);
     return NextResponse.redirect(settingsUrl);
   }
 
-  return NextResponse.redirect(portalUrl);
+  return NextResponse.redirect(result.url);
 }

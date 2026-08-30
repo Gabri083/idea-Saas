@@ -15,10 +15,10 @@ const PORTAL_ERROR_KEYS = {
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ portal_error?: string }>;
+  searchParams: Promise<{ portal_error?: string; portal_error_detail?: string }>;
 }) {
   const businessId = await requireBusinessId();
-  const [business, dict, locale, { portal_error }] = await Promise.all([
+  const [business, dict, locale, { portal_error, portal_error_detail }] = await Promise.all([
     getBusiness(businessId),
     getDictionary(),
     getLocale(),
@@ -38,9 +38,12 @@ export default async function SettingsPage({
       </div>
 
       {portalErrorKey && (
-        <p className="rounded-xl border border-amber/30 bg-amber/[0.06] px-4 py-3 text-sm text-amber">
-          {dict.dashboard.planSection[portalErrorKey]}
-        </p>
+        <div className="rounded-xl border border-amber/30 bg-amber/[0.06] px-4 py-3 text-sm text-amber">
+          <p>{dict.dashboard.planSection[portalErrorKey]}</p>
+          {portal_error_detail && (
+            <p className="mt-1 break-words font-mono text-xs opacity-80">{portal_error_detail}</p>
+          )}
+        </div>
       )}
 
       <Card className="max-w-xl p-6">
