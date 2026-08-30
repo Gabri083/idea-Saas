@@ -38,7 +38,7 @@ export default async function SettingsPage() {
       <PlanSection
         currentPlan={business.plan}
         subscriptionStatus={business.subscription_status}
-        customerPortalUrl={business.customer_portal_url}
+        hasSubscription={business.lemonsqueezy_subscription_id != null}
         dict={dict.dashboard.planSection}
       />
     </div>

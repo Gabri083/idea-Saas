@@ -11,12 +11,12 @@ import type { Dictionary } from "@/lib/i18n/dictionaries";
 export function PlanSection({
   currentPlan,
   subscriptionStatus,
-  customerPortalUrl,
+  hasSubscription,
   dict,
 }: {
   currentPlan: Plan;
   subscriptionStatus: string | null;
-  customerPortalUrl: string | null;
+  hasSubscription: boolean;
   dict: Dictionary["dashboard"]["planSection"];
 }) {
   const [pendingPlan, setPendingPlan] = useState<Plan | null>(null);
@@ -55,9 +55,9 @@ export function PlanSection({
             {dict.statusLabels[subscriptionStatus as keyof typeof dict.statusLabels] ?? subscriptionStatus}
           </Badge>
         )}
-        {customerPortalUrl && (
+        {hasSubscription && (
           <a
-            href={customerPortalUrl}
+            href="/api/billing/portal"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-sm text-cobalt hover:underline"

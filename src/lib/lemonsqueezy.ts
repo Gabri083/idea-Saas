@@ -83,6 +83,26 @@ export async function createCheckout(params: {
   return url as string;
 }
 
+/**
+ * Lemon Squeezy's customer_portal URL is a short-lived signed link — it
+ * expires (in practice, within a day or so), so it can never be stored from
+ * a webhook payload and reused later. This re-fetches the subscription right
+ * before redirecting the user, guaranteeing a link that's valid at the
+ * moment they click "manage subscription", no matter how old the
+ * subscription is.
+ */
+export async function getFreshCustomerPortalUrl(subscriptionId: string): Promise<string | null> {
+  const res = await fetch(`${API_BASE}/subscriptions/${subscriptionId}`, {
+    headers: {
+      Authorization: `Bearer ${process.env.LEMONSQUEEZY_API_KEY}`,
+      Accept: "application/vnd.api+json",
+    },
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json?.data?.attributes?.urls?.customer_portal ?? null;
+}
+
 /** Verifies the X-Signature header against the raw request body (HMAC SHA-256). */
 export function verifyWebhookSignature(rawBody: string, signatureHeader: string | null): boolean {
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
