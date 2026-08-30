@@ -335,6 +335,9 @@ const es = {
     planSection: {
       title: "Tu plan",
       manageSubscription: "Gestionar suscripción",
+      portalErrorNotConfigured: "Los pagos todavía no están configurados en este entorno.",
+      portalErrorNoSubscription: "Esta cuenta no tiene una suscripción activa en Lemon Squeezy que gestionar.",
+      portalErrorUnavailable: "No se pudo generar el link de gestión ahora mismo. Intenta de nuevo en un momento.",
       statusLabels: {
         active: "Activa",
         on_trial: "En prueba",
@@ -1155,6 +1158,9 @@ const en: typeof es = {
     planSection: {
       title: "Your plan",
       manageSubscription: "Manage subscription",
+      portalErrorNotConfigured: "Payments aren't configured in this environment yet.",
+      portalErrorNoSubscription: "This account doesn't have an active Lemon Squeezy subscription to manage.",
+      portalErrorUnavailable: "Couldn't generate the management link right now. Try again in a moment.",
       statusLabels: {
         active: "Active",
         on_trial: "On trial",
