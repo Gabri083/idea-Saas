@@ -756,6 +756,11 @@ const es = {
     correctedFilterExplanation:
       "Solo las reseñas donde el puntaje de la IA no coincidió con lo que el cliente marcó — compáralas tú mismo.",
     emptyCorrectedFilterState: "La IA no corrigió ninguna reseña de este negocio —",
+    ratingTier5: "Excelente",
+    ratingTier4: "Muy bueno",
+    ratingTier3: "Regular",
+    ratingTier2: "Malo",
+    ratingTier1: "Muy malo",
     paginationPrev: "Anteriores",
     paginationNext: "Siguientes",
     paginationPage: "Página {page} de {total}",
@@ -1563,6 +1568,11 @@ const en: typeof es = {
     correctedFilterExplanation:
       "Only reviews where the AI's score didn't match what the customer picked — compare them yourself.",
     emptyCorrectedFilterState: "The AI hasn't corrected any review for this business —",
+    ratingTier5: "Excellent",
+    ratingTier4: "Great",
+    ratingTier3: "Average",
+    ratingTier2: "Poor",
+    ratingTier1: "Bad",
     paginationPrev: "Previous",
     paginationNext: "Next",
     paginationPage: "Page {page} of {total}",

@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import { getBusiness, getReviews, getWidgetConfig } from "@/lib/data";
 import { resolveBusinessId } from "@/lib/demo";
 import { getCategoryLabels, type Review } from "@/lib/types";
-import { formatDate, isConfirmed, recencyWeightedAverage } from "@/lib/utils";
+import { formatDate, isConfirmed, recencyWeightedAverage, RATING_TIER_COLORS } from "@/lib/utils";
 import { publicPageThemeStyle } from "@/lib/public-page-theme";
 import { StarRating } from "@/components/ui/star-rating";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,19 @@ function isAttributeComplaint(value: number | null): value is number {
 
 function isAttribute(value: string | undefined): value is Attribute {
   return value === "producto" || value === "atencion" || value === "envio";
+}
+
+/** How many reviews landed at each whole-star count (1-5), for the
+ * color-coded distribution bars — same rating each review already shows
+ * (customer's own pick, or the AI's read for reviews with no customer pick). */
+function computeRatingDistribution(reviews: Review[]): number[] {
+  const counts = [0, 0, 0, 0, 0];
+  for (const r of reviews) {
+    const rounded = Math.round(r.customer_star_rating ?? r.overall_ai_rating);
+    const bucket = Math.min(5, Math.max(1, rounded));
+    counts[bucket - 1] += 1;
+  }
+  return counts;
 }
 
 async function loadData(businessIdParam: string) {
@@ -89,6 +102,7 @@ export default async function PublicReviewsPage({
   };
 
   const average = recencyWeightedAverage(publicReviews, (r) => r.overall_ai_rating);
+  const ratingDistribution = computeRatingDistribution(publicReviews);
 
   const activeAttribute = isAttribute(filterParam) ? filterParam : null;
   const showCorrectedOnly = filterParam === "corregidas";
@@ -184,16 +198,19 @@ export default async function PublicReviewsPage({
           </div>
 
           {publicReviews.length > 0 ? (
-            <div className="mt-5 flex items-center gap-3">
-              <span className="text-3xl font-semibold tracking-tight">{average.toFixed(1)}</span>
-              <div>
-                <StarRating value={average} size={16} />
-                <Link href="/legal/transparencia-ia" className="mt-0.5 block text-xs text-muted hover:text-cobalt hover:underline">
-                  {publicReviews.length === 1
-                    ? t.reviewCountSingular
-                    : t.reviewCountPlural.replace("{n}", String(publicReviews.length))}
-                </Link>
+            <div className="mt-5 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl font-semibold tracking-tight">{average.toFixed(1)}</span>
+                <div>
+                  <StarRating value={average} size={16} mode="aggregate" />
+                  <Link href="/legal/transparencia-ia" className="mt-0.5 block text-xs text-muted hover:text-cobalt hover:underline">
+                    {publicReviews.length === 1
+                      ? t.reviewCountSingular
+                      : t.reviewCountPlural.replace("{n}", String(publicReviews.length))}
+                  </Link>
+                </div>
               </div>
+              <RatingDistribution counts={ratingDistribution} total={publicReviews.length} dict={t} />
             </div>
           ) : (
             <p className="mt-5 text-sm text-muted">{t.noReviewsYet}</p>
@@ -263,6 +280,44 @@ export default async function PublicReviewsPage({
   );
 }
 
+function RatingDistribution({
+  counts,
+  total,
+  dict,
+}: {
+  counts: number[];
+  total: number;
+  dict: Dictionary["publicReviews"];
+}) {
+  const labels = [
+    dict.ratingTier5,
+    dict.ratingTier4,
+    dict.ratingTier3,
+    dict.ratingTier2,
+    dict.ratingTier1,
+  ];
+  return (
+    <div className="flex min-w-[180px] flex-1 flex-col gap-1.5">
+      {([5, 4, 3, 2, 1] as const).map((stars, i) => {
+        const count = counts[stars - 1];
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        return (
+          <div key={stars} className="grid grid-cols-[minmax(0,72px)_1fr_30px] items-center gap-2.5">
+            <span className="truncate text-[11.5px] text-muted">{labels[i]}</span>
+            <div className="h-[6px] overflow-hidden rounded-full bg-surface-2">
+              <div
+                className="h-full rounded-full transition-[width]"
+                style={{ width: `${pct}%`, background: RATING_TIER_COLORS[stars] }}
+              />
+            </div>
+            <span className="text-right text-[11px] text-muted">{pct}%</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function AttributeChip({ active, href, children }: { active: boolean; href: string; children: React.ReactNode }) {
   return (
     <Link
@@ -321,7 +376,7 @@ function ReviewEntry({
   return (
     <Card className="p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <StarRating value={big} size={20} />
+        <StarRating value={big} size={20} mode="review" />
         <span className="text-sm font-medium text-muted">{big.toFixed(1)}</span>
         {!confirmed && (
           <details className="group relative inline-block align-middle">

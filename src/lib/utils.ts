@@ -113,3 +113,25 @@ export function isConfirmed(review: {
 
   return Math.abs(review.customer_star_rating - review.overall_ai_rating) < OVERALL_CONFIRM_EPSILON;
 }
+
+/** 5 evenly-spaced quality bands, dark-green to red — the same "at a glance"
+ * color language most review platforms use, not anything proprietary. Only
+ * used on /resenas (the public reviews page); the embeddable widget keeps
+ * using the business's own chosen accent color for its stars instead. */
+export const RATING_TIER_COLORS = {
+  5: "#16a34a",
+  4: "#84cc16",
+  3: "#eab308",
+  2: "#f97316",
+  1: "#ef4444",
+} as const;
+
+/** Which of the 5 quality bands a rating falls into, for coloring stars and
+ * the ratings-distribution bars on /resenas. */
+export function ratingTierColor(value: number): string {
+  if (value >= 4.5) return RATING_TIER_COLORS[5];
+  if (value >= 3.5) return RATING_TIER_COLORS[4];
+  if (value >= 2.5) return RATING_TIER_COLORS[3];
+  if (value >= 1.5) return RATING_TIER_COLORS[2];
+  return RATING_TIER_COLORS[1];
+}
