@@ -8,6 +8,7 @@ import { Footer } from "@/components/landing/footer";
 import { getAllBlogPosts, getBlogPost } from "@/lib/blog";
 import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 import { formatDate } from "@/lib/utils";
+import { SITE_URL } from "@/lib/site";
 
 export function generateStaticParams() {
   return getAllBlogPosts().map((post) => ({ slug: post.slug }));
@@ -34,9 +35,36 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   if (!post) notFound();
 
   const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const postUrl = `${SITE_URL}/blog/${post.slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.excerpt,
+        datePublished: post.date,
+        dateModified: post.date,
+        url: postUrl,
+        mainEntityOfPage: postUrl,
+        ...(post.coverImage ? { image: `${SITE_URL}${post.coverImage}` } : {}),
+        author: { "@type": "Organization", name: "Kelsira" },
+        publisher: { "@type": "Organization", name: "Kelsira", logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.png` } },
+        inLanguage: post.locale,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Blog", item: `${SITE_URL}/blog` },
+          { "@type": "ListItem", position: 2, name: post.title, item: postUrl },
+        ],
+      },
+    ],
+  };
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar dict={dict.nav} locale={locale} />
       <main className="flex-1 bg-grid">
         <article className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
