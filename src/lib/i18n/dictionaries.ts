@@ -194,7 +194,7 @@ const es = {
       categoryHint: "Le da contexto a la IA para juzgar reseñas de forma justa según tu rubro.",
       descriptionLabel: "Cuéntanos brevemente qué vende tu negocio",
       descriptionOptional: "(opcional)",
-      descriptionPlaceholder: "Ej. Zapatillas urbanas hechas a mano, envíos a todo Chile.",
+      descriptionPlaceholder: "Ej. Zapatillas urbanas hechas a mano, envíos a nivel nacional.",
       fullNameLabel: "Tu nombre",
       fullNamePlaceholder: "Tu nombre completo",
       submitIdle: "Crear cuenta",
