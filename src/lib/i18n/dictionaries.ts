@@ -714,7 +714,12 @@ const es = {
     emailPlaceholder: "tucorreo@ejemplo.com",
     emailHint: "Solo para verificar tu compra. Nunca se publica.",
     textLabel: "Cuéntanos tu experiencia completa",
-    textPlaceholder: "Escribe con total libertad — nada de tu texto será editado ni censurado.",
+    textPlaceholder:
+      "Ej: El producto es de buena calidad, llegó 2 días antes de lo esperado y bien empacado. Nada de tu texto será editado ni censurado.",
+    nudgeMessage:
+      "¿Nos cuentas un poco más? Menciona algo específico del producto, el envío o la atención — así tu reseña ayuda más al próximo comprador.",
+    nudgeAddDetail: "Agregar más detalle",
+    nudgeSubmitAnyway: "Enviar igual",
     categoryRatingLabel: "¿Cómo calificarías cada aspecto?",
     categoryRatingOptional: "(opcional)",
     categoryProductLabel: "Producto",
@@ -1534,7 +1539,12 @@ const en: typeof es = {
     emailPlaceholder: "youremail@example.com",
     emailHint: "Only used to verify your purchase. Never published.",
     textLabel: "Tell us your full experience",
-    textPlaceholder: "Write freely — nothing you write will be edited or censored.",
+    textPlaceholder:
+      "E.g. The product is good quality, arrived 2 days early, and well packaged. Nothing you write will be edited or censored.",
+    nudgeMessage:
+      "Want to tell us a bit more? Mention something specific about the product, shipping, or service — it helps the next buyer more.",
+    nudgeAddDetail: "Add more detail",
+    nudgeSubmitAnyway: "Submit anyway",
     categoryRatingLabel: "How would you rate each part of it?",
     categoryRatingOptional: "(optional)",
     categoryProductLabel: "Product",

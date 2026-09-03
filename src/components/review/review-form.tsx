@@ -62,13 +62,15 @@ export function ReviewForm({
   const [deliveryRating, setDeliveryRating] = useState(0);
   const [review, setReview] = useState<Review | null>(null);
   const [startedAt] = useState(() => Date.now());
+  // Below this, a review clears the hard minimum but is usually too thin to
+  // help the next buyer (e.g. "llegó raro") — nudge once for more detail
+  // instead of silently accepting it. Never blocks; one click sends it anyway.
+  const NUDGE_THRESHOLD = 30;
+  const [pendingFormData, setPendingFormData] = useState<FormData | null>(null);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function submitReview(formData: FormData) {
     setStatus("submitting");
     setErrorMessage("");
-
-    const formData = new FormData(e.currentTarget);
 
     try {
       const res = await fetch("/api/reviews", {
@@ -96,6 +98,19 @@ export function ReviewForm({
       setErrorMessage(err instanceof Error ? err.message : dict.unexpectedError);
       setStatus("error");
     }
+  }
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const text = String(formData.get("review_text") || "").trim();
+
+    if (text.length < NUDGE_THRESHOLD) {
+      setPendingFormData(formData);
+      return;
+    }
+
+    submitReview(formData);
   }
 
   if (status === "done" && review) {
@@ -168,8 +183,33 @@ export function ReviewForm({
           maxLength={4000}
           rows={6}
           placeholder={dict.textPlaceholder}
+          onChange={() => setPendingFormData(null)}
           className="resize-none rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
         />
+        {pendingFormData && (
+          <div className="flex flex-col gap-2.5 rounded-xl border border-cobalt/30 bg-cobalt/[0.06] px-4 py-3 text-sm">
+            <p className="text-foreground/90">{dict.nudgeMessage}</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingFormData(null);
+                  document.getElementById("review_text")?.focus();
+                }}
+                className="rounded-lg bg-cobalt px-3 py-1.5 text-xs font-medium text-white hover:bg-cobalt-dim"
+              >
+                {dict.nudgeAddDetail}
+              </button>
+              <button
+                type="button"
+                onClick={() => submitReview(pendingFormData)}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs text-muted hover:text-foreground"
+              >
+                {dict.nudgeSubmitAnyway}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface px-4 py-3.5">
