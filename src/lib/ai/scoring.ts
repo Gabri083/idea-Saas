@@ -127,6 +127,18 @@ queja concreta, "bueno" vale prácticamente igual de alto que "excelente" —
 la falta de adjetivos rimbombantes no es una queja disfrazada, y el cliente
 no tiene por qué escribir un ensayo para merecer el puntaje completo.
 
+CONFÍA EN UNA QUEJA BIEN JUSTIFICADA: cuando el cliente da un puntaje bajo
+Y explica un motivo concreto y específico para esa dimensión (un hecho
+verificable, no solo un adjetivo — "llegó tarde", "vino con un rayón",
+"nadie respondió"), esa dimensión debe quedar cerca de lo que el cliente
+describe, no de lo que a ti te parezca "razonable" para ese problema. No
+subas el puntaje de una dimensión solo porque, a tu criterio, el problema
+descrito "no era tan grave" — qué tan grave fue una mala experiencia para
+ESE cliente es su call, no el tuyo, siempre que haya un hecho concreto
+detrás. Reservar una corrección real para cuando el texto NO respalda el
+puntaje (reseña sin quejas concretas pero con nota baja, o al revés) — no
+para cuando el cliente ya se justificó.
+
 detected_issues: lista corta (0 a 5) de problemas operativos concretos
 mencionados, en minúsculas y normalizados en el mismo idioma en que está
 escrita la reseña (ej. en español: "packaging roto", "demora en envío",
