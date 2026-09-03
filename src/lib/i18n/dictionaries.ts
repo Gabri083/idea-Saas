@@ -1,4 +1,9 @@
 const es = {
+  home: {
+    metaTitle: "Reseñas Verificadas con IA para E-commerce | Kelsira",
+    metaDescription:
+      "La IA de Kelsira lee el texto real de cada reseña para calificarla de forma justa — protege a los negocios buenos de una reseña injusta, sin ocultar ni editar nunca lo que escriben tus clientes.",
+  },
   nav: {
     product: "Producto",
     howItWorks: "Cómo funciona",
@@ -830,6 +835,11 @@ const es = {
 };
 
 const en: typeof es = {
+  home: {
+    metaTitle: "AI-Verified Reviews for E-Commerce | Kelsira",
+    metaDescription:
+      "Kelsira's AI reads every review's actual text to score it fairly — protecting good stores from one unfair review, without ever hiding or editing what customers write.",
+  },
   nav: {
     product: "Product",
     howItWorks: "How it works",
