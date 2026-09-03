@@ -1057,6 +1057,14 @@ export function WidgetConfigurator({
   const borderColor = isDark ? "#232529" : "#e5e7eb";
   const starBg = isDark ? "#3a3d44" : "#e2e4e8";
   const radius = radiusPx[config.border_radius];
+  // Cosmetic only — makes the preview read as "this is your actual site",
+  // not a real domain lookup.
+  const previewDomain =
+    businessName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^a-z0-9]+/g, "") + ".com";
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
@@ -1268,19 +1276,27 @@ export function WidgetConfigurator({
               </span>
             )}
           </div>
-          <div
-            className="rounded-2xl border p-6"
-            style={{
-              position: "relative",
-              background: isDark ? "#101114" : "#ffffff",
-              color: isDark ? "#f4f5f7" : "#111318",
-              borderColor,
-              fontFamily: fontStack[config.font_family] ?? undefined,
-              ...(config.layout === "lanzador" && { overflow: "hidden", minHeight: 400 }),
-              ...(config.layout === "barra" && { overflow: "hidden", minHeight: 220 }),
-              ...(config.layout === "notificacion" && { overflow: "hidden", minHeight: 180 }),
-            }}
-          >
+          <div className="overflow-hidden rounded-2xl border border-[#e2e4ea] shadow-[0_20px_45px_-30px_rgba(20,30,70,.4)]">
+            <div className="flex items-center gap-1.5 border-b border-[#e5e7ec] bg-white px-3.5 py-2.5">
+              <span className="h-2 w-2 rounded-full bg-[#dcdee4]" />
+              <span className="h-2 w-2 rounded-full bg-[#dcdee4]" />
+              <span className="h-2 w-2 rounded-full bg-[#dcdee4]" />
+              <span className="ml-2 truncate rounded-md bg-[#f2f3f6] px-2.5 py-1 font-mono text-[10.5px] text-[#6b6e78]">
+                {previewDomain}
+              </span>
+            </div>
+            <div
+              className="p-6"
+              style={{
+                position: "relative",
+                background: isDark ? "#101114" : "#ffffff",
+                color: isDark ? "#f4f5f7" : "#111318",
+                fontFamily: fontStack[config.font_family] ?? undefined,
+                ...(config.layout === "lanzador" && { overflow: "hidden", minHeight: 400 }),
+                ...(config.layout === "barra" && { overflow: "hidden", minHeight: 220 }),
+                ...(config.layout === "notificacion" && { overflow: "hidden", minHeight: 180 }),
+              }}
+            >
             {config.layout === "badge" ? (
               <ClassicBadge
                 average={average}
@@ -1446,6 +1462,7 @@ export function WidgetConfigurator({
               config.layout !== "cierre" && (
                 <p className="mt-4 text-right text-[10px] opacity-50">{dict.footerBranding}</p>
               )}
+            </div>
           </div>
         </Card>
 
