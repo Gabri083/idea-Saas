@@ -1423,10 +1423,10 @@ export function WidgetConfigurator({
                       : "flex gap-3 overflow-x-auto",
                 )}
               >
-                {/* 20 matches the real cap the embedded widget's own API call
-                    applies (public/widget.js) — showing more here would make
-                    the preview lie about how long a real wall actually gets. */}
-                {(config.layout === "wall" ? previewReviews.slice(0, 20) : previewReviews.slice(0, 4)).map((r) =>
+                {/* The preview only needs enough cards to show the layout's
+                    shape — not to replicate the widget's real 20-review cap,
+                    which would just make the config page scroll forever. */}
+                {(config.layout === "wall" ? previewReviews.slice(0, 5) : previewReviews.slice(0, 4)).map((r) =>
                   config.card_style === "medidor" ? (
                     <div key={r.id} className={config.layout === "carousel" ? "min-w-[240px] flex-1" : undefined}>
                       <GaugeCard
