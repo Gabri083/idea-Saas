@@ -1423,7 +1423,10 @@ export function WidgetConfigurator({
                       : "flex gap-3 overflow-x-auto",
                 )}
               >
-                {(config.layout === "wall" ? previewReviews : previewReviews.slice(0, 4)).map((r) =>
+                {/* The preview only needs enough cards to show the layout's
+                    shape — not to replicate the widget's real 20-review cap,
+                    which would just make the config page scroll forever. */}
+                {(config.layout === "wall" ? previewReviews.slice(0, 5) : previewReviews.slice(0, 4)).map((r) =>
                   config.card_style === "medidor" ? (
                     <div key={r.id} className={config.layout === "carousel" ? "min-w-[240px] flex-1" : undefined}>
                       <GaugeCard
