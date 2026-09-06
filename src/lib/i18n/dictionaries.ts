@@ -13,11 +13,11 @@ const es = {
   },
   hero: {
     badge: "Impulsado por GPT-4o",
-    titleLead: "La primera",
-    titleGradient: "plataforma de reseñas",
-    titleTail: "que nunca se ocultan ni editan",
+    titleLead: "Deja de perder ventas por",
+    titleGradient: "reseñas injustas",
+    titleTail: "",
     subtitle:
-      "Protege a tu marca del sesgo de la ira. Tus clientes conservan su voz, la IA aporta la objetividad. Convierte críticas injustas en crecimiento operativo.",
+      "Kelsira lee lo que tus clientes realmente escriben y lo califica según los hechos — para que un momento de rabia no hunda tu calificación para siempre. Nunca ocultamos, editamos ni borramos nada.",
     ctaPrimary: "Empezar gratis",
     ctaSecondary: "Ver Demo Interactiva",
     exampleLabel: "Reseña del cliente (texto intacto)",
@@ -37,7 +37,7 @@ const es = {
     problemExampleQuote: "“Todo perfecto, pero llegó tarde”",
     problemExampleSub: "Calificación tradicional: ★☆☆☆☆ (1.0)",
     solutionLabel: "Nuestra solución",
-    solutionTitle: "Análisis de Sentimiento Ponderado",
+    solutionTitle: "Puntaje Objetivo IA",
     solutionBody:
       "Evaluamos Producto, Atención y Tiempos de Entrega por separado y calculamos una nota objetiva — sin tocar ni una palabra del texto original del cliente.",
     solutionExampleQuote: "Mismo texto, evaluado por hechos",
@@ -880,11 +880,11 @@ const en: typeof es = {
   },
   hero: {
     badge: "Powered by GPT-4o",
-    titleLead: "The first",
-    titleGradient: "review platform",
-    titleTail: "where nothing gets hidden or edited",
+    titleLead: "Stop losing sales to",
+    titleGradient: "unfair",
+    titleTail: "reviews.",
     subtitle:
-      "Protect your brand from anger bias. Your customers keep their voice, the AI brings the objectivity. Turn unfair criticism into operational growth.",
+      "Kelsira reads what your customers actually write and scores it by the facts — so one angry moment doesn't drag your rating down for good. Nothing is ever hidden, edited, or deleted.",
     ctaPrimary: "Start free",
     ctaSecondary: "See Interactive Demo",
     exampleLabel: "Customer review (text untouched)",
@@ -903,7 +903,7 @@ const en: typeof es = {
     problemExampleQuote: "“Everything perfect, but it arrived late”",
     problemExampleSub: "Traditional rating: ★☆☆☆☆ (1.0)",
     solutionLabel: "Our solution",
-    solutionTitle: "Weighted Sentiment Analysis",
+    solutionTitle: "The AI Objective Score",
     solutionBody:
       "We evaluate Product, Service, and Delivery Times separately and compute an objective score — without touching a single word of the customer's original text.",
     solutionExampleQuote: "Same text, scored by facts",
