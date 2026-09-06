@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,6 +100,10 @@ const radiusPx: Record<WidgetConfig["border_radius"], string> = {
 // every other style's dramatic 0–28px rounding, so it's fixed instead of
 // pretending to be configurable.
 const TICKET_CUT_PX = 8;
+// Calibrated for comfortable reading speed — see Ticker, which turns this
+// into a duration proportional to how much content there actually is,
+// instead of a fixed duration that makes more reviews whip by faster.
+const TICKER_PX_PER_SECOND = 45;
 const fontOptions = ["inter", "system-ui", "georgia", "mono"];
 const fontStack: Record<string, string> = {
   inter: "Inter, ui-sans-serif, sans-serif",
@@ -531,6 +535,18 @@ function Ticker({
   radius: string;
   dict: WidgetDict;
 }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [duration, setDuration] = useState(26);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    // Content is duplicated once for the seamless loop, so half of the
+    // rendered width is one full cycle — only measurable once mounted.
+    const oneLoopWidth = track.scrollWidth / 2;
+    setDuration(Math.max(15, oneLoopWidth / TICKER_PX_PER_SECOND));
+  }, [reviews]);
+
   const items = reviews.map((r) => (
     <span key={r.id} className="inline-flex shrink-0 items-center gap-1">
       <b className="font-semibold text-white">{r.customer_name}</b>
@@ -554,8 +570,9 @@ function Ticker({
       </div>
       <div className="relative min-w-0 flex-1 overflow-hidden">
         <div
+          ref={trackRef}
           className="kelsira-ticker-track flex items-center gap-10 whitespace-nowrap px-5 text-[12.5px]"
-          style={{ animation: "kelsira-ticker-scroll 26s linear infinite" }}
+          style={{ animation: `kelsira-ticker-scroll ${duration}s linear infinite` }}
         >
           {items}
           {items}
