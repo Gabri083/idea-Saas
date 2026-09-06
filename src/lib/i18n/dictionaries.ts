@@ -646,6 +646,10 @@ const es = {
         wordpress: "WordPress",
         other: "Otro / HTML",
       },
+      flow: {
+        shopify: [["Tienda", "online"], ["Personalizar"], ["Agregar", "sección"], ["Guardar"]],
+        wordpress: [["Editor de", "página"], ["Bloque", "HTML"], ["Pegar", "código"], ["Publicar"]],
+      },
       snippetHint: "Este código ya incluye tu negocio y el diseño elegido — cópialo y pégalo donde se indica abajo.",
       copyAria: "Copiar código",
       copiedLabel: "¡Copiado!",
@@ -1624,6 +1628,10 @@ const en: typeof es = {
         shopify: "Shopify",
         wordpress: "WordPress",
         other: "Other / HTML",
+      },
+      flow: {
+        shopify: [["Online", "Store"], ["Customize"], ["Add", "section"], ["Save"]],
+        wordpress: [["Page", "editor"], ["HTML", "block"], ["Paste", "code"], ["Publish"]],
       },
       snippetHint: "This code already includes your business and the design you chose — copy it and paste it where shown below.",
       copyAria: "Copy code",

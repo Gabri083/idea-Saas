@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CopyableLink } from "@/components/dashboard/copyable-link";
+import { PlatformFlow } from "@/components/dashboard/platform-flow";
 import { SITE_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { WIDGET_LAYOUT_ORDER, WIDGET_PLACEMENT, type WidgetPlacement } from "@/lib/widget-layouts";
@@ -95,6 +96,12 @@ export function WidgetGuides({
               </button>
             ))}
           </div>
+
+          {(platform === "shopify" || platform === "wordpress") && (
+            <div className="mt-4 flex justify-center rounded-lg border border-border bg-surface p-4">
+              <PlatformFlow steps={dict.flow[platform] as [string[], string[], string[], string[]]} />
+            </div>
+          )}
 
           <ol className="mt-4 flex flex-col gap-2.5">
             {dict.steps[category][platform].map((step, i) => (
