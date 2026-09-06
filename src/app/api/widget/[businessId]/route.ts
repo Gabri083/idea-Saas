@@ -40,7 +40,20 @@ export async function GET(
     // count and the headline average are computed from. Only the list of
     // cards actually rendered is capped, further down.
     const allPublicReviews = reviews.filter((r) => r.status === "published" || r.status === "resolved");
-    const displayReviews = allPublicReviews.slice(0, 12);
+
+    // These layouts show a whole shelf of cards at once, so leading with the
+    // strongest ones actually earns the space — every other layout (a single
+    // quote, a launcher panel, a ticker) stays most-recent-first, unaffected.
+    const BEST_REVIEWS_LAYOUTS = ["carousel", "wall", "grid", "mosaico"];
+    const displayReviews = BEST_REVIEWS_LAYOUTS.includes(config.layout)
+      ? [...allPublicReviews]
+          .sort(
+            (a, b) =>
+              b.overall_ai_rating - a.overall_ai_rating ||
+              new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+          )
+          .slice(0, 8)
+      : allPublicReviews.slice(0, 12);
 
     const average = recencyWeightedAverage(allPublicReviews, (r) => r.overall_ai_rating);
 
