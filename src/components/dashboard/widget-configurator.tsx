@@ -270,11 +270,15 @@ function TicketCard({
       style={{ borderColor, clipPath }}
     >
       <div className="px-4 pt-4 pb-3">
-        <div className="flex flex-wrap items-center gap-2">
+        {/* relative here (not on the <details> itself) so the note below
+            centers under the whole row instead of the icon's own position,
+            which shifts with the star count — keeps it inside a narrow
+            carousel/grid card instead of spilling into the next one. */}
+        <div className="relative flex flex-wrap items-center gap-2">
           <Stars value={big} size={20} accent={accent} bg={starBg} />
           <span className="text-sm font-medium opacity-60">{big.toFixed(1)}</span>
           {!confirmed && (
-            <details className="group relative inline-block align-middle">
+            <details className="group inline-block align-middle">
               <summary
                 className="flex h-[18px] w-[18px] list-none items-center justify-center rounded-full border border-current text-[11px] font-extrabold opacity-55 [&::-webkit-details-marker]:hidden [&::marker]:hidden group-hover:opacity-90 group-open:opacity-90"
                 title={dict.fairIconTitle}
@@ -282,7 +286,7 @@ function TicketCard({
                 !
               </summary>
               <div
-                className="absolute left-0 top-[calc(100%+6px)] z-10 hidden w-[210px] rounded-lg border px-2.5 py-2 text-[11.5px] font-normal leading-snug shadow-lg group-hover:block group-open:block"
+                className="absolute left-1/2 top-[calc(100%+6px)] z-10 hidden w-[190px] max-w-[calc(100%-12px)] -translate-x-1/2 rounded-lg border px-2.5 py-2 text-[11.5px] font-normal leading-snug shadow-lg group-hover:block group-open:block"
                 style={{ background: isDark ? "#101114" : "#ffffff", borderColor }}
               >
                 {dict.fairNoteText.replace("{score}", review.overall_ai_rating.toFixed(1))}

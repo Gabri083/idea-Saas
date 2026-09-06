@@ -753,21 +753,24 @@
       ".kelsira-ticket:hover{transform:translateY(-3px);}" +
       ".kelsira-carousel .kelsira-ticket{flex:0 0 270px;scroll-snap-align:start;}" +
       ".kelsira-ticket-head{padding:16px 18px 13px;}" +
-      ".kelsira-correction-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}" +
+      ".kelsira-correction-row{position:relative;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}" +
       ".kelsira-raw{font-size:13px;opacity:.5;text-decoration:line-through;}" +
       ".kelsira-arrow{font-size:12px;opacity:.4;}" +
       ".kelsira-final{font-weight:700;font-size:19px;}" +
       ".kelsira-final-secondary{font-weight:500;font-size:13px;opacity:.65;}" +
       // The "!" flag on a review the AI reads differently — closed by default,
       // opens on tap (native <details>) or on hover (CSS below), never both
-      // forced. Its note is absolutely positioned so opening it never
-      // reflows the card around it.
-      ".kelsira-fair{position:relative;display:inline-block;vertical-align:middle;}" +
+      // forced. Its note is centered under the whole row (not the icon
+      // itself, which can sit anywhere along it depending on the star
+      // count) so a narrow carousel/grid card never lets it spill into the
+      // neighboring card — that's what position:relative moved onto
+      // .kelsira-correction-row is for.
+      ".kelsira-fair{display:inline-block;vertical-align:middle;}" +
       ".kelsira-fair summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;opacity:.55;font-size:11px;font-weight:800;line-height:1;}" +
       ".kelsira-fair summary::-webkit-details-marker{display:none;}" +
       ".kelsira-fair summary::marker{content:'';}" +
       ".kelsira-fair:hover summary,.kelsira-fair[open] summary{opacity:.9;}" +
-      ".kelsira-fair-note{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:5;width:210px;padding:9px 11px;border-radius:8px;background:var(--kelsira-bg);border:1px solid var(--kelsira-border);box-shadow:0 8px 20px -8px rgba(0,0,0,.25);font-size:11.5px;line-height:1.45;font-weight:400;}" +
+      ".kelsira-fair-note{display:none;position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:5;width:190px;max-width:calc(100% - 12px);padding:9px 11px;border-radius:8px;background:var(--kelsira-bg);border:1px solid var(--kelsira-border);box-shadow:0 8px 20px -8px rgba(0,0,0,.25);font-size:11.5px;line-height:1.45;font-weight:400;}" +
       ".kelsira-fair:hover .kelsira-fair-note,.kelsira-fair[open] .kelsira-fair-note{display:block;}" +
       ".kelsira-perforation{height:0;border-top:1.5px dashed var(--kelsira-border);margin:0 18px;}" +
       ".kelsira-ticket-body{padding:14px 18px 16px;}" +
