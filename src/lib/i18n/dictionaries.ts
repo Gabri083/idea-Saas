@@ -582,6 +582,8 @@ const es = {
       codeSectionTitle: "Código para tu tienda",
       copyCodeAria: "Copiar código",
       codeSectionHint: "Copia el código de arriba y sigue los pasos según dónde tengas tu tienda:",
+      codeSectionMultiHint:
+        "¿Quieres otro diseño en otra parte de la misma página? Pega el código de nuevo y cambia solo el valor de data-layout (ej. \"badge\", \"mosaico\") — no afecta tu configuración guardada.",
       installStepsTitle: "Cómo instalarlo paso a paso",
       platform: {
         tabs: {
@@ -1432,6 +1434,8 @@ const en: typeof es = {
       codeSectionTitle: "Code for your store",
       copyCodeAria: "Copy code",
       codeSectionHint: "Copy the code above and follow the steps for where your store lives:",
+      codeSectionMultiHint:
+        "Want a different design somewhere else on the same page? Paste the code again and change just the data-layout value (e.g. \"badge\", \"mosaico\") — it won't affect your saved configuration.",
       installStepsTitle: "How to install it step by step",
       platform: {
         tabs: {

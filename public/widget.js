@@ -846,7 +846,11 @@
       ".kelsira-bar-link{text-decoration:underline;text-underline-offset:2px;opacity:.85;color:inherit;}" +
       // El Lanzador — floating corner bubble + popover panel.
       ".kelsira-launcher{position:fixed;right:20px;bottom:20px;z-index:2147483000;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}" +
-      ".kelsira-launcher-bubble{width:52px;height:52px;border-radius:50%;color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer;box-shadow:0 10px 26px -8px rgba(0,0,0,.4);}" +
+      // display/white-space/line-height/font-size all reasserted defensively:
+      // a host page's own button/global reset styles can otherwise leak in
+      // (e.g. a larger inherited font-size) and wrap "4.2★" across 3 lines
+      // instead of centering it on one.
+      ".kelsira-launcher-bubble{display:flex!important;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;color:#fff;font-weight:700;font-size:13px!important;line-height:1!important;white-space:nowrap;border:none;cursor:pointer;box-shadow:0 10px 26px -8px rgba(0,0,0,.4);}" +
       ".kelsira-launcher-panel{width:260px;background:var(--kelsira-bg);color:var(--kelsira-fg);border:1px solid var(--kelsira-border);border-radius:var(--kelsira-radius);overflow:hidden;box-shadow:0 20px 50px -18px rgba(0,0,0,.4);}" +
       ".kelsira-launcher-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;color:#fff;}" +
       ".kelsira-launcher-head b{font-size:13px;}" +
@@ -922,6 +926,44 @@
     document.head.appendChild(script);
   }
 
+  var LAYOUT_VALUES = [
+    "carousel", "badge", "grid", "wall", "spotlight", "sello", "mosaico", "cinta",
+    "lanzador", "barra", "fila", "notificacion", "comparador", "franja", "cierre",
+  ];
+  var CARD_STYLE_VALUES = ["recibo", "medidor"];
+  var THEME_MODE_VALUES = ["light", "dark"];
+  var BORDER_RADIUS_VALUES = ["none", "sm", "md", "lg", "full"];
+
+  // Every business has exactly one *saved* design (set in the dashboard) —
+  // but a page can paste this script more than once to show more than one
+  // design at once (e.g. a compact badge in the header, a full wall further
+  // down). Without this, both copies would fetch the same saved config and
+  // render identically. A data- attribute on a given <script> tag overrides
+  // just that one instance, leaving the saved default (and every other copy
+  // on the page) untouched.
+  function applyConfigOverrides(config, script) {
+    var layout = script.getAttribute("data-layout");
+    if (layout && LAYOUT_VALUES.indexOf(layout) !== -1) config.layout = layout;
+
+    var cardStyle = script.getAttribute("data-card-style");
+    if (cardStyle && CARD_STYLE_VALUES.indexOf(cardStyle) !== -1) config.card_style = cardStyle;
+
+    var themeMode = script.getAttribute("data-theme-mode");
+    if (themeMode && THEME_MODE_VALUES.indexOf(themeMode) !== -1) config.theme_mode = themeMode;
+
+    var borderRadius = script.getAttribute("data-border-radius");
+    if (borderRadius && BORDER_RADIUS_VALUES.indexOf(borderRadius) !== -1) config.border_radius = borderRadius;
+
+    var fontFamily = script.getAttribute("data-font-family");
+    if (fontFamily && FONT_MAP.hasOwnProperty(fontFamily)) config.font_family = fontFamily;
+
+    var accentColor = script.getAttribute("data-accent-color");
+    if (accentColor && /^#[0-9a-fA-F]{3,8}$/.test(accentColor)) config.accent_color = accentColor;
+
+    var showBreakdown = script.getAttribute("data-show-breakdown");
+    if (showBreakdown === "true" || showBreakdown === "false") config.show_breakdown = showBreakdown === "true";
+  }
+
   function mount(script) {
     var businessId = script.getAttribute("data-business-id");
     if (!businessId) return;
@@ -937,6 +979,7 @@
       })
       .then(function (data) {
         T = STRINGS[data.business.locale] || STRINGS.en;
+        applyConfigOverrides(data.config, script);
         injectStyles("kelsira-widget-styles");
 
         var isDark = data.config.theme_mode === "dark";
