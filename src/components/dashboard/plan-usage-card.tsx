@@ -16,9 +16,7 @@ export function PlanUsageCard({
   if (cap == null) {
     return (
       <Card className="flex items-center gap-3 p-5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cobalt/15 text-cobalt">
-          <Gauge size={17} />
-        </span>
+        <Gauge size={17} className="shrink-0 text-cobalt" />
         <div>
           <p className="text-sm font-medium">{dict.unlimitedTitle}</p>
           <p className="text-xs text-muted">{dict.unlimitedSub}</p>
