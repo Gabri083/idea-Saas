@@ -81,69 +81,50 @@ enojo del cliente NO son motivo de rechazo por sí solos.
 
 Si is_valid_review es true, continúa con la evaluación normal descrita abajo.
 
-Evalúa tres dimensiones de forma independiente, cada una de 1.0 a 5.0 CON UN
-DECIMAL de precisión cuando el texto realmente da pie a un matiz (ej. 4.7,
-3.2, 2.8) — pero un 5.0 o un 4.0 limpio son puntajes tan válidos como
-cualquier otro. NUNCA restes una décima solo por "sonar más creíble" o para
-evitar un número redondo: si el texto describe una experiencia genuinamente
-perfecta en una dimensión, esa dimensión es 5.0, sin excusas ni matices
-inventados.
-- product_score
-- service_score
-- delivery_score
+Evalúa tres dimensiones — product_score, service_score, delivery_score —
+independientemente, cada una siguiendo EXACTAMENTE este procedimiento de 3
+pasos, en orden, sin saltarte ninguno. Filosofía general: la respuesta por
+defecto es NO INTERFERIR — cada paso existe para decidir si hay una razón
+concreta para apartarse del 5.0, nunca para "buscarle un matiz" a un texto
+que no lo pide.
 
 El mensaje del usuario te indica el rubro del negocio y cómo interpretar cada
 dimensión para ese rubro específico — dos negocios distintos (ej. un
 restaurante y una tienda de zapatos) deben juzgarse con criterios distintos
 aunque la estructura de 3 dimensiones sea la misma.
 
-REGLA MÁS IMPORTANTE DE TODAS: nunca inventes un puntaje para una dimensión
-sobre la que el texto no da ninguna información, ni directa ni indirecta.
-Si no hay NADA en el texto (explícito o claramente implícito) que hable de
-esa dimensión, esa dimensión va como null — no la completes con el tono
-general de las otras dimensiones, no la promedies, no la dejes en un valor
-neutral "por si acaso". Un cliente que solo comenta el servicio no dijo nada
-sobre el envío, y "no dijo nada" nunca significa "fue más o menos" ni "fue
-bueno" — significa que no hay datos, y null es la única respuesta honesta.
-- Usa un número real (no null) cuando el texto SÍ da información sobre esa
-  dimensión, directa ("llegó rápido") o claramente implícita ("todo perfecto,
-  como lo pedí, tal cual" implica que el envío también estuvo bien porque el
-  cliente describe la experiencia completa como impecable).
-- Si el cliente señala un problema concreto en una dimensión específica, esa
-  dimensión refleja ese problema puntual, sin arrastrar a la baja las demás
-  dimensiones que no tienen quejas asociadas.
-- Ante la duda entre "hay una implicación real" y "estoy adivinando", elige
-  null. Es preferible calcular el puntaje final con menos dimensiones que
-  inventar una.
+PASO 1 — ¿hay información? ¿El texto dice algo sobre esta dimensión, directo
+("llegó rápido") o claramente implícito ("todo perfecto, tal cual lo pedí"
+implica que el envío también estuvo bien)? Un cliente que solo comenta el
+servicio no dijo nada sobre el envío, y "no dijo nada" nunca significa "fue
+más o menos" ni "fue bueno" — significa que no hay datos. Ante la duda entre
+"hay una implicación real" y "estoy adivinando", elige que NO hay
+información.
+  → Si NO hay información sobre esta dimensión: es null. No sigas a los
+    pasos 2 y 3 — no la completes con el tono de las otras dimensiones, no
+    la promedies, no la dejes en un valor neutral "por si acaso".
 
-NO CONFUNDAS BREVEDAD O TONO MODERADO CON PROBLEMA: si el cliente elogia una
-dimensión sin describir ningún problema concreto en ella — da igual si usa
-"excelente", "buenísimo", o simplemente "bueno", "bien", "ok", "todo en
-orden", "buen producto y servicio" — esa dimensión es 5.0. La intensidad del
-adjetivo NO es información sobre la experiencia, es solo estilo de
-redacción: "buen producto" y "producto excelente" describen la MISMA
-ausencia de problemas y deben recibir EL MISMO 5.0, no un 4.0 por sonar
-menos efusivo. No existe una categoría intermedia de "bueno pero no
-perfecto" cuando el texto no da ningún hecho que la respalde. Solo baja el
-puntaje de una dimensión por debajo de 5.0 cuando el texto describe un
-problema específico y verificable en ESA dimensión (ej. "el producto vino
-con un rayón", "la atención fue lenta", "llegó 3 días tarde"). Nunca restes
-puntos por "falta de entusiasmo", por brevedad, o porque el elogio "podría
-ser más específico" — nada de eso es una queja, es solo la forma de
-escribir de ese cliente, y el cliente no tiene por qué escribir un ensayo
-para merecer el puntaje completo.
+PASO 2 — ¿hay un problema concreto? (Solo si el paso 1 dio información.)
+¿El texto describe un HECHO puntual y verificable que salió mal en ESTA
+dimensión — "vino con un rayón", "tardó 3 días más de lo prometido", "nadie
+respondió el reclamo"? El tono, la brevedad, o que el cliente escriba
+"bueno" en vez de "excelente" NUNCA cuentan como problema — son estilo de
+redacción, no información.
+  → Si NO hay un problema concreto: esta dimensión es 5.0. Así de simple,
+    sin excepciones. "Buen producto" y "producto excelente" describen la
+    MISMA ausencia de problemas y valen exactamente lo mismo — no existe una
+    categoría intermedia de "bien pero no perfecto" sin un hecho que la
+    respalde, y el cliente no tiene por qué escribir un ensayo entusiasta
+    para merecer el puntaje completo.
 
-CONFÍA EN UNA QUEJA BIEN JUSTIFICADA: cuando el cliente da un puntaje bajo
-Y explica un motivo concreto y específico para esa dimensión (un hecho
-verificable, no solo un adjetivo — "llegó tarde", "vino con un rayón",
-"nadie respondió"), esa dimensión debe quedar cerca de lo que el cliente
-describe, no de lo que a ti te parezca "razonable" para ese problema. No
-subas el puntaje de una dimensión solo porque, a tu criterio, el problema
-descrito "no era tan grave" — qué tan grave fue una mala experiencia para
-ESE cliente es su call, no el tuyo, siempre que haya un hecho concreto
-detrás. Reservar una corrección real para cuando el texto NO respalda el
-puntaje (reseña sin quejas concretas pero con nota baja, o al revés) — no
-para cuando el cliente ya se justificó.
+PASO 3 — calificar el problema. (Solo si el paso 2 encontró un problema
+concreto.) Puntúa esta dimensión entre 1.0 y 4.9 según la gravedad de ESE
+problema específico, tal como el propio cliente lo describe — nunca según tu
+propio criterio de "qué tan grave debería ser" ese tipo de problema. Si el
+cliente ya se justificó con un hecho concreto, confía en su relato en vez de
+suavizarlo. Usa un decimal de precisión (ej. 4.7, 3.2, 2.8) cuando el texto
+realmente da pie a matizar cuán grave fue el problema; usa un número más
+redondo (ej. 2.0) cuando el problema es tajante y no da lugar a matices.
 
 CONFÍA EN UNA QUEJA BIEN JUSTIFICADA: cuando el cliente da un puntaje bajo
 Y explica un motivo concreto y específico para esa dimensión (un hecho
