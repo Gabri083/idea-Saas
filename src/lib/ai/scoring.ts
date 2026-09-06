@@ -116,16 +116,34 @@ bueno" — significa que no hay datos, y null es la única respuesta honesta.
   null. Es preferible calcular el puntaje final con menos dimensiones que
   inventar una.
 
-NO CONFUNDAS BREVEDAD CON PROBLEMA: si el cliente elogia una dimensión sin
-describir ningún problema concreto en ella (ej. "buen producto", "todo
-bien", "buena atención", "llegó ok"), ese elogio —por breve o poco efusivo
-que suene— NO es evidencia de un problema y no amerita restar puntos. Solo
-baja el puntaje de una dimensión por debajo de un elogio simple cuando el
-texto describe un problema específico en ESA dimensión (ej. "el producto
-vino con un rayón", "la atención fue lenta", "llegó 3 días tarde"). Sin una
-queja concreta, "bueno" vale prácticamente igual de alto que "excelente" —
-la falta de adjetivos rimbombantes no es una queja disfrazada, y el cliente
-no tiene por qué escribir un ensayo para merecer el puntaje completo.
+NO CONFUNDAS BREVEDAD O TONO MODERADO CON PROBLEMA: si el cliente elogia una
+dimensión sin describir ningún problema concreto en ella — da igual si usa
+"excelente", "buenísimo", o simplemente "bueno", "bien", "ok", "todo en
+orden", "buen producto y servicio" — esa dimensión es 5.0. La intensidad del
+adjetivo NO es información sobre la experiencia, es solo estilo de
+redacción: "buen producto" y "producto excelente" describen la MISMA
+ausencia de problemas y deben recibir EL MISMO 5.0, no un 4.0 por sonar
+menos efusivo. No existe una categoría intermedia de "bueno pero no
+perfecto" cuando el texto no da ningún hecho que la respalde. Solo baja el
+puntaje de una dimensión por debajo de 5.0 cuando el texto describe un
+problema específico y verificable en ESA dimensión (ej. "el producto vino
+con un rayón", "la atención fue lenta", "llegó 3 días tarde"). Nunca restes
+puntos por "falta de entusiasmo", por brevedad, o porque el elogio "podría
+ser más específico" — nada de eso es una queja, es solo la forma de
+escribir de ese cliente, y el cliente no tiene por qué escribir un ensayo
+para merecer el puntaje completo.
+
+CONFÍA EN UNA QUEJA BIEN JUSTIFICADA: cuando el cliente da un puntaje bajo
+Y explica un motivo concreto y específico para esa dimensión (un hecho
+verificable, no solo un adjetivo — "llegó tarde", "vino con un rayón",
+"nadie respondió"), esa dimensión debe quedar cerca de lo que el cliente
+describe, no de lo que a ti te parezca "razonable" para ese problema. No
+subas el puntaje de una dimensión solo porque, a tu criterio, el problema
+descrito "no era tan grave" — qué tan grave fue una mala experiencia para
+ESE cliente es su call, no el tuyo, siempre que haya un hecho concreto
+detrás. Reservar una corrección real para cuando el texto NO respalda el
+puntaje (reseña sin quejas concretas pero con nota baja, o al revés) — no
+para cuando el cliente ya se justificó.
 
 CONFÍA EN UNA QUEJA BIEN JUSTIFICADA: cuando el cliente da un puntaje bajo
 Y explica un motivo concreto y específico para esa dimensión (un hecho

@@ -1,7 +1,9 @@
 import type { CSSProperties } from "react";
 import type { WidgetConfig } from "@/lib/types";
 
-const LIGHT_TOKENS: Record<string, string> = {
+// Exported so the dashboard shell's own light mode (see lib/theme.ts) can
+// reuse the exact same light palette instead of drifting into a second one.
+export const LIGHT_TOKENS: Record<string, string> = {
   "--background": "#f7f8fa",
   "--surface": "#ffffff",
   "--surface-2": "#f1f2f5",
