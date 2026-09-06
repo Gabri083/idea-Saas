@@ -236,6 +236,7 @@ const es = {
       appeals: "Apelaciones",
       calibration: "Calibración",
       widget: "Widget",
+      guides: "Guías",
       settings: "Configuración",
     },
     backToSite: "← Volver al sitio",
@@ -623,6 +624,132 @@ const es = {
           other:
             'Si tu sitio está hecho con otra plataforma (Wix, Squarespace, etc.), busca la opción para agregar "código personalizado" o "HTML embebido" — casi todas lo ofrecen.',
         },
+      },
+    },
+    guides: {
+      pageTitle: "Guías de instalación",
+      pageSubtitle: "Cómo integrar correctamente cada widget en tu tienda, paso a paso.",
+      widgetListTitle: "Elige un widget",
+      categoryLabels: {
+        page: "Contenido de una página",
+        product: "Solo en la página de producto",
+        sitewide: "En todo el sitio",
+      },
+      categoryHint: {
+        page: "Se agrega manualmente a la página donde quieras mostrarlo (inicio, una landing, etc.).",
+        product:
+          "Va en la plantilla de producto para que aparezca automáticamente en cada ficha, sin pegarlo página por página.",
+        sitewide: "Se agrega una sola vez en el encabezado o pie de página del tema y aparece en todo el sitio.",
+      },
+      platformTabs: {
+        shopify: "Shopify",
+        wordpress: "WordPress",
+        other: "Otro / HTML",
+      },
+      snippetHint: "Este código ya incluye tu negocio y el diseño elegido — cópialo y pégalo donde se indica abajo.",
+      copyAria: "Copiar código",
+      copiedLabel: "¡Copiado!",
+      steps: {
+        page: {
+          shopify: [
+            'Entra a tu panel de Shopify y ve a "Tienda online" → "Temas".',
+            'En tu tema activo, haz click en "Personalizar".',
+            "Ve a la página donde quieras mostrar el widget (ej. tu página de inicio).",
+            'Haz click en "Agregar sección" y busca "Liquid personalizado" ("Custom Liquid").',
+            "Pega el código en el cuadro de texto que aparece.",
+            'Haz click en "Guardar".',
+          ],
+          wordpress: [
+            "Entra a tu escritorio de WordPress (tudominio.com/wp-admin).",
+            "Abre la página donde quieras mostrar el widget, o crea una nueva.",
+            'Haz click en el botón "+" y busca el bloque "HTML personalizado".',
+            "Pega el código dentro de ese bloque.",
+            'Haz click en "Actualizar" o "Publicar".',
+          ],
+          other: [
+            "Abre el editor de la página donde quieras mostrar el widget.",
+            "Busca la opción para insertar código o HTML personalizado.",
+            "Pega el código ahí y guarda los cambios.",
+          ],
+        },
+        product: {
+          shopify: [
+            'Ve a "Tienda online" → "Temas" → "Personalizar" y abre una ficha de producto cualquiera.',
+            'Haz click en "Agregar bloque" dentro de la sección de información del producto (junto al precio o el botón de compra).',
+            'Busca "Liquid personalizado" y pega el código ahí.',
+            "Guarda — al estar en la plantilla, se repite automáticamente en todos tus productos, no solo en el que estabas editando.",
+          ],
+          wordpress: [
+            "Si usas WooCommerce, este widget debe ir en la plantilla de producto, no en una página suelta.",
+            'La forma más simple: instala el plugin gratuito "Code Snippets" y crea un snippet que enganche el código al hook woocommerce_single_product_summary.',
+            '¿Usas Elementor u otro constructor con editor de plantillas? Edita la "Plantilla de producto único" y agrega ahí un bloque de HTML personalizado.',
+            "Guarda — al estar en la plantilla, aparecerá en todas tus fichas de producto automáticamente.",
+          ],
+          other: [
+            "Este widget necesita vivir en la plantilla de producto de tu plataforma, no en una sola página.",
+            'Busca en tu plataforma la opción para editar la plantilla de producto (a veces llamada "Product template" o "Item page") y pega el código ahí.',
+            "Escríbenos si no encuentras esa opción y te ayudamos a ubicarla.",
+          ],
+        },
+        sitewide: {
+          shopify: [
+            'Ve a "Tienda online" → "Temas" → busca el menú "⋮" junto a "Personalizar" → "Editar código".',
+            "Abre el archivo theme.liquid.",
+            "Pega el código justo antes de la etiqueta de cierre </body>.",
+            'Haz click en "Guardar" — como el widget se posiciona flotante, aparecerá en todas las páginas sin importar dónde lo pegaste dentro del archivo.',
+          ],
+          wordpress: [
+            'Instala el plugin gratuito "Insert Headers and Footers" (o similar).',
+            'Ve a "Configuración" → "Insertar encabezado y pie de página".',
+            "Pega el código en el cuadro de pie de página (footer).",
+            "Guarda — aparecerá en todo tu sitio, en cualquier página.",
+          ],
+          other: [
+            'Busca en tu plataforma una zona de "código personalizado" o "scripts" que se aplique a todo el sitio, no a una sola página.',
+            "Pega el código ahí y guarda los cambios.",
+          ],
+        },
+      },
+      notes: {
+        page: {
+          shopify:
+            'Si no encuentras "Liquid personalizado" en tu tema, algunos temas no lo incluyen por defecto — escríbenos y te ayudamos con otra alternativa.',
+          wordpress:
+            '¿Quieres que aparezca en todas las páginas en vez de solo una? Usa la opción "En todo el sitio" de este mismo widget si tu diseño lo permite, o repite estos pasos en cada página.',
+          other:
+            'Casi todas las plataformas (Wix, Squarespace, etc.) ofrecen una opción de "código personalizado" o "HTML embebido".',
+        },
+        product: {
+          shopify:
+            "Si tu tema es de los antiguos (previo a Online Store 2.0) y no tiene bloques personalizables en la ficha de producto, edita directamente el archivo sections/main-product.liquid en el editor de código.",
+          wordpress:
+            "Sin WooCommerce (ej. un catálogo simple), pega el código en la plantilla que uses para mostrar cada producto individual.",
+          other:
+            'El nombre exacto puede variar ("plantilla de producto", "página de artículo"), pero casi toda plataforma de e-commerce tiene una.',
+        },
+        sitewide: {
+          shopify:
+            'Si editar theme.liquid te da nervios, duplica tu tema actual antes ("Acciones" → "Duplicar") por si quieres revertir.',
+          wordpress: "También puedes pegarlo directamente en el archivo footer.php de tu tema si prefieres no instalar un plugin.",
+          other: "Si tu plataforma no tiene una zona de código sitewide, contáctanos — casi siempre hay una alternativa.",
+        },
+      },
+      widgets: {
+        carousel: "Carrusel horizontal de reseñas con scroll — ideal para tu página de inicio o una sección de testimonios.",
+        grid: "Cuadrícula de reseñas — perfecta para una página dedicada a todas tus reseñas.",
+        wall: "Reseñas apiladas verticalmente, una sección completa dedicada a la opinión de tus clientes.",
+        spotlight: "Una cita grande y destacada que va rotando entre tus mejores reseñas.",
+        badge: "Insignia compacta de una sola línea con tu puntaje — cabe en cualquier rincón de una página.",
+        sello: "Sello circular con tu puntaje, pensado para destacar visualmente.",
+        mosaico: "Lista densa y compacta de reseñas recientes, ideal junto a texto o en una barra lateral.",
+        cinta: "Cinta oscura que se desliza mostrando reseñas — funciona como una franja de confianza en todo el sitio.",
+        lanzador: "Burbuja flotante que se abre con un click y muestra tus mejores reseñas — vive en una esquina, en todo el sitio.",
+        barra: "Barra fija arriba de todo, incluso sobre tu menú — para mostrar tu puntaje en cada página.",
+        fila: 'Fila de estrellas y conteo, sin caja — el clásico "★★★★★ (128 reseñas)" bajo el título de un producto.',
+        notificacion: "Aviso flotante que aparece solo, mostrando la reseña más reciente de un cliente.",
+        comparador: "Compara tu puntaje contra el promedio de tu categoría — genera confianza con contexto.",
+        franja: "Línea discreta con avatares de clientes, pensada para el pie de página.",
+        cierre: "Frase de confianza justo antes del botón de compra, para el último empujón antes de pagar.",
       },
     },
   },
@@ -1099,6 +1226,7 @@ const en: typeof es = {
       appeals: "Appeals",
       calibration: "Calibration",
       widget: "Widget",
+      guides: "Guides",
       settings: "Settings",
     },
     backToSite: "← Back to site",
@@ -1475,6 +1603,132 @@ const en: typeof es = {
           other:
             "If your site runs on another platform (Wix, Squarespace, etc.), look for the option to add \"custom code\" or \"embed HTML\" — almost all of them offer it.",
         },
+      },
+    },
+    guides: {
+      pageTitle: "Installation Guides",
+      pageSubtitle: "How to correctly integrate each widget into your store, step by step.",
+      widgetListTitle: "Choose a widget",
+      categoryLabels: {
+        page: "Page content",
+        product: "Product page only",
+        sitewide: "Sitewide",
+      },
+      categoryHint: {
+        page: "Added manually to whichever page you want to show it on (home, a landing page, etc.).",
+        product:
+          "Goes in the product template so it shows up automatically on every product, without pasting it page by page.",
+        sitewide: "Added once in your theme's header or footer and shows up across your whole site.",
+      },
+      platformTabs: {
+        shopify: "Shopify",
+        wordpress: "WordPress",
+        other: "Other / HTML",
+      },
+      snippetHint: "This code already includes your business and the design you chose — copy it and paste it where shown below.",
+      copyAria: "Copy code",
+      copiedLabel: "Copied!",
+      steps: {
+        page: {
+          shopify: [
+            'Go to your Shopify admin and open "Online Store" → "Themes".',
+            'On your active theme, click "Customize".',
+            "Go to the page where you want the widget to show (e.g. your homepage).",
+            'Click "Add section" and search for "Custom Liquid".',
+            "Paste the code into the text box that appears.",
+            'Click "Save".',
+          ],
+          wordpress: [
+            "Log into your WordPress dashboard (yoursite.com/wp-admin).",
+            "Open the page where you want the widget, or create a new one.",
+            'Click the "+" button and search for the "Custom HTML" block.',
+            "Paste the code inside that block.",
+            'Click "Update" or "Publish".',
+          ],
+          other: [
+            "Open the editor for the page where you want the widget.",
+            "Look for the option to insert custom code or HTML.",
+            "Paste the code there and save your changes.",
+          ],
+        },
+        product: {
+          shopify: [
+            'Go to "Online Store" → "Themes" → "Customize" and open any product page.',
+            'Click "Add block" inside the product information section (next to the price or buy button).',
+            'Search for "Custom Liquid" and paste the code there.',
+            "Save — since it's in the template, it repeats automatically on every product, not just the one you were editing.",
+          ],
+          wordpress: [
+            "If you use WooCommerce, this widget belongs in the product template, not a standalone page.",
+            'Simplest option: install the free "Code Snippets" plugin and create a snippet that hooks the code into woocommerce_single_product_summary.',
+            'Using Elementor or another builder with template editing? Edit the "Single Product" template and add a Custom HTML block there.',
+            "Save — since it lives in the template, it'll show up on every product page automatically.",
+          ],
+          other: [
+            "This widget needs to live in your platform's product template, not a single page.",
+            'Look for the option to edit the product template (sometimes called "Product template" or "Item page") and paste the code there.',
+            "Reach out if you can't find that option — we'll help you locate it.",
+          ],
+        },
+        sitewide: {
+          shopify: [
+            'Go to "Online Store" → "Themes" → the "⋮" menu next to "Customize" → "Edit code".',
+            "Open the theme.liquid file.",
+            "Paste the code right before the closing </body> tag.",
+            "Click \"Save\" — since the widget is fixed-position, it'll show up on every page no matter where in the file you pasted it.",
+          ],
+          wordpress: [
+            'Install the free "Insert Headers and Footers" plugin (or similar).',
+            'Go to "Settings" → "Insert Headers and Footers".',
+            "Paste the code into the footer box.",
+            "Save — it'll show up across your whole site, on any page.",
+          ],
+          other: [
+            'Look for a "custom code" or "scripts" area in your platform that applies sitewide, not to a single page.',
+            "Paste the code there and save your changes.",
+          ],
+        },
+      },
+      notes: {
+        page: {
+          shopify:
+            'Can\'t find "Custom Liquid" in your theme? Some themes don\'t include it by default — reach out and we\'ll help you find another way.',
+          wordpress:
+            "Want it on every page instead of just one? Use this same widget's \"Sitewide\" option if your design allows it, or repeat these steps on each page.",
+          other:
+            'Almost every platform (Wix, Squarespace, etc.) offers a "custom code" or "embed HTML" option.',
+        },
+        product: {
+          shopify:
+            "If your theme predates Online Store 2.0 and has no customizable blocks on the product page, edit the sections/main-product.liquid file directly in the code editor.",
+          wordpress:
+            "Without WooCommerce (e.g. a simple catalog), paste the code into whatever template you use to show each individual product.",
+          other:
+            'The exact name may vary ("product template", "item page"), but almost every e-commerce platform has one.',
+        },
+        sitewide: {
+          shopify:
+            'Nervous about editing theme.liquid? Duplicate your current theme first ("Actions" → "Duplicate") in case you want to revert.',
+          wordpress: "You can also paste it directly into your theme's footer.php file if you'd rather not install a plugin.",
+          other: "If your platform has no sitewide code area, contact us — there's almost always a workaround.",
+        },
+      },
+      widgets: {
+        carousel: "A horizontal, scrollable row of reviews — great for your homepage or a testimonials section.",
+        grid: "A grid of reviews — perfect for a page dedicated to all your reviews.",
+        wall: "Reviews stacked vertically, a full section dedicated to what your customers say.",
+        spotlight: "One big, featured quote that rotates through your best reviews.",
+        badge: "A compact single-line badge with your rating — fits in any corner of a page.",
+        sello: "A circular seal with your rating, built to stand out visually.",
+        mosaico: "A dense, compact list of recent reviews — great next to text or in a sidebar.",
+        cinta: "A dark scrolling ticker of reviews — works as a sitewide trust strip.",
+        lanzador: "A floating bubble that opens on click and shows your best reviews — lives in a corner, sitewide.",
+        barra: "A bar fixed above everything, even your menu — shows your rating on every page.",
+        fila: 'A star row and count, no box — the classic "★★★★★ (128 reviews)" under a product title.',
+        notificacion: "A floating toast that pops up on its own, showing a customer's most recent review.",
+        comparador: "Compares your rating against your category average — builds trust with context.",
+        franja: "A quiet strip with customer avatars, built for the footer.",
+        cierre: "A trust line right before the buy button, for that last nudge before checkout.",
       },
     },
   },

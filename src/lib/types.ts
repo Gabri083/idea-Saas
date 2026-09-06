@@ -147,28 +147,30 @@ export interface CalibrationRequest {
   resolved_at: string | null;
 }
 
+export type WidgetLayout =
+  | "carousel"
+  | "badge"
+  | "grid"
+  | "wall"
+  | "spotlight"
+  | "sello"
+  | "mosaico"
+  | "cinta"
+  | "lanzador"
+  | "barra"
+  | "notificacion"
+  | "comparador"
+  | "franja"
+  | "cierre"
+  | "fila";
+
 export interface WidgetConfig {
   business_id: string;
   theme_mode: "light" | "dark";
   accent_color: string;
   border_radius: "none" | "sm" | "md" | "lg" | "full";
   font_family: string;
-  layout:
-    | "carousel"
-    | "badge"
-    | "grid"
-    | "wall"
-    | "spotlight"
-    | "sello"
-    | "mosaico"
-    | "cinta"
-    | "lanzador"
-    | "barra"
-    | "notificacion"
-    | "comparador"
-    | "franja"
-    | "cierre"
-    | "fila";
+  layout: WidgetLayout;
   card_style: "recibo" | "medidor"; // per-review card look, used by grid/wall/carousel
   show_breakdown: boolean;
   show_branding: boolean; // "Verificado por Kelsira" footer; forced true on free/starter regardless of this value
