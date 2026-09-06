@@ -61,6 +61,16 @@ export function recencyWeightedAverage<T extends { created_at: string }>(
   return totalWeight > 0 ? weightedSum / totalWeight : 0;
 }
 
+/** Reviews created since the start of the current UTC month — matches the
+ * cap enforcement in /api/reviews, so this always agrees with what would
+ * actually get blocked. */
+export function countReviewsThisMonth<T extends { created_at: string }>(items: T[]): number {
+  const startOfMonth = new Date();
+  startOfMonth.setUTCDate(1);
+  startOfMonth.setUTCHours(0, 0, 0, 0);
+  return items.filter((item) => new Date(item.created_at) >= startOfMonth).length;
+}
+
 /** Below this gap between the customer's own star pick and the AI score, the
  * two are treated as "the same" — the AI confirmed the customer's take
  * rather than correcting it, so copy should never read like a correction.

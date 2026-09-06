@@ -15,22 +15,23 @@ export function MetricCard({
   hint?: string;
   tone?: "neutral" | "emerald" | "amber" | "cobalt";
 }) {
+  // Plain, flat icon — no tinted background chip. Color is reserved for
+  // actually signaling something (an open alert, a good/bad delta), not
+  // decorating every card the same way regardless of what it says.
   const toneClasses = {
-    neutral: "text-foreground bg-surface-2",
-    emerald: "text-emerald bg-emerald/10",
-    amber: "text-amber bg-amber/10",
-    cobalt: "text-cobalt bg-cobalt/10",
+    neutral: "text-muted",
+    emerald: "text-emerald",
+    amber: "text-amber",
+    cobalt: "text-cobalt",
   }[tone];
 
   return (
     <Card className="p-5">
-      <div className="flex items-center gap-3">
-        <span className={cn("flex h-9 w-9 items-center justify-center rounded-lg", toneClasses)}>
-          <Icon size={17} />
-        </span>
+      <div className="flex items-center gap-2">
+        <Icon size={15} className={cn(toneClasses)} />
         <p className="text-sm text-muted">{label}</p>
       </div>
-      <p className="mt-4 text-2xl font-semibold tracking-tight">{value}</p>
+      <p className="mt-3 text-2xl font-semibold tracking-tight">{value}</p>
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
     </Card>
   );
