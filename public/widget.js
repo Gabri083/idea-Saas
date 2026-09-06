@@ -19,6 +19,9 @@
     "M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z";
   var AVATAR_HUES = [210, 260, 330, 20, 160, 40, 280, 190];
   var SPOTLIGHT_INTERVAL_MS = 5000;
+  // Calibrated for comfortable reading speed — see mountTicker, which turns
+  // this into a duration proportional to how much content there actually is.
+  var TICKER_PX_PER_SECOND = 45;
   // Fallback threshold for reviews from before per-category ratings existed
   // (nothing more specific to compare against). Same value as
   // CATEGORY_CONFIRM_EPSILON below, for the same reason. Mirrored in
@@ -526,6 +529,19 @@
       "</div>" +
       "</div>";
     container.appendChild(wrap);
+
+    // The CSS animation's duration is fixed, but the track's width isn't —
+    // a business with 12 reviews has a much longer track than one with 2.
+    // Without this, the same fixed duration makes more content whip by
+    // faster instead of just taking longer to loop, so the apparent speed
+    // is pinned to a constant instead of the loop length. scrollWidth is
+    // only measurable once the element is actually in the DOM.
+    var track = wrap.querySelector(".kelsira-ticker-track");
+    if (track) {
+      var oneLoopWidth = track.scrollWidth / 2; // content is duplicated once for the seamless loop
+      var duration = Math.max(15, oneLoopWidth / TICKER_PX_PER_SECOND);
+      track.style.animationDuration = duration + "s";
+    }
   }
 
   // ---------- La Fila de Producto: no box at all, just the inline star row ----------
@@ -621,9 +637,12 @@
   }
 
   // ---------- La Notificación: live social-proof toast, cycles reviews on its own ----------
-  function mountNotificacion(container, data, showBranding) {
-    var wrap = document.createElement("div");
+  function mountNotificacion(container, data, showBranding, origin, businessId) {
+    var wrap = document.createElement("a");
     wrap.className = "kelsira-notify";
+    wrap.href = origin + "/resenas/" + encodeURIComponent(businessId);
+    wrap.target = "_blank";
+    wrap.rel = "noopener";
 
     var reviews = data.reviews;
     var index = 0;
@@ -862,7 +881,11 @@
       ".kelsira-launcher-cta{display:block;text-align:center;padding:10px;font-size:11.5px;font-weight:600;text-decoration:none;border-top:1px solid var(--kelsira-border);}" +
       ".kelsira-launcher-brand{text-align:center;padding:8px;font-size:10px;opacity:.55;border-top:1px solid var(--kelsira-border);}" +
       // La Notificación — floating corner toast, opposite side from El Lanzador.
-      ".kelsira-notify{position:fixed;left:20px;bottom:20px;z-index:2147483000;display:flex;align-items:center;gap:10px;max-width:280px;background:var(--kelsira-bg);color:var(--kelsira-fg);border:1px solid var(--kelsira-border);border-radius:var(--kelsira-radius);padding:12px;box-shadow:0 10px 26px -10px rgba(0,0,0,.35);animation:kelsira-notify-in .4s cubic-bezier(.2,.8,.2,1);}" +
+      // An <a> now (not a <div>) so it links through to the full public
+      // reviews page — text-decoration/cursor reset since it's styled as a
+      // toast, not a link.
+      ".kelsira-notify{position:fixed;left:20px;bottom:20px;z-index:2147483000;display:flex;align-items:center;gap:10px;max-width:280px;background:var(--kelsira-bg);color:var(--kelsira-fg);text-decoration:none;cursor:pointer;border:1px solid var(--kelsira-border);border-radius:var(--kelsira-radius);padding:12px;box-shadow:0 10px 26px -10px rgba(0,0,0,.35);animation:kelsira-notify-in .4s cubic-bezier(.2,.8,.2,1);transition:transform .15s ease;}" +
+      ".kelsira-notify:hover{transform:translateY(-2px);}" +
       "@keyframes kelsira-notify-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}" +
       ".kelsira-notify-body p{margin:0;font-size:12px;line-height:1.4;}" +
       ".kelsira-notify-meta{display:block;margin-top:2px;font-size:10.5px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}" +
@@ -1020,7 +1043,7 @@
         } else if (layout === "lanzador") {
           mountLanzador(container, data, accent, origin, businessId);
         } else if (layout === "notificacion") {
-          mountNotificacion(container, data, data.config.show_branding);
+          mountNotificacion(container, data, data.config.show_branding, origin, businessId);
         } else if (layout === "comparador") {
           mountComparador(container, data, accent);
         } else if (layout === "franja") {
