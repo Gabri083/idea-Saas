@@ -2,8 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
-import { getBusiness, getReviews, getWidgetConfig } from "@/lib/data";
+import { getBusiness, getRecurringIssues, getReviews, getWidgetConfig } from "@/lib/data";
 import { resolveBusinessId } from "@/lib/demo";
+import { getReviewIssueTags, type ReviewIssueTag } from "@/lib/ai/recurring-issues";
 import { getCategoryLabels, type Review } from "@/lib/types";
 import { formatDate, isConfirmed, recencyWeightedAverage, RATING_TIER_COLORS } from "@/lib/utils";
 import { publicPageThemeStyle } from "@/lib/public-page-theme";
@@ -55,13 +56,15 @@ function computeRatingDistribution(reviews: Review[]): number[] {
 
 async function loadData(businessIdParam: string) {
   const businessId = resolveBusinessId(businessIdParam);
-  const [business, reviews, config] = await Promise.all([
+  const [business, reviews, config, recurringIssues] = await Promise.all([
     getBusiness(businessId),
     getReviews(businessId),
     getWidgetConfig(businessId),
+    getRecurringIssues(businessId),
   ]);
   const publicReviews = reviews.filter((r) => r.status === "published" || r.status === "resolved");
-  return { business, publicReviews, config };
+  const issueTagsByReview = getReviewIssueTags(publicReviews, recurringIssues);
+  return { business, publicReviews, config, issueTagsByReview };
 }
 
 export async function generateMetadata({
@@ -89,7 +92,7 @@ export default async function PublicReviewsPage({
 }) {
   const { businessId } = await params;
   const { page: pageParam, filter: filterParam } = await searchParams;
-  const [{ business, publicReviews, config }, dict, locale] = await Promise.all([
+  const [{ business, publicReviews, config, issueTagsByReview }, dict, locale] = await Promise.all([
     loadData(businessId),
     getDictionary(),
     getLocale(),
@@ -257,7 +260,14 @@ export default async function PublicReviewsPage({
             </Card>
           ) : (
             pageReviews.map((review) => (
-              <ReviewEntry key={review.id} review={review} businessName={business.name} locale={locale} dict={t} />
+              <ReviewEntry
+                key={review.id}
+                review={review}
+                businessName={business.name}
+                locale={locale}
+                dict={t}
+                issueTags={issueTagsByReview.get(review.id) ?? []}
+              />
             ))
           )}
         </div>
@@ -360,11 +370,13 @@ function ReviewEntry({
   businessName,
   locale,
   dict,
+  issueTags,
 }: {
   review: Review;
   businessName: string;
   locale: "es" | "en";
   dict: Dictionary["publicReviews"];
+  issueTags: ReviewIssueTag[];
 }) {
   const confirmed = isConfirmed(review);
   // Same rule as the embeddable widget: the number shown by default is
@@ -393,13 +405,19 @@ function ReviewEntry({
         )}
       </div>
       <p className="mt-3 text-sm text-foreground/90">{review.review_text}</p>
-      {review.detected_issues.length > 0 && (
+      {issueTags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {review.detected_issues.map((issue) => (
-            <Badge key={issue} tone="amber">
-              {issue}
-            </Badge>
-          ))}
+          {issueTags.map((tag) =>
+            tag.status === "unresolved" ? (
+              <Badge key={tag.label} tone="amber" title={dict.issueTagUnresolvedTitle}>
+                {dict.issueTagUnresolved.replace("{label}", tag.label)}
+              </Badge>
+            ) : (
+              <Badge key={tag.label} tone="neutral" title={dict.issueTagResolvedTitle}>
+                {dict.issueTagResolved.replace("{label}", tag.label)}
+              </Badge>
+            ),
+          )}
         </div>
       )}
       <div className="mt-4 flex items-center justify-between">

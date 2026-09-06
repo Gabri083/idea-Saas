@@ -252,3 +252,21 @@ export function computeCustomerWeightedRating(picks: {
 export function clampRating(value: number): number {
   return Math.min(5, Math.max(1, Math.round(value * 10) / 10));
 }
+
+/**
+ * Decides, per dimension, whose number actually gets published — the AI's
+ * own text-based read, or the customer's own category pick. Whenever the
+ * customer left a pick AND the AI found a real, concrete problem in that
+ * dimension, the customer's own number wins (up or down) — they already
+ * weighed the problem when choosing it, and the AI's job there was only to
+ * confirm the complaint is real, not to recompute a "better" severity.
+ * The AI's number only wins when it found NO problem at all (a clean 5.0):
+ * that's the one case worth protecting the business from — a harsh click
+ * with no fact behind it.
+ */
+export function reconcileDimensionScore(aiScore: number | null, customerScore: number | null): number | null {
+  if (customerScore == null) return aiScore;
+  if (aiScore == null) return customerScore;
+  if (aiScore >= 5) return aiScore;
+  return customerScore;
+}
