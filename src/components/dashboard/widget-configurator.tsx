@@ -708,7 +708,7 @@ function Launcher({
       )}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-[0_10px_26px_-8px_rgba(0,0,0,.4)]"
+        className="flex h-12 w-12 shrink-0 items-center justify-center whitespace-nowrap rounded-full text-xs font-bold leading-none text-white shadow-[0_10px_26px_-8px_rgba(0,0,0,.4)]"
         style={{ background: accent }}
       >
         {average.toFixed(1)}★
@@ -999,7 +999,7 @@ export function WidgetConfigurator({
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [copied, setCopied] = useState(false);
 
-  const snippet = `<script src="${SITE_URL}/widget.js" data-business-id="${businessId}"></script>`;
+  const snippet = `<script src="${SITE_URL}/widget.js" data-business-id="${businessId}" data-layout="${config.layout}"></script>`;
 
   async function save() {
     setSaveStatus("saving");
@@ -1460,6 +1460,7 @@ export function WidgetConfigurator({
             </button>
           </div>
           <p className="mt-2 text-xs text-muted">{dict.codeSectionHint}</p>
+          <p className="mt-1 text-xs text-muted">{dict.codeSectionMultiHint}</p>
         </Card>
 
         <Card className="min-w-0 p-6">
