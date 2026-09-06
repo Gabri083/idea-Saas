@@ -255,22 +255,13 @@
     return html + "</div>";
   }
 
-  function replyHtml(review, businessName) {
-    if (!review.business_reply) return "";
-    return (
-      '<div class="kelsira-reply">' +
-      '<span class="kelsira-reply-from">' + T.replyFrom +
-      escapeHtml(businessName) +
-      "</span>" +
-      '<p class="kelsira-reply-text">' +
-      escapeHtml(truncate(review.business_reply, 280)) +
-      "</p>" +
-      "</div>"
-    );
-  }
+  // Deliberately no reply rendering in any card/quote layout below: a long
+  // business reply next to a short one breaks the uniform card height a
+  // grid/wall/carousel depends on to look intentional. Full replies still
+  // show on /resenas, which has the room and isn't laid out in a grid.
 
   // ---------- El Recibo: ticket-shaped card, customer's own rating up top ----------
-  function reciboCardHtml(review, showBreakdown, accent, businessName) {
+  function reciboCardHtml(review, showBreakdown, accent) {
     var r = ratingRowHtml(review, accent);
     return (
       '<div class="kelsira-ticket">' +
@@ -293,13 +284,12 @@
       "</span></div>" +
       "</div>" +
       "</div>" +
-      replyHtml(review, businessName) +
       "</div>"
     );
   }
 
   // ---------- El Medidor: comparative gauge, no strikethrough text ----------
-  function medidorCardHtml(review, showBreakdown, accent, businessName) {
+  function medidorCardHtml(review, showBreakdown, accent) {
     var confirmed = isConfirmed(review);
     var rawPct = confirmed ? null : Math.max(0, Math.min(100, ((review.customer_star_rating - 1) / 4) * 100));
     var finalPct = Math.max(0, Math.min(100, ((review.overall_ai_rating - 1) / 4) * 100));
@@ -335,19 +325,18 @@
       formatDate(review.created_at) +
       "</span></div>" +
       "</div>" +
-      replyHtml(review, businessName) +
       "</div>"
     );
   }
 
-  function cardHtml(review, showBreakdown, accent, businessName, cardStyle) {
+  function cardHtml(review, showBreakdown, accent, cardStyle) {
     return cardStyle === "medidor"
-      ? medidorCardHtml(review, showBreakdown, accent, businessName)
-      : reciboCardHtml(review, showBreakdown, accent, businessName);
+      ? medidorCardHtml(review, showBreakdown, accent)
+      : reciboCardHtml(review, showBreakdown, accent);
   }
 
   // ---------- La Cita: oversized spotlight quote ----------
-  function mountSpotlight(container, reviews, showBreakdown, accent, businessName) {
+  function mountSpotlight(container, reviews, showBreakdown, accent) {
     var wrap = document.createElement("div");
     wrap.className = "kelsira-spotlight";
     var inner = document.createElement("div");
@@ -385,8 +374,7 @@
         aiTagHtml() +
         "</span>" +
         "</div>" +
-        (showBreakdown ? breakdownHtml(r) : "") +
-        replyHtml(r, businessName);
+        (showBreakdown ? breakdownHtml(r) : "");
 
       if (dots) {
         dots.innerHTML = "";
@@ -754,9 +742,6 @@
       ".kelsira-quote:after{content:'\\201D';}" +
       ".kelsira-breakdown{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}" +
       ".kelsira-pill{font-size:10.5px;padding:3px 9px;border-radius:999px;background:var(--kelsira-pill-bg);opacity:.85;}" +
-      ".kelsira-reply{margin-top:12px;padding:10px 12px;border-radius:calc(var(--kelsira-radius) * 0.6);background:var(--kelsira-pill-bg);}" +
-      ".kelsira-reply-from{display:block;font-size:11px;font-weight:700;opacity:.7;margin-bottom:3px;}" +
-      ".kelsira-reply-text{margin:0;font-size:12.5px;line-height:1.5;opacity:.85;}" +
       ".kelsira-card-foot{display:flex;align-items:center;gap:10px;margin-top:14px;}" +
       ".kelsira-carousel{display:flex;gap:14px;overflow-x:auto;padding:6px 2px 14px;scroll-snap-type:x proximity;}" +
       ".kelsira-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}" +
@@ -806,7 +791,6 @@
       ".kelsira-spotlight-foot{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;}" +
       ".kelsira-quote-chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;margin-left:6px;}" +
       ".kelsira-spotlight .kelsira-breakdown{justify-content:center;margin-top:14px;}" +
-      ".kelsira-spotlight .kelsira-reply{text-align:left;max-width:360px;margin-left:auto;margin-right:auto;}" +
       ".kelsira-dots{display:flex;justify-content:center;gap:6px;margin-top:18px;}" +
       ".kelsira-dot{width:6px;height:6px;border-radius:50%;background:var(--kelsira-border);border:none;padding:0;cursor:pointer;transition:width .2s ease,background .2s ease;}" +
       ".kelsira-dot--active{width:18px;border-radius:3px;background:var(--kelsira-accent);}" +
@@ -996,7 +980,7 @@
         } else if (layout === "cierre") {
           mountCierre(container, data, accent);
         } else if (layout === "spotlight") {
-          mountSpotlight(container, data.reviews, data.config.show_breakdown, accent, data.business.name);
+          mountSpotlight(container, data.reviews, data.config.show_breakdown, accent);
         } else {
           var list = document.createElement("div");
           list.className =
@@ -1004,7 +988,7 @@
           data.reviews.forEach(function (review) {
             list.insertAdjacentHTML(
               "beforeend",
-              cardHtml(review, data.config.show_breakdown, accent, data.business.name, cardStyle),
+              cardHtml(review, data.config.show_breakdown, accent, cardStyle),
             );
           });
           container.appendChild(list);

@@ -235,39 +235,22 @@ function Breakdown({ review, pillBg, dict }: { review: Review; pillBg: string; d
   );
 }
 
-function Reply({
-  review,
-  businessName,
-  pillBg,
-  dict,
-}: {
-  review: Review;
-  businessName: string;
-  pillBg: string;
-  dict: WidgetDict;
-}) {
-  if (!review.business_reply) return null;
-  return (
-    <div className="mt-3 rounded-lg px-3 py-2.5" style={{ background: pillBg }}>
-      <p className="text-[11px] font-bold opacity-70">{dict.replyFrom.replace("{name}", businessName)}</p>
-      <p className="mt-0.5 text-[12.5px] leading-relaxed opacity-85">{review.business_reply}</p>
-    </div>
-  );
-}
+// Deliberately no reply rendering in any card/quote layout below: a long
+// business reply next to a short one breaks the uniform card height a
+// grid/wall/carousel depends on to look intentional. Full replies still show
+// on /resenas, which has the room and isn't laid out in a grid.
 
 function TicketCard({
   review,
   showBreakdown,
   accent,
   isDark,
-  businessName,
   dict,
 }: {
   review: Review;
   showBreakdown: boolean;
   accent: string;
   isDark: boolean;
-  businessName: string;
   dict: WidgetDict;
 }) {
   const borderColor = isDark ? "#232529" : "#e5e7eb";
@@ -319,7 +302,6 @@ function TicketCard({
             <span className="text-[11px] opacity-55">{formatDate(review.created_at)}</span>
           </div>
         </div>
-        <Reply review={review} businessName={businessName} pillBg={pillBg} dict={dict} />
       </div>
     </div>
   );
@@ -331,7 +313,6 @@ function GaugeCard({
   accent,
   isDark,
   radius,
-  businessName,
   dict,
 }: {
   review: Review;
@@ -339,7 +320,6 @@ function GaugeCard({
   accent: string;
   isDark: boolean;
   radius: string;
-  businessName: string;
   dict: WidgetDict;
 }) {
   const borderColor = isDark ? "#232529" : "#e5e7eb";
@@ -400,7 +380,6 @@ function GaugeCard({
           <span className="text-[11px] opacity-55">{formatDate(review.created_at)}</span>
         </div>
       </div>
-      <Reply review={review} businessName={businessName} pillBg={pillBg} dict={dict} />
     </div>
   );
 }
@@ -919,14 +898,12 @@ function Spotlight({
   showBreakdown,
   accent,
   isDark,
-  businessName,
   dict,
 }: {
   reviews: Review[];
   showBreakdown: boolean;
   accent: string;
   isDark: boolean;
-  businessName: string;
   dict: WidgetDict;
 }) {
   const [index, setIndex] = useState(0);
@@ -971,13 +948,6 @@ function Spotlight({
       {showBreakdown && (
         <div className="flex justify-center">
           <Breakdown review={review} pillBg={pillBg} dict={dict} />
-        </div>
-      )}
-      {review.business_reply && (
-        <div className="flex justify-center">
-          <div className="mt-1 max-w-sm">
-            <Reply review={review} businessName={businessName} pillBg={pillBg} dict={dict} />
-          </div>
         </div>
       )}
       {reviews.length > 1 && (
@@ -1340,7 +1310,6 @@ export function WidgetConfigurator({
                 showBreakdown={config.show_breakdown}
                 accent={config.accent_color}
                 isDark={isDark}
-                businessName={businessName}
                 dict={dict}
               />
             ) : config.layout === "fila" ? (
@@ -1435,7 +1404,6 @@ export function WidgetConfigurator({
                         accent={config.accent_color}
                         isDark={isDark}
                         radius={radius}
-                        businessName={businessName}
                         dict={dict}
                       />
                     </div>
@@ -1446,7 +1414,6 @@ export function WidgetConfigurator({
                         showBreakdown={config.show_breakdown}
                         accent={config.accent_color}
                         isDark={isDark}
-                        businessName={businessName}
                         dict={dict}
                       />
                     </div>
