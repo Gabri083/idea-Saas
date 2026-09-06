@@ -54,7 +54,7 @@
       viewAllPrefix: "View all ",
       viewVerifiedAria: "View verified reviews",
       noReviewsYet: "No verified reviews yet.",
-      poweredFooter: "Reviews verified by Kelsira — AI Objective Score",
+      poweredFooter: "See all reviews — Verified by Kelsira",
       clientAndAi: "Customer & AI: ",
       client: "Customer ",
       dateLocale: "en-US",
@@ -82,7 +82,7 @@
       viewAllPrefix: "Ver las ",
       viewVerifiedAria: "Ver reseñas verificadas",
       noReviewsYet: "Aún no hay reseñas verificadas.",
-      poweredFooter: "Reseñas verificadas por Kelsira — Puntaje Objetivo IA",
+      poweredFooter: "Ver todas las reseñas — Verificado por Kelsira",
       clientAndAi: "Cliente e IA: ",
       client: "Cliente ",
       dateLocale: "es",
@@ -1084,7 +1084,7 @@
           var footer = document.createElement("div");
           footer.className = "kelsira-powered";
           footer.innerHTML =
-            '<a href="' + origin + '/legal/transparencia-ia" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">' +
+            '<a href="' + origin + "/resenas/" + encodeURIComponent(businessId) + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">' +
             T.poweredFooter +
             "</a>";
           container.appendChild(footer);
