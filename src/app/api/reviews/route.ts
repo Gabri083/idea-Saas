@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { analyzeReviewText, clampRating, computeCustomerWeightedRating, computeWeightedRating } from "@/lib/ai/scoring";
-import { syncRecurringIssuesAndGetPenalty } from "@/lib/ai/recurring-issues";
+import {
+  analyzeReviewText,
+  clampRating,
+  computeCustomerWeightedRating,
+  computeWeightedRating,
+  reconcileDimensionScore,
+} from "@/lib/ai/scoring";
+import { syncRecurringIssues } from "@/lib/ai/recurring-issues";
 import { uuidSchema } from "@/lib/validation";
 import { sendEmail } from "@/lib/email";
 import {
@@ -137,22 +143,27 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Step 2 — 40/30/30 weighted rating over whichever dimensions the AI
-  // actually found grounded in the text. Null only in the rare case a valid
-  // review says nothing that maps to product/service/delivery at all — a
-  // neutral 3.0 is the only honest fallback left when there's truly no
-  // dimension to weight.
-  const weighted = computeWeightedRating(analysis) ?? 3.0;
+  // Step 2 — reconcile each dimension: when the customer left their own pick
+  // AND the AI found a real problem there, the customer's own number wins
+  // (see reconcileDimensionScore) — the AI's independent read only stands
+  // on its own where there's nothing of the customer's to defer to.
+  const productScore = reconcileDimensionScore(analysis.product_score, customer_product_rating ?? null);
+  const serviceScore = reconcileDimensionScore(analysis.service_score, customer_service_rating ?? null);
+  const deliveryScore = reconcileDimensionScore(analysis.delivery_score, customer_delivery_rating ?? null);
 
-  // Step 3 — inaction penalty: subtract penalty_factor for any detected issue
-  // that matches an `open` recurring_issues row past its 30-day deadline.
-  const { penalty, penalizedIssueLabels, newIssues } = await syncRecurringIssuesAndGetPenalty(
-    admin,
-    business_id,
-    analysis.detected_issues,
-  );
+  // Step 3 — 40/30/30 weighted rating over whichever dimensions ended up
+  // with a value. Null only in the rare case a valid review says nothing
+  // that maps to product/service/delivery at all — a neutral 3.0 is the only
+  // honest fallback left when there's truly no dimension to weight.
+  const weighted =
+    computeWeightedRating({ product_score: productScore, service_score: serviceScore, delivery_score: deliveryScore }) ??
+    3.0;
+  const overallAiRating = clampRating(weighted);
 
-  const overallAiRating = clampRating(weighted - penalty);
+  // Tracks how often this exact issue has been reported for this business —
+  // powers the "Sin resolver" tag on /resenas once it crosses the threshold,
+  // never a silent score change (see getReviewIssueTags).
+  const { newIssues } = await syncRecurringIssues(admin, business_id, analysis.detected_issues);
 
   // The customer's own composite, same 40/30/30 weighting as the AI's —
   // renormalized over whichever categories they actually rated, so a fair,
@@ -174,14 +185,14 @@ export async function POST(request: NextRequest) {
       customer_service_rating: customer_service_rating ?? null,
       customer_delivery_rating: customer_delivery_rating ?? null,
       customer_star_rating: customerStarRating,
-      product_score: analysis.product_score,
-      service_score: analysis.service_score,
-      delivery_score: analysis.delivery_score,
+      product_score: productScore,
+      service_score: serviceScore,
+      delivery_score: deliveryScore,
       detected_issues: analysis.detected_issues,
       ai_summary: analysis.summary,
       ai_raw_response: analysis,
       overall_ai_rating: overallAiRating,
-      penalty_applied: penalty,
+      penalty_applied: 0,
       status: "published",
     })
     .select()
@@ -214,14 +225,5 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  return NextResponse.json({
-    review,
-    penalty_context:
-      penalty > 0
-        ? {
-            penalty_applied: penalty,
-            reason: `Penalización por inacción operativa sobre: ${penalizedIssueLabels.join(", ")}`,
-          }
-        : null,
-  });
+  return NextResponse.json({ review });
 }

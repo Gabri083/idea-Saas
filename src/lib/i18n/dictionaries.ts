@@ -801,6 +801,10 @@ const es = {
     fairIconTitle: "La IA de Kelsira lee esta reseña distinto",
     fairNoteText: "Según lo que describe la reseña, la IA de Kelsira le daría {score}/5.",
     replyFrom: "Respuesta de {name}",
+    issueTagUnresolved: "Sin resolver: {label}",
+    issueTagUnresolvedTitle: "Varios clientes reportaron este mismo problema y el negocio aún no lo ha resuelto.",
+    issueTagResolved: "Resuelto: {label}",
+    issueTagResolvedTitle: "El negocio resolvió este problema.",
   },
   admin: {
     badge: "Panel interno de Kelsira",
@@ -1646,6 +1650,10 @@ const en: typeof es = {
     fairIconTitle: "Kelsira's AI reads this one differently",
     fairNoteText: "Based on what the review describes, Kelsira's AI would score this {score}/5.",
     replyFrom: "Reply from {name}",
+    issueTagUnresolved: "Unresolved: {label}",
+    issueTagUnresolvedTitle: "Several customers reported this same problem and the business hasn't resolved it yet.",
+    issueTagResolved: "Resolved: {label}",
+    issueTagResolvedTitle: "The business resolved this problem.",
   },
   admin: {
     badge: "Kelsira internal panel",
