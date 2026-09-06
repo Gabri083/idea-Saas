@@ -1,8 +1,11 @@
 import { Badge } from "@/components/ui/badge";
-import { LogoutButton } from "@/components/dashboard/logout-button";
 import type { Business } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Plan and "log out" used to live here too — both moved to Settings
+// (PlanSection already shows the current plan in full, and the account
+// section there now carries the logout button), so this stays just the
+// business identity plus the demo-mode notice.
 export function Topbar({
   business,
   demoMode,
@@ -18,13 +21,7 @@ export function Topbar({
         <p className="text-sm font-medium">{business.name}</p>
         <p className="text-xs text-muted">{business.contact_email}</p>
       </div>
-      <div className="flex items-center gap-2">
-        {demoMode && <Badge tone="amber">{dict.demoModeBadge}</Badge>}
-        <Badge tone="cobalt">
-          {dict.planPrefix} {dict.planLabels[business.plan]}
-        </Badge>
-        {!demoMode && <LogoutButton label={dict.logout} />}
-      </div>
+      {demoMode && <Badge tone="amber">{dict.demoModeBadge}</Badge>}
     </header>
   );
 }

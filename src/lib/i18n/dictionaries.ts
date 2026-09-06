@@ -323,6 +323,11 @@ const es = {
       businessInfoTitle: "Información del negocio",
       languageTitle: "Idioma",
       languageSubtitle: "Cambia el idioma del panel y del sitio para tu cuenta.",
+      appearanceTitle: "Apariencia",
+      appearanceSubtitle: "Elige cómo se ve el panel. No afecta a tus clientes.",
+      themeDark: "Oscuro",
+      themeLight: "Claro",
+      accountTitle: "Cuenta",
       form: {
         nameLabel: "Nombre del negocio",
         contactEmailLabel: "Correo de contacto",
@@ -1171,6 +1176,11 @@ const en: typeof es = {
       businessInfoTitle: "Business information",
       languageTitle: "Language",
       languageSubtitle: "Change the language of the dashboard and site for your account.",
+      appearanceTitle: "Appearance",
+      appearanceSubtitle: "Choose how the dashboard looks. Doesn't affect your customers.",
+      themeDark: "Dark",
+      themeLight: "Light",
+      accountTitle: "Account",
       form: {
         nameLabel: "Business name",
         contactEmailLabel: "Contact email",
