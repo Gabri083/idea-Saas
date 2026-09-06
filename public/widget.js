@@ -603,7 +603,9 @@
     bubble.textContent = data.average_rating.toFixed(1) + "★";
     bubble.setAttribute("aria-label", T.viewVerifiedAria);
 
-    var open = true;
+    // Closed by default — like any chat-bubble widget, it waits for a click
+    // before popping out, not an open panel greeting the visitor unasked.
+    var open = false;
     function render() {
       panel.style.display = open ? "block" : "none";
     }
