@@ -482,6 +482,17 @@ const es = {
       publicPageSubtitle:
         "El historial completo, buenas y malas, con paginación — no solo las 12 que caben en el widget. Compártela donde quieras que un comprador pueda revisar todo.",
       copyLinkAria: "Copiar link",
+      embedFormTitle: "Formulario embebido en tu web",
+      embedFormSubtitle:
+        "Que el cliente reseñe sin salir de tu página (ideal: la confirmación de compra). Elige cómo aparece y pega el código.",
+      embedStyleLabel: "Estilo",
+      embedStyleInline: "En línea",
+      embedStyleModal: "Ventana emergente",
+      embedStyleLauncher: "Burbuja flotante",
+      embedCopyAria: "Copiar código",
+      embedCopied: "¡Copiado!",
+      embedPrefillHint:
+        "Opcional: pasa el nombre, correo y producto del pedido para que el formulario llegue prellenado.",
       gateBanner:
         "Personalizar el widget es parte del plan Growth. Mientras tanto se usa el estilo predeterminado.",
       accentColorLabel: "Color de acento",
@@ -713,6 +724,8 @@ const es = {
     emailLabel: "Correo electrónico",
     emailPlaceholder: "tucorreo@ejemplo.com",
     emailHint: "Solo para verificar tu compra. Nunca se publica.",
+    prefillNote: "Prellenado desde tu pedido — cámbialo si no eres tú.",
+    aboutProductLabel: "Sobre tu compra: {product}",
     textLabel: "Cuéntanos tu experiencia completa",
     textPlaceholder:
       "Ej: El producto es de buena calidad, llegó 2 días antes de lo esperado y bien empacado. Nada de tu texto será editado ni censurado.",
@@ -1310,6 +1323,17 @@ const en: typeof es = {
       publicPageSubtitle:
         "The full history, good and bad, with pagination — not just the 12 that fit in the widget. Share it wherever you want a shopper to check everything.",
       copyLinkAria: "Copy link",
+      embedFormTitle: "Review form embedded on your site",
+      embedFormSubtitle:
+        "Let customers review without leaving your page (ideal spot: the order confirmation page). Pick how it appears and paste the code.",
+      embedStyleLabel: "Style",
+      embedStyleInline: "Inline",
+      embedStyleModal: "Pop-up",
+      embedStyleLauncher: "Floating bubble",
+      embedCopyAria: "Copy code",
+      embedCopied: "Copied!",
+      embedPrefillHint:
+        "Optional: pass the order's name, email, and product so the form arrives pre-filled.",
       gateBanner: "Customizing the widget is part of the Growth plan. The default style is used meanwhile.",
       accentColorLabel: "Accent color",
       modeLabel: "Mode",
@@ -1538,6 +1562,8 @@ const en: typeof es = {
     emailLabel: "Email address",
     emailPlaceholder: "youremail@example.com",
     emailHint: "Only used to verify your purchase. Never published.",
+    prefillNote: "Pre-filled from your order — change it if this isn't you.",
+    aboutProductLabel: "About your purchase: {product}",
     textLabel: "Tell us your full experience",
     textPlaceholder:
       "E.g. The product is good quality, arrived 2 days early, and well packaged. Nothing you write will be edited or censored.",

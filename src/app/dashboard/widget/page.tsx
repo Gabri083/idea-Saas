@@ -1,4 +1,5 @@
 import { WidgetConfigurator } from "@/components/dashboard/widget-configurator";
+import { EmbedSnippetCard } from "@/components/dashboard/embed-snippet-card";
 import { LogoUploader } from "@/components/dashboard/logo-uploader";
 import { getBusiness, getCategoryBenchmark, getReviews, getWidgetConfig } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
@@ -48,6 +49,8 @@ export default async function WidgetPage() {
           <CopyableLink path={`/resenas/${businessId}`} copyAria={t.copyLinkAria} />
         </div>
       </Card>
+
+      <EmbedSnippetCard businessId={businessId} dict={t} />
 
       <LogoUploader initialLogoUrl={business.logo_url} canCustomize={canCustomize} dict={t} />
 

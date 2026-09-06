@@ -50,10 +50,22 @@ export function ReviewForm({
   businessId,
   thanksMessage,
   dict,
+  prefillName,
+  prefillEmail,
+  productName,
+  onSubmitted,
 }: {
   businessId: string;
   thanksMessage?: string | null;
   dict: Dictionary["publicReview"];
+  // Below: only set by the embeddable review widget (see EmbedReviewShell),
+  // which already knows this from the order that triggered it — every other
+  // caller (the /review link page) leaves these undefined and gets the exact
+  // same form as before.
+  prefillName?: string;
+  prefillEmail?: string;
+  productName?: string;
+  onSubmitted?: () => void;
 }) {
   const [status, setStatus] = useState<"form" | "submitting" | "done" | "error">("form");
   const [errorMessage, setErrorMessage] = useState("");
@@ -94,6 +106,7 @@ export function ReviewForm({
 
       setReview(data.review);
       setStatus("done");
+      onSubmitted?.();
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : dict.unexpectedError);
       setStatus("error");
@@ -142,6 +155,12 @@ export function ReviewForm({
         <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
+      {productName && (
+        <p className="-mb-1 text-sm font-medium text-cobalt">
+          {dict.aboutProductLabel.replace("{product}", productName)}
+        </p>
+      )}
+
       <div className="flex flex-col gap-1.5">
         <label htmlFor="customer_name" className="text-sm font-medium">
           {dict.nameLabel}
@@ -151,9 +170,11 @@ export function ReviewForm({
           name="customer_name"
           required
           maxLength={120}
+          defaultValue={prefillName}
           placeholder={dict.namePlaceholder}
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
         />
+        {prefillName && <p className="text-xs text-cobalt">{dict.prefillNote}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -165,6 +186,7 @@ export function ReviewForm({
           name="customer_email"
           type="email"
           required
+          defaultValue={prefillEmail}
           placeholder={dict.emailPlaceholder}
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
         />
