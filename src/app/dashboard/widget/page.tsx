@@ -1,11 +1,9 @@
 import { WidgetConfigurator } from "@/components/dashboard/widget-configurator";
-import { EmbedSnippetCard } from "@/components/dashboard/embed-snippet-card";
+import { LinksEmbedsCard } from "@/components/dashboard/links-embeds-card";
 import { LogoUploader } from "@/components/dashboard/logo-uploader";
 import { getBusiness, getCategoryBenchmark, getReviews, getWidgetConfig } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
 import { getCategoryLabels, hasGrowthAccess } from "@/lib/types";
-import { Card } from "@/components/ui/card";
-import { CopyableLink } from "@/components/dashboard/copyable-link";
 import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 
 export default async function WidgetPage() {
@@ -34,24 +32,6 @@ export default async function WidgetPage() {
         <p className="mt-1 text-sm text-muted">{t.pageSubtitle}</p>
       </div>
 
-      <Card className="p-5">
-        <p className="text-sm font-medium">{t.publicLinkTitle}</p>
-        <p className="mt-1 text-xs text-muted">{t.publicLinkSubtitle}</p>
-        <div className="mt-3">
-          <CopyableLink path={`/review/${businessId}`} copyAria={t.copyLinkAria} />
-        </div>
-      </Card>
-
-      <Card className="p-5">
-        <p className="text-sm font-medium">{t.publicPageTitle}</p>
-        <p className="mt-1 text-xs text-muted">{t.publicPageSubtitle}</p>
-        <div className="mt-3">
-          <CopyableLink path={`/resenas/${businessId}`} copyAria={t.copyLinkAria} />
-        </div>
-      </Card>
-
-      <EmbedSnippetCard businessId={businessId} dict={t} />
-
       <LogoUploader initialLogoUrl={business.logo_url} canCustomize={canCustomize} dict={t} />
 
       <WidgetConfigurator
@@ -64,6 +44,8 @@ export default async function WidgetPage() {
         categoryLabel={categoryLabel}
         dict={t}
       />
+
+      <LinksEmbedsCard businessId={businessId} dict={t} />
     </div>
   );
 }

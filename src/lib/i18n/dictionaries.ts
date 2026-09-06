@@ -475,10 +475,12 @@ const es = {
     widget: {
       pageTitle: "Widget embebible",
       pageSubtitle: "Configura el estilo, previsualízalo en vivo y copia el código para tu e-commerce.",
-      publicLinkTitle: "Tu link público para recibir reseñas",
+      linksCardTitle: "Links y embeds",
+      linksCardSubtitle: "Todas las formas en que un cliente encuentra o deja una reseña.",
+      publicLinkTitle: "Link público para recibir reseñas",
       publicLinkSubtitle:
         "Compártelo con tus clientes (por email, WhatsApp, etc.) para que dejen su reseña.",
-      publicPageTitle: "Tu página pública de reseñas",
+      publicPageTitle: "Página pública de reseñas",
       publicPageSubtitle:
         "El historial completo, buenas y malas, con paginación — no solo las 12 que caben en el widget. Compártela donde quieras que un comprador pueda revisar todo.",
       copyLinkAria: "Copiar link",
@@ -1317,9 +1319,11 @@ const en: typeof es = {
     widget: {
       pageTitle: "Embeddable widget",
       pageSubtitle: "Configure the style, preview it live, and copy the code for your store.",
-      publicLinkTitle: "Your public link to receive reviews",
+      linksCardTitle: "Links & embeds",
+      linksCardSubtitle: "Every way a customer can find or leave a review.",
+      publicLinkTitle: "Public link to receive reviews",
       publicLinkSubtitle: "Share it with your customers (email, WhatsApp, etc.) so they leave a review.",
-      publicPageTitle: "Your public reviews page",
+      publicPageTitle: "Public reviews page",
       publicPageSubtitle:
         "The full history, good and bad, with pagination — not just the 12 that fit in the widget. Share it wherever you want a shopper to check everything.",
       copyLinkAria: "Copy link",
