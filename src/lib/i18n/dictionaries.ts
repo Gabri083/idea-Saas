@@ -114,7 +114,6 @@ const es = {
         features: [
           "Reseñas ilimitadas",
           "Consultor de Mejora Operativa IA",
-          "Apelaciones prioritarias",
           "Widget personalizable",
           "Centro de Calibración e Histórico",
         ],
@@ -383,7 +382,7 @@ const es = {
           name: "Growth",
           price: "$79/mes",
           trialNote: "14 días de prueba gratis, requiere tarjeta.",
-          features: ["Reseñas ilimitadas", "Consultor de Mejora Operativa IA", "Apelaciones prioritarias"],
+          features: ["Reseñas ilimitadas", "Consultor de Mejora Operativa IA", "Widget personalizable"],
         },
         enterprise: {
           name: "Enterprise",
@@ -1119,7 +1118,6 @@ const en: typeof es = {
         features: [
           "Unlimited reviews",
           "AI Operational Improvement Consultant",
-          "Priority appeals",
           "Customizable widget",
           "Calibration & History Center",
         ],
@@ -1383,7 +1381,7 @@ const en: typeof es = {
           name: "Growth",
           price: "$79/mo",
           trialNote: "14-day free trial, card required.",
-          features: ["Unlimited reviews", "AI Operational Improvement Consultant", "Priority appeals"],
+          features: ["Unlimited reviews", "AI Operational Improvement Consultant", "Customizable widget"],
         },
         enterprise: {
           name: "Enterprise",
