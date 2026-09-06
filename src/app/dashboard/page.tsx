@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getBusiness, getCategoryBenchmark, getRecurringIssues, getReviews } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
-import { formatDate, isPastDeadline, recencyWeightedAverage } from "@/lib/utils";
+import { countReviewsThisMonth, formatDate, isPastDeadline, recencyWeightedAverage } from "@/lib/utils";
 import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 import { getCategoryLabels, hasGrowthAccess } from "@/lib/types";
 
@@ -25,11 +25,7 @@ export default async function DashboardOverviewPage() {
     ? await getCategoryBenchmark(business.category, businessId)
     : { available: false as const };
 
-  // UTC to match the cap enforcement in /api/reviews.
-  const startOfMonth = new Date();
-  startOfMonth.setUTCDate(1);
-  startOfMonth.setUTCHours(0, 0, 0, 0);
-  const usedThisMonth = reviews.filter((r) => new Date(r.created_at) >= startOfMonth).length;
+  const usedThisMonth = countReviewsThisMonth(reviews);
 
   const avgAi = recencyWeightedAverage(reviews, (r) => r.overall_ai_rating);
   const customerRated = reviews.filter((r) => r.customer_star_rating != null);

@@ -2,14 +2,20 @@ import { cookies } from "next/headers";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { Topbar } from "@/components/dashboard/topbar";
-import { getBusiness, isSupabaseConfigured } from "@/lib/data";
+import { getBusiness, getReviews, isSupabaseConfigured } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
+import { countReviewsThisMonth } from "@/lib/utils";
 import { getDictionary } from "@/lib/i18n/get-locale";
 import { THEME_COOKIE, DEFAULT_DASHBOARD_THEME, isDashboardTheme, dashboardThemeStyle } from "@/lib/theme";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const businessId = await requireBusinessId();
-  const [business, dict, cookieStore] = await Promise.all([getBusiness(businessId), getDictionary(), cookies()]);
+  const [business, reviews, dict, cookieStore] = await Promise.all([
+    getBusiness(businessId),
+    getReviews(businessId),
+    getDictionary(),
+    cookies(),
+  ]);
   const themeValue = cookieStore.get(THEME_COOKIE)?.value;
   const theme = isDashboardTheme(themeValue) ? themeValue : DEFAULT_DASHBOARD_THEME;
 
@@ -18,7 +24,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
       className="flex min-w-0 flex-1 overflow-x-hidden bg-background text-foreground"
       style={dashboardThemeStyle(theme)}
     >
-      <Sidebar plan={business.plan} dict={{ nav: dict.dashboard.nav, backToSite: dict.dashboard.backToSite }} />
+      <Sidebar
+        plan={business.plan}
+        usage={{ used: countReviewsThisMonth(reviews), cap: business.monthly_review_cap }}
+        dict={{
+          nav: dict.dashboard.nav,
+          backToSite: dict.dashboard.backToSite,
+          planUsage: dict.dashboard.planUsage,
+          planLabels: dict.dashboard.planLabels,
+          viewPlans: dict.dashboard.upgradeGate.viewPlans,
+        }}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar business={business} demoMode={!isSupabaseConfigured()} dict={dict.dashboard} />
         <MobileNav plan={business.plan} dict={{ nav: dict.dashboard.nav }} />

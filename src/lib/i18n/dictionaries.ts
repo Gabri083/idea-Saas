@@ -276,6 +276,7 @@ const es = {
     planUsage: {
       unlimitedTitle: "Reseñas ilimitadas este mes",
       unlimitedSub: "Tu plan no tiene límite mensual.",
+      compactUnlimited: "Reseñas ilimitadas",
       usageTitle: "Uso de tu plan este mes",
       // {used}/{cap} replaced client-side — see impactCalculator note above.
       usageOf: "{used} de {cap} reseñas",
@@ -1280,6 +1281,7 @@ const en: typeof es = {
     planUsage: {
       unlimitedTitle: "Unlimited reviews this month",
       unlimitedSub: "Your plan has no monthly limit.",
+      compactUnlimited: "Unlimited reviews",
       usageTitle: "Your plan usage this month",
       usageOf: "{used} of {cap} reviews",
       atCapText: "You reached your plan's limit — new reviews won't be received until next month.",
