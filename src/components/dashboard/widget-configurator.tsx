@@ -658,7 +658,9 @@ function Launcher({
   showBranding: boolean;
   dict: WidgetDict;
 }) {
-  const [open, setOpen] = useState(true);
+  // Closed by default — like any chat-bubble widget, it should wait for a
+  // click before popping out, not greet the visitor with an open panel.
+  const [open, setOpen] = useState(false);
   const bg = isDark ? "#101114" : "#ffffff";
   const fg = isDark ? "#f4f5f7" : "#111318";
   const borderColor = isDark ? "#232529" : "#e5e7eb";
