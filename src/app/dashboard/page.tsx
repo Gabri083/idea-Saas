@@ -27,8 +27,17 @@ export default async function DashboardOverviewPage() {
 
   const usedThisMonth = countReviewsThisMonth(reviews);
 
+  // The AI never scores a dimension below the customer's own pick for it —
+  // it either matches the customer's number (a real problem was found) or
+  // overrides it upward to a clean 5.0 (no problem found), see
+  // reconcileDimensionScore. So the two averages must be compared over the
+  // SAME set of reviews (those with a customer rating to reconcile against);
+  // averaging the AI side over every review — including customer-star-less
+  // ones, which skew negative since nobody bothers rating in detail when
+  // happy — would make the AI look harsher than it ever actually is.
   const avgAi = recencyWeightedAverage(reviews, (r) => r.overall_ai_rating);
   const customerRated = reviews.filter((r) => r.customer_star_rating != null);
+  const avgAiOnRated = recencyWeightedAverage(customerRated, (r) => r.overall_ai_rating);
   const avgCustomer = recencyWeightedAverage(customerRated, (r) => r.customer_star_rating!);
   const openAlerts = recurringIssues.filter(
     (i) => i.status === "open" && isPastDeadline(i.resolution_deadline),
@@ -46,7 +55,7 @@ export default async function DashboardOverviewPage() {
           icon={Sparkles}
           tone="cobalt"
           label={t.aiAvgLabel}
-          value={`${avgAi.toFixed(1)}★`}
+          value={`${(customerRated.length ? avgAiOnRated : avgAi).toFixed(1)}★`}
           hint={t.aiAvgHint}
         />
         <MetricCard
