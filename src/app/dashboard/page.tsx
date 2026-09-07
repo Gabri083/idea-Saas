@@ -10,6 +10,7 @@ import { requireBusinessId } from "@/lib/auth";
 import { countReviewsThisMonth, formatDate, isPastDeadline, recencyWeightedAverage } from "@/lib/utils";
 import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 import { getCategoryLabels, hasGrowthAccess } from "@/lib/types";
+import { computeWeightedRating } from "@/lib/ai/scoring";
 
 export default async function DashboardOverviewPage() {
   const businessId = await requireBusinessId();
@@ -30,14 +31,27 @@ export default async function DashboardOverviewPage() {
   // The AI never scores a dimension below the customer's own pick for it —
   // it either matches the customer's number (a real problem was found) or
   // overrides it upward to a clean 5.0 (no problem found), see
-  // reconcileDimensionScore. So the two averages must be compared over the
-  // SAME set of reviews (those with a customer rating to reconcile against);
-  // averaging the AI side over every review — including customer-star-less
-  // ones, which skew negative since nobody bothers rating in detail when
-  // happy — would make the AI look harsher than it ever actually is.
+  // reconcileDimensionScore. But that guarantee only holds dimension by
+  // dimension: overall_ai_rating can still cover MORE dimensions than
+  // customer_star_rating does, because the AI also scores dimensions the
+  // customer never clicked a star for at all (reconcileDimensionScore has no
+  // customer pick to reconcile against there, so it passes the AI's own raw
+  // read through unprotected). Comparing the two composites straight isn't
+  // apples to apples, so for this comparison we mask the AI side down to
+  // only the dimensions the customer actually rated — the same subset
+  // customer_star_rating is built from — which keeps the per-dimension
+  // guarantee intact and makes this average provably >= the customer's.
   const avgAi = recencyWeightedAverage(reviews, (r) => r.overall_ai_rating);
   const customerRated = reviews.filter((r) => r.customer_star_rating != null);
-  const avgAiOnRated = recencyWeightedAverage(customerRated, (r) => r.overall_ai_rating);
+  const avgAiOnRated = recencyWeightedAverage(
+    customerRated,
+    (r) =>
+      computeWeightedRating({
+        product_score: r.customer_product_rating != null ? r.product_score : null,
+        service_score: r.customer_service_rating != null ? r.service_score : null,
+        delivery_score: r.customer_delivery_rating != null ? r.delivery_score : null,
+      }) ?? r.overall_ai_rating,
+  );
   const avgCustomer = recencyWeightedAverage(customerRated, (r) => r.customer_star_rating!);
   const openAlerts = recurringIssues.filter(
     (i) => i.status === "open" && isPastDeadline(i.resolution_deadline),
