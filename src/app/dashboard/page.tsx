@@ -28,19 +28,16 @@ export default async function DashboardOverviewPage() {
 
   const usedThisMonth = countReviewsThisMonth(reviews);
 
-  // The AI never scores a dimension below the customer's own pick for it —
-  // it either matches the customer's number (a real problem was found) or
-  // overrides it upward to a clean 5.0 (no problem found), see
-  // reconcileDimensionScore. But that guarantee only holds dimension by
-  // dimension: overall_ai_rating can still cover MORE dimensions than
-  // customer_star_rating does, because the AI also scores dimensions the
-  // customer never clicked a star for at all (reconcileDimensionScore has no
-  // customer pick to reconcile against there, so it passes the AI's own raw
-  // read through unprotected). Comparing the two composites straight isn't
-  // apples to apples, so for this comparison we mask the AI side down to
-  // only the dimensions the customer actually rated — the same subset
-  // customer_star_rating is built from — which keeps the per-dimension
-  // guarantee intact and makes this average provably >= the customer's.
+  // Kelsira's rule: the AI only ever intervenes to correct an unjust,
+  // unjustified rating — a harsh click with no fact in the text behind it
+  // (reconcileDimensionScore overrides to a clean 5.0 in exactly that case).
+  // Everywhere else it defers entirely to the customer's own number. So for
+  // this comparison, default to the customer's composite and only let the
+  // AI side move a dimension when it actually cleared that dimension (found
+  // no problem) — never fall through to the AI's raw, independent read on a
+  // dimension the customer never rated, which isn't correcting an injustice,
+  // it's introducing an opinion nobody flagged as unfair. That makes this
+  // average provably >= the customer's, with no data-shape exceptions.
   const avgAi = recencyWeightedAverage(reviews, (r) => r.overall_ai_rating);
   const customerRated = reviews.filter((r) => r.customer_star_rating != null);
   const avgAiOnRated = recencyWeightedAverage(
@@ -50,7 +47,7 @@ export default async function DashboardOverviewPage() {
         product_score: r.customer_product_rating != null ? r.product_score : null,
         service_score: r.customer_service_rating != null ? r.service_score : null,
         delivery_score: r.customer_delivery_rating != null ? r.delivery_score : null,
-      }) ?? r.overall_ai_rating,
+      }) ?? r.customer_star_rating!,
   );
   const avgCustomer = recencyWeightedAverage(customerRated, (r) => r.customer_star_rating!);
   const openAlerts = recurringIssues.filter(
