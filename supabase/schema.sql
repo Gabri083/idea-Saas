@@ -121,6 +121,13 @@ create table if not exists reviews (
   -- 'other') — set once per import, null for normal submissions. Purely for
   -- internal analytics on which real integration to build next.
   source_platform        text,
+  -- The star rating the source platform's CSV had for this review, kept
+  -- purely as a reference point — never fed into product/service/delivery_score
+  -- or overall_ai_rating (see reconcileDimensionScore comments). Lets the
+  -- dashboard show "original vs Kelsira AI" for imported reviews specifically,
+  -- without ever pretending it was a real per-dimension pick made on this
+  -- site. Null for normal submissions.
+  original_rating        numeric(2, 1) check (original_rating between 1 and 5),
 
   -- optional public reply from the business owner, shown under the review
   -- itself (result page + widget) — not part of the AI scoring, just a

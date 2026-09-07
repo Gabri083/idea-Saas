@@ -272,6 +272,12 @@ const es = {
       belowAverage: "bajo el promedio",
       onAverage: "en línea con el promedio",
       benchmarkSample: "Comparado con {n} negocios de {category} en Kelsira, con al menos 5 reseñas cada uno.",
+      importedComparisonTitle: "Reseñas importadas: original vs. IA de Kelsira",
+      importedComparisonHint:
+        "Sin protección de por medio — aquí la IA da su propia opinión honesta, así que puede coincidir, subir o bajar respecto al puntaje de origen.",
+      originalAverage: "Promedio original",
+      importedAiAverage: "Promedio IA",
+      importedSample: "Sobre {n} reseñas importadas con puntaje de origen.",
     },
     planUsage: {
       unlimitedTitle: "Reseñas ilimitadas este mes",
@@ -1337,6 +1343,12 @@ const en: typeof es = {
       belowAverage: "below average",
       onAverage: "in line with average",
       benchmarkSample: "Compared with {n} businesses in {category} on Kelsira, each with at least 5 reviews.",
+      importedComparisonTitle: "Imported reviews: original vs. Kelsira AI",
+      importedComparisonHint:
+        "No protection here — the AI gives its own honest opinion, so it can match, beat, or fall short of the original rating.",
+      originalAverage: "Original average",
+      importedAiAverage: "AI average",
+      importedSample: "Across {n} imported reviews with an original rating.",
     },
     planUsage: {
       unlimitedTitle: "Unlimited reviews this month",

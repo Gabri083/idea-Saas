@@ -50,6 +50,16 @@ export default async function DashboardOverviewPage() {
       }) ?? r.customer_star_rating!,
   );
   const avgCustomer = recencyWeightedAverage(customerRated, (r) => r.customer_star_rating!);
+
+  // Imported reviews never go through reconciliation (there's no customer
+  // pick on this site to reconcile against), so the AI's read here is a
+  // fully independent, honest opinion — it can land above, below, or right
+  // at the source platform's original rating. Kept as its own comparison,
+  // separate from the protected one above, so the two don't get conflated.
+  const importedWithOriginal = reviews.filter((r) => r.source === "imported" && r.original_rating != null);
+  const avgOriginal = recencyWeightedAverage(importedWithOriginal, (r) => r.original_rating!);
+  const avgImportedAi = recencyWeightedAverage(importedWithOriginal, (r) => r.overall_ai_rating);
+
   const openAlerts = recurringIssues.filter(
     (i) => i.status === "open" && isPastDeadline(i.resolution_deadline),
   );
@@ -123,6 +133,25 @@ export default async function DashboardOverviewPage() {
             {t.benchmarkSample
               .replace("{n}", String(benchmark.businessCount))
               .replace("{category}", getCategoryLabels(locale)[business.category].toLowerCase())}
+          </p>
+        </Card>
+      )}
+
+      {importedWithOriginal.length > 0 && (
+        <Card className="p-5">
+          <p className="text-sm font-medium">{t.importedComparisonTitle}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-6">
+            <div>
+              <p className="text-xs text-muted">{t.originalAverage}</p>
+              <p className="text-2xl font-semibold tracking-tight text-muted">{avgOriginal.toFixed(1)}★</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted">{t.importedAiAverage}</p>
+              <p className="text-2xl font-semibold tracking-tight">{avgImportedAi.toFixed(1)}★</p>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-muted">
+            {t.importedSample.replace("{n}", String(importedWithOriginal.length))} {t.importedComparisonHint}
           </p>
         </Card>
       )}

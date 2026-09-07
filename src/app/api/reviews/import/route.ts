@@ -129,6 +129,7 @@ export async function POST(request: NextRequest) {
         status: "published",
         source: "imported",
         source_platform: platform,
+        original_rating: row.rating ?? null,
         created_at: createdAt.toISOString(),
       });
 

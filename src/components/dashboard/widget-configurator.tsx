@@ -36,6 +36,7 @@ const SAMPLE_REVIEWS: Review[] = [
     status: "published",
     source: "kelsira",
     source_platform: null,
+    original_rating: null,
     business_reply:
       "¡Gracias por tu comentario! Ya estamos trabajando con nuestro courier para mejorar los tiempos de entrega.",
     business_reply_at: new Date(Date.now() - 1 * 86_400_000).toISOString(),
@@ -61,6 +62,7 @@ const SAMPLE_REVIEWS: Review[] = [
     status: "published",
     source: "kelsira",
     source_platform: null,
+    original_rating: null,
     business_reply: null,
     business_reply_at: null,
     created_at: new Date(Date.now() - 6 * 86_400_000).toISOString(),
@@ -85,6 +87,7 @@ const SAMPLE_REVIEWS: Review[] = [
     status: "published",
     source: "kelsira",
     source_platform: null,
+    original_rating: null,
     business_reply: null,
     business_reply_at: null,
     created_at: new Date(Date.now() - 13 * 86_400_000).toISOString(),

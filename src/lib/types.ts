@@ -103,6 +103,10 @@ export interface Review {
   // schema.sql). 'imported' means it came through the bulk CSV importer.
   source: "kelsira" | "imported";
   source_platform: string | null;
+  // The source platform's original rating for an imported review, kept only
+  // as a reference to compare against overall_ai_rating — never fed into
+  // scoring. Null for normal submissions.
+  original_rating: number | null;
   created_at: string;
 }
 
