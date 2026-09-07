@@ -112,6 +112,16 @@ create table if not exists reviews (
   status                 text not null default 'published'
                             check (status in ('published', 'in_appeal', 'resolved', 'archived')),
 
+  -- 'imported' = brought in via the bulk CSV importer instead of the public
+  -- submit flow. Internal only — /resenas, the widget API, and every public
+  -- surface treat both the same; this is for the dashboard and for Gabriel's
+  -- own analytics, never a public badge.
+  source                 text not null default 'kelsira' check (source in ('kelsira', 'imported')),
+  -- Which platform an imported batch came from (e.g. 'judgeme', 'google',
+  -- 'other') — set once per import, null for normal submissions. Purely for
+  -- internal analytics on which real integration to build next.
+  source_platform        text,
+
   -- optional public reply from the business owner, shown under the review
   -- itself (result page + widget) — not part of the AI scoring, just a
   -- public conversation layer on top of it.

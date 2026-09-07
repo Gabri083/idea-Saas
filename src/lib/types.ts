@@ -99,6 +99,10 @@ export interface Review {
   status: ReviewStatus;
   business_reply: string | null;
   business_reply_at: string | null;
+  // Internal-only — never read on any public surface (see reviews.source in
+  // schema.sql). 'imported' means it came through the bulk CSV importer.
+  source: "kelsira" | "imported";
+  source_platform: string | null;
   created_at: string;
 }
 
