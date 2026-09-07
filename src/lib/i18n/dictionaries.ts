@@ -303,6 +303,10 @@ const es = {
         archived: "Archivada",
       },
       emptyState: "No hay reseñas en esta categoría.",
+      // {page}/{totalPages} replaced client-side — see impactCalculator note above.
+      pageOf: "Página {page} de {totalPages}",
+      prevPage: "Anterior",
+      nextPage: "Siguiente",
       // {n} replaced client-side — see impactCalculator note above.
       penalty: "Penalización -{n}",
       appealReview: "Apelar reseña",
@@ -1352,6 +1356,9 @@ const en: typeof es = {
         archived: "Archived",
       },
       emptyState: "No reviews in this category.",
+      pageOf: "Page {page} of {totalPages}",
+      prevPage: "Previous",
+      nextPage: "Next",
       penalty: "Penalty -{n}",
       appealReview: "Appeal review",
       markResolved: "Mark as resolved",
