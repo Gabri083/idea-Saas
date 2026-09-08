@@ -88,6 +88,7 @@
 
     var iframeMounted = false;
     var body = document.createElement("div");
+    body.className = "kelsira-submit-dialog-body";
     dialog.appendChild(closeBtn);
     dialog.appendChild(body);
     overlay.appendChild(dialog);
