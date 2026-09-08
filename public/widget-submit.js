@@ -187,7 +187,11 @@
       ".kelsira-submit-panel{width:300px;max-height:70vh;background:#101114;border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -18px rgba(0,0,0,.4);display:flex;flex-direction:column;}" +
       ".kelsira-submit-panel-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#4f7cff;color:#fff;font-size:13px;font-weight:600;flex-shrink:0;}" +
       ".kelsira-submit-panel-head button{background:none;border:none;color:#fff;cursor:pointer;font-size:13px;}" +
-      ".kelsira-submit-panel-body{overflow-y:auto;}";
+      ".kelsira-submit-panel-body{overflow-y:auto;}" +
+      ".kelsira-submit-dialog,.kelsira-submit-panel-body{scrollbar-width:thin;}" +
+      ".kelsira-submit-dialog::-webkit-scrollbar,.kelsira-submit-panel-body::-webkit-scrollbar{width:6px;}" +
+      ".kelsira-submit-dialog::-webkit-scrollbar-thumb,.kelsira-submit-panel-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:3px;}" +
+      ".kelsira-submit-dialog::-webkit-scrollbar-track,.kelsira-submit-panel-body::-webkit-scrollbar-track{background:transparent;}";
     document.head.appendChild(style);
   }
 
