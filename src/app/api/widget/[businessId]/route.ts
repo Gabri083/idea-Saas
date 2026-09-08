@@ -41,19 +41,20 @@ export async function GET(
     // cards actually rendered is capped, further down.
     const allPublicReviews = reviews.filter((r) => r.status === "published" || r.status === "resolved");
 
-    // These layouts show a whole shelf of cards at once, so leading with the
-    // strongest ones actually earns the space — every other layout (a single
-    // quote, a launcher panel, a ticker) stays most-recent-first, unaffected.
-    const BEST_REVIEWS_LAYOUTS = ["carousel", "wall", "grid", "mosaico"];
-    const displayReviews = BEST_REVIEWS_LAYOUTS.includes(config.layout)
-      ? [...allPublicReviews]
-          .sort(
-            (a, b) =>
-              b.overall_ai_rating - a.overall_ai_rating ||
-              new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-          )
-          .slice(0, 8)
-      : allPublicReviews.slice(0, 12);
+    // Every layout leads with its strongest reviews first — a single-quote
+    // spotlight or a sitewide ticker shows just as few reviews as a grid does
+    // cards, so a low-scoring one landing in the lead slot by pure chance of
+    // recency is just as damaging there, if not more (it's the ONLY thing
+    // shown until it rotates). Grid-style layouts (a whole shelf of cards at
+    // once) get more of them since there's room to earn; the rest get fewer.
+    const MANY_CARDS_LAYOUTS = ["carousel", "wall", "grid", "mosaico"];
+    const displayReviews = [...allPublicReviews]
+      .sort(
+        (a, b) =>
+          b.overall_ai_rating - a.overall_ai_rating ||
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )
+      .slice(0, MANY_CARDS_LAYOUTS.includes(config.layout) ? 8 : 12);
 
     const average = recencyWeightedAverage(allPublicReviews, (r) => r.overall_ai_rating);
 
