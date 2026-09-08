@@ -68,6 +68,10 @@ create table if not exists widget_configs (
   -- Kelsira's own default copy in each locale.
   review_form_welcome text,
   review_form_thanks  text,
+  -- How many cards a "whole shelf at once" layout (carousel/wall/grid/mosaico)
+  -- shows before it starts feeling like a wall of text rather than proof —
+  -- single-review layouts (spotlight, lanzador, etc.) are unaffected.
+  max_visible_reviews integer not null default 8 check (max_visible_reviews between 2 and 12),
   updated_at     timestamptz not null default now()
 );
 

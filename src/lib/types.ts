@@ -184,6 +184,10 @@ export interface WidgetConfig {
   show_branding: boolean; // "Verificado por Kelsira" footer; forced true on free/starter regardless of this value
   review_form_welcome: string | null; // overrides the default copy above the review form on /review; null = default
   review_form_thanks: string | null; // overrides the default copy on the post-submit confirmation; null = default
+  // How many cards a "whole shelf at once" layout (carousel/wall/grid/mosaico)
+  // shows before it starts feeling like a wall of text rather than proof —
+  // single-review layouts (spotlight, lanzador, etc.) are unaffected. 2-12.
+  max_visible_reviews: number;
 }
 
 /** Structured output contract for the OpenAI JSON-mode scoring call. */

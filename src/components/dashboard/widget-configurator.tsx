@@ -142,6 +142,11 @@ const cardStyleIds: WidgetConfig["card_style"][] = ["recibo", "medidor"];
 // single aggregate displays, so the card-style choice doesn't apply to them.
 const CARD_STYLE_LAYOUTS: WidgetConfig["layout"][] = ["carousel", "grid", "wall"];
 
+// The "whole shelf at once" layouts — same list the widget API caps by
+// max_visible_reviews. Everything else shows one review at a time, so the
+// count doesn't apply.
+const MANY_CARDS_LAYOUTS: WidgetConfig["layout"][] = ["carousel", "wall", "grid", "mosaico"];
+
 // "Bordes" doesn't mean anything for El Sello (always a circle), El Recibo
 // (its cut corner is a fixed part of the style), La Barra Superior / La
 // Franja de Pie de Página (full-bleed, no visible corners), La Fila de
@@ -1199,6 +1204,25 @@ export function WidgetConfigurator({
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {MANY_CARDS_LAYOUTS.includes(config.layout) && (
+          <div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">{dict.maxVisibleReviewsLabel}</p>
+              <span className="text-sm text-muted">{config.max_visible_reviews}</span>
+            </div>
+            <input
+              type="range"
+              min={2}
+              max={12}
+              step={1}
+              value={config.max_visible_reviews}
+              onChange={(e) => setConfig((p) => ({ ...p, max_visible_reviews: Number(e.target.value) }))}
+              className="mt-2 w-full accent-cobalt"
+            />
+            <p className="mt-1 text-xs text-muted">{dict.maxVisibleReviewsHint}</p>
           </div>
         )}
 

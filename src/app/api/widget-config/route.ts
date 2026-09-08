@@ -30,6 +30,7 @@ const BodySchema = z.object({
   card_style: z.enum(["recibo", "medidor"]),
   show_breakdown: z.boolean(),
   show_branding: z.boolean(),
+  max_visible_reviews: z.number().int().min(2).max(12),
   review_form_welcome: z.string().trim().max(200).optional().or(z.literal("")),
   review_form_thanks: z.string().trim().max(200).optional().or(z.literal("")),
 });
