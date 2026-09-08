@@ -59,6 +59,19 @@ export function LinksEmbedsCard({
         </div>
         <CopyableLink value={embedSnippet} copyAria={dict.embedCopyAria} />
         <p className="text-[11px] text-muted">{dict.embedPrefillHint}</p>
+
+        <div className="mt-2 flex flex-col gap-1.5">
+          <span className="text-xs font-medium text-muted">{dict.embedPreviewTitle}</span>
+          <div className="overflow-hidden rounded-lg border border-border">
+            <iframe
+              key={embedStyle}
+              src={`/embed/preview-submit/${businessId}?style=${embedStyle}`}
+              title={dict.embedPreviewTitle}
+              className="h-[340px] w-full"
+            />
+          </div>
+          <p className="text-[11px] text-muted">{dict.embedPreviewHint}</p>
+        </div>
       </div>
     </Card>
   );

@@ -557,6 +557,8 @@ const es = {
       embedCopied: "¡Copiado!",
       embedPrefillHint:
         "Opcional: pasa el nombre, correo y producto del pedido para que el formulario llegue prellenado.",
+      embedPreviewTitle: "Así se ve en tu web",
+      embedPreviewHint: "\"En línea\" muestra el formulario directo; en los otros dos, haz clic en el botón para abrirlo.",
       gateBanner:
         "Personalizar el widget es parte del plan Growth. Mientras tanto se usa el estilo predeterminado.",
       accentColorLabel: "Color de acento",
@@ -1607,6 +1609,8 @@ const en: typeof es = {
       embedCopied: "Copied!",
       embedPrefillHint:
         "Optional: pass the order's name, email, and product so the form arrives pre-filled.",
+      embedPreviewTitle: "What it looks like on your site",
+      embedPreviewHint: "\"Inline\" shows the form directly; the other two need a click on the button to open it.",
       gateBanner: "Customizing the widget is part of the Growth plan. The default style is used meanwhile.",
       accentColorLabel: "Accent color",
       modeLabel: "Mode",
