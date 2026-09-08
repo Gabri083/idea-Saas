@@ -10,6 +10,7 @@ import { requireBusinessId } from "@/lib/auth";
 import { countReviewsThisMonth, formatDate, isPastDeadline, recencyWeightedAverage } from "@/lib/utils";
 import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 import { getCategoryLabels, hasGrowthAccess } from "@/lib/types";
+import { computeWeightedRating } from "@/lib/ai/scoring";
 
 export default async function DashboardOverviewPage() {
   const businessId = await requireBusinessId();
@@ -27,9 +28,38 @@ export default async function DashboardOverviewPage() {
 
   const usedThisMonth = countReviewsThisMonth(reviews);
 
+  // Kelsira's rule: the AI only ever intervenes to correct an unjust,
+  // unjustified rating — a harsh click with no fact in the text behind it
+  // (reconcileDimensionScore overrides to a clean 5.0 in exactly that case).
+  // Everywhere else it defers entirely to the customer's own number. So for
+  // this comparison, default to the customer's composite and only let the
+  // AI side move a dimension when it actually cleared that dimension (found
+  // no problem) — never fall through to the AI's raw, independent read on a
+  // dimension the customer never rated, which isn't correcting an injustice,
+  // it's introducing an opinion nobody flagged as unfair. That makes this
+  // average provably >= the customer's, with no data-shape exceptions.
   const avgAi = recencyWeightedAverage(reviews, (r) => r.overall_ai_rating);
   const customerRated = reviews.filter((r) => r.customer_star_rating != null);
+  const avgAiOnRated = recencyWeightedAverage(
+    customerRated,
+    (r) =>
+      computeWeightedRating({
+        product_score: r.customer_product_rating != null ? r.product_score : null,
+        service_score: r.customer_service_rating != null ? r.service_score : null,
+        delivery_score: r.customer_delivery_rating != null ? r.delivery_score : null,
+      }) ?? r.customer_star_rating!,
+  );
   const avgCustomer = recencyWeightedAverage(customerRated, (r) => r.customer_star_rating!);
+
+  // Imported reviews never go through reconciliation (there's no customer
+  // pick on this site to reconcile against), so the AI's read here is a
+  // fully independent, honest opinion — it can land above, below, or right
+  // at the source platform's original rating. Kept as its own comparison,
+  // separate from the protected one above, so the two don't get conflated.
+  const importedWithOriginal = reviews.filter((r) => r.source === "imported" && r.original_rating != null);
+  const avgOriginal = recencyWeightedAverage(importedWithOriginal, (r) => r.original_rating!);
+  const avgImportedAi = recencyWeightedAverage(importedWithOriginal, (r) => r.overall_ai_rating);
+
   const openAlerts = recurringIssues.filter(
     (i) => i.status === "open" && isPastDeadline(i.resolution_deadline),
   );
@@ -46,7 +76,7 @@ export default async function DashboardOverviewPage() {
           icon={Sparkles}
           tone="cobalt"
           label={t.aiAvgLabel}
-          value={`${avgAi.toFixed(1)}★`}
+          value={`${(customerRated.length ? avgAiOnRated : avgAi).toFixed(1)}★`}
           hint={t.aiAvgHint}
         />
         <MetricCard
@@ -103,6 +133,25 @@ export default async function DashboardOverviewPage() {
             {t.benchmarkSample
               .replace("{n}", String(benchmark.businessCount))
               .replace("{category}", getCategoryLabels(locale)[business.category].toLowerCase())}
+          </p>
+        </Card>
+      )}
+
+      {importedWithOriginal.length > 0 && (
+        <Card className="p-5">
+          <p className="text-sm font-medium">{t.importedComparisonTitle}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-6">
+            <div>
+              <p className="text-xs text-muted">{t.originalAverage}</p>
+              <p className="text-2xl font-semibold tracking-tight text-muted">{avgOriginal.toFixed(1)}★</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted">{t.importedAiAverage}</p>
+              <p className="text-2xl font-semibold tracking-tight">{avgImportedAi.toFixed(1)}★</p>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-muted">
+            {t.importedSample.replace("{n}", String(importedWithOriginal.length))} {t.importedComparisonHint}
           </p>
         </Card>
       )}

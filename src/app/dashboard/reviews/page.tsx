@@ -1,16 +1,19 @@
 import { Download } from "lucide-react";
 import { ReviewsTable } from "@/components/dashboard/reviews-table";
+import { ImportReviewsModal } from "@/components/dashboard/import-reviews-modal";
+import { RescanReviewsButton } from "@/components/dashboard/rescan-reviews-button";
 import { getBusiness, getReviews } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
-import { getDictionary } from "@/lib/i18n/get-locale";
+import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
 import { hasGrowthAccess } from "@/lib/types";
 
 export default async function ReviewsPage() {
   const businessId = await requireBusinessId();
-  const [reviews, business, dict] = await Promise.all([
+  const [reviews, business, dict, locale] = await Promise.all([
     getReviews(businessId),
     getBusiness(businessId),
     getDictionary(),
+    getLocale(),
   ]);
   const t = dict.dashboard.reviews;
 
@@ -21,13 +24,17 @@ export default async function ReviewsPage() {
           <h1 className="text-2xl font-semibold tracking-tight">{t.pageTitle}</h1>
           <p className="mt-1 text-sm text-muted">{t.pageSubtitle}</p>
         </div>
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- file download, not a page navigation */}
-        <a
-          href="/api/reviews/export"
-          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-muted transition-colors hover:text-foreground"
-        >
-          <Download size={14} /> {t.exportCsv}
-        </a>
+        <div className="flex shrink-0 items-center gap-2">
+          <RescanReviewsButton reviewIds={reviews.map((r) => r.id)} dict={t.rescan} />
+          <ImportReviewsModal locale={locale} dict={t.import} />
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- file download, not a page navigation */}
+          <a
+            href="/api/reviews/export"
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm text-muted transition-colors hover:text-foreground"
+          >
+            <Download size={14} /> {t.exportCsv}
+          </a>
+        </div>
       </div>
 
       <ReviewsTable initialReviews={reviews} dict={t} canSuggestReply={hasGrowthAccess(business.plan)} />

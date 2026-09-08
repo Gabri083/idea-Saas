@@ -1,13 +1,24 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, ChevronDown, Loader2, MessageSquareReply, ShieldQuestion, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  MessageSquareReply,
+  ShieldQuestion,
+  Sparkles,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/ui/star-rating";
 import { formatDate, cn } from "@/lib/utils";
 import type { Review, ReviewStatus } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+
+const PAGE_SIZE = 15;
 
 const statusTone: Record<ReviewStatus, "neutral" | "emerald" | "amber" | "cobalt"> = {
   published: "cobalt",
@@ -33,6 +44,7 @@ export function ReviewsTable({
   ];
   const [reviews, setReviews] = useState(initialReviews);
   const [tab, setTab] = useState<"all" | ReviewStatus>("all");
+  const [page, setPage] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
@@ -45,6 +57,13 @@ export function ReviewsTable({
     () => (tab === "all" ? reviews : reviews.filter((r) => r.status === tab)),
     [reviews, tab],
   );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  useEffect(() => {
+    setPage(1);
+  }, [tab]);
+  const pageStart = (page - 1) * PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + PAGE_SIZE);
 
   async function updateStatus(id: string, status: ReviewStatus) {
     setPendingId(id);
@@ -125,7 +144,7 @@ export function ReviewsTable({
           </p>
         )}
 
-        {filtered.map((review) => {
+        {paginated.map((review) => {
           const expanded = expandedId === review.id;
           return (
             <div key={review.id} className="rounded-xl border border-border bg-surface">
@@ -265,6 +284,28 @@ export function ReviewsTable({
           );
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+          >
+            <ChevronLeft size={14} /> {dict.prevPage}
+          </button>
+          <p className="text-xs text-muted">
+            {dict.pageOf.replace("{page}", String(page)).replace("{totalPages}", String(totalPages))}
+          </p>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+          >
+            {dict.nextPage} <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
