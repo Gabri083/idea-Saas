@@ -1,7 +1,6 @@
 import { Download } from "lucide-react";
 import { ReviewsTable } from "@/components/dashboard/reviews-table";
 import { ImportReviewsModal } from "@/components/dashboard/import-reviews-modal";
-import { RescanReviewsButton } from "@/components/dashboard/rescan-reviews-button";
 import { getBusiness, getReviews } from "@/lib/data";
 import { requireBusinessId } from "@/lib/auth";
 import { getDictionary, getLocale } from "@/lib/i18n/get-locale";
@@ -25,7 +24,6 @@ export default async function ReviewsPage() {
           <p className="mt-1 text-sm text-muted">{t.pageSubtitle}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <RescanReviewsButton reviewIds={reviews.map((r) => r.id)} dict={t.rescan} />
           <ImportReviewsModal locale={locale} dict={t.import} />
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- file download, not a page navigation */}
           <a

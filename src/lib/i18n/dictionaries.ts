@@ -373,16 +373,6 @@ const es = {
         close: "Cerrar",
         done: "Listo",
       },
-      rescan: {
-        button: "Volver a evaluar con la IA",
-        confirm:
-          "Esto vuelve a analizar el texto de todas tus reseñas con el modelo de IA actual, sin tocar lo que tus clientes calificaron. Útil si algunas reseñas quedaron con un puntaje de una versión anterior del sistema. ¿Continuar?",
-        // {done}/{total} replaced client-side — see impactCalculator note above.
-        progress: "Re-evaluando {done} de {total}…",
-        // {rescored}/{total} replaced client-side — see impactCalculator note above.
-        result: "{rescored} de {total} reseñas actualizadas.",
-        error: "Algo falló al re-evaluar. Intenta de nuevo.",
-      },
     },
     settings: {
       pageTitle: "Configuración",
@@ -1437,14 +1427,6 @@ const en: typeof es = {
         parseError: "Couldn't read the file. Check that it's a CSV with the columns shown.",
         close: "Close",
         done: "Done",
-      },
-      rescan: {
-        button: "Re-evaluate with AI",
-        confirm:
-          "This re-analyzes the text of every one of your reviews with the current AI model, without touching what your customers rated. Useful if some reviews were scored by an older version of the system. Continue?",
-        progress: "Re-evaluating {done} of {total}…",
-        result: "{rescored} of {total} reviews updated.",
-        error: "Something failed while re-evaluating. Try again.",
       },
     },
     settings: {
