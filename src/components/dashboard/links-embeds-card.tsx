@@ -90,7 +90,7 @@ export function LinksEmbedsCard({
               src={`/embed/preview-submit/${businessId}?style=${embedStyle}`}
               title={dict.embedPreviewTitle}
               style={{ height: previewHeight }}
-              className="w-full transition-[height]"
+              className="w-full"
             />
           </div>
           <p className="text-[11px] text-muted">{dict.embedPreviewHint}</p>
