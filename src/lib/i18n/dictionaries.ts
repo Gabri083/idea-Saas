@@ -503,6 +503,10 @@ const es = {
       requestRecalibration: "Solicitar recalibración",
       submitError: "No se pudo enviar. Intenta de nuevo.",
       noIssues: "No hay problemas recurrentes registrados todavía.",
+      // {page}/{totalPages} replaced client-side — see impactCalculator note above.
+      pageOf: "Página {page} de {totalPages}",
+      prevPage: "Anterior",
+      nextPage: "Siguiente",
       requestHistoryTitle: "Historial de solicitudes",
       noRequests: "Aún no has solicitado calibraciones.",
       requestStatusLabels: {
@@ -1560,6 +1564,9 @@ const en: typeof es = {
       requestRecalibration: "Request recalibration",
       submitError: "Couldn't submit. Try again.",
       noIssues: "No recurring issues recorded yet.",
+      pageOf: "Page {page} of {totalPages}",
+      prevPage: "Previous",
+      nextPage: "Next",
       requestHistoryTitle: "Request history",
       noRequests: "You haven't requested any calibrations yet.",
       requestStatusLabels: {

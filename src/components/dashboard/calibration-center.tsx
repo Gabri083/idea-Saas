@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, History, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, History, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -101,6 +101,45 @@ function IssueCalibrationCard({
   );
 }
 
+const PAGE_SIZE = 10;
+
+function Pager({
+  page,
+  totalPages,
+  onPrev,
+  onNext,
+  dict,
+}: {
+  page: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
+  dict: Dictionary["dashboard"]["calibration"];
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="mt-2 flex items-center justify-between">
+      <button
+        onClick={onPrev}
+        disabled={page === 1}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+      >
+        <ChevronLeft size={14} /> {dict.prevPage}
+      </button>
+      <p className="text-xs text-muted">
+        {dict.pageOf.replace("{page}", String(page)).replace("{totalPages}", String(totalPages))}
+      </p>
+      <button
+        onClick={onNext}
+        disabled={page === totalPages}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+      >
+        {dict.nextPage} <ChevronRight size={14} />
+      </button>
+    </div>
+  );
+}
+
 export function CalibrationCenter({
   businessId,
   issues,
@@ -117,6 +156,9 @@ export function CalibrationCenter({
   dict: Dictionary["dashboard"]["calibration"];
 }) {
   const [requests, setRequests] = useState(initialRequests);
+  const [issuePage, setIssuePage] = useState(1);
+  const [requestPage, setRequestPage] = useState(1);
+  const [prevFocusIssueId, setPrevFocusIssueId] = useState(focusIssueId);
 
   const matchedByIssue = useMemo(() => {
     const map = new Map<string, Review[]>();
@@ -133,12 +175,27 @@ export function CalibrationCenter({
     ? [...issues].sort((a, b) => (a.id === focusIssueId ? -1 : b.id === focusIssueId ? 1 : 0))
     : issues;
 
+  // A focused issue (arrived via ?issueId=) always sorts to the front, so it
+  // always lands on page 1 — jump back there whenever the target changes.
+  // Adjusted during render (the React-recommended way to reset state when a
+  // prop changes), not in an effect, which would cost an extra render pass.
+  if (focusIssueId !== prevFocusIssueId) {
+    setPrevFocusIssueId(focusIssueId);
+    setIssuePage(1);
+  }
+
+  const totalIssuePages = Math.max(1, Math.ceil(sortedIssues.length / PAGE_SIZE));
+  const paginatedIssues = sortedIssues.slice((issuePage - 1) * PAGE_SIZE, issuePage * PAGE_SIZE);
+
+  const totalRequestPages = Math.max(1, Math.ceil(requests.length / PAGE_SIZE));
+  const paginatedRequests = requests.slice((requestPage - 1) * PAGE_SIZE, requestPage * PAGE_SIZE);
+
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h2 className="mb-4 text-lg font-medium">{dict.historicalIssuesTitle}</h2>
         <div className="flex flex-col gap-4">
-          {sortedIssues.map((issue) => (
+          {paginatedIssues.map((issue) => (
             <IssueCalibrationCard
               key={issue.id}
               businessId={businessId}
@@ -152,6 +209,13 @@ export function CalibrationCenter({
             <Card className="p-6 text-center text-sm text-muted">{dict.noIssues}</Card>
           )}
         </div>
+        <Pager
+          page={issuePage}
+          totalPages={totalIssuePages}
+          onPrev={() => setIssuePage((p) => Math.max(1, p - 1))}
+          onNext={() => setIssuePage((p) => Math.min(totalIssuePages, p + 1))}
+          dict={dict}
+        />
       </div>
 
       <div>
@@ -160,7 +224,7 @@ export function CalibrationCenter({
           {requests.length === 0 && (
             <Card className="p-6 text-center text-sm text-muted">{dict.noRequests}</Card>
           )}
-          {requests.map((req) => (
+          {paginatedRequests.map((req) => (
             <Card key={req.id} className="flex items-start justify-between gap-3 p-5">
               <div>
                 <p className="text-sm text-foreground/90">{req.evidence}</p>
@@ -172,6 +236,13 @@ export function CalibrationCenter({
             </Card>
           ))}
         </div>
+        <Pager
+          page={requestPage}
+          totalPages={totalRequestPages}
+          onPrev={() => setRequestPage((p) => Math.max(1, p - 1))}
+          onNext={() => setRequestPage((p) => Math.min(totalRequestPages, p + 1))}
+          dict={dict}
+        />
       </div>
     </div>
   );
