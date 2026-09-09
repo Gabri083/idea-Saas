@@ -42,13 +42,17 @@ export function SubmitWidgetMount({ businessId, style }: { businessId: string; s
     };
   }, [businessId, style]);
 
+  // "inline" drops the real form straight into normal document flow — it
+  // genuinely needs this page to grow taller and scroll to reach the
+  // bottom, so overflow must stay visible/natural here. "modal"/"lanzador"
+  // only ever show a small trigger button/bubble in normal flow (the
+  // dialog/panel are position:fixed, scrolling internally on their own) —
+  // h-screen + overflow-hidden there guards against a 1px rounding overflow
+  // accidentally giving the iframe its OWN redundant scrollbar.
+  const isFixedTrigger = style === "modal" || style === "lanzador";
+
   return (
-    // h-screen + overflow-hidden, not min-h-screen — this page's own content
-    // (the trigger button/bubble) never needs to scroll, so this guarantees
-    // it never accidentally does (a 1px rounding overflow would otherwise
-    // give the iframe its OWN scrollbar right next to the dialog/panel's
-    // intentional one, two scrollbars where only one is meant to exist).
-    <div className="h-screen overflow-hidden bg-[#f4f4f5] p-4 text-[#18181b]">
+    <div className={`bg-[#f4f4f5] p-4 text-[#18181b] ${isFixedTrigger ? "h-screen overflow-hidden" : "min-h-screen"}`}>
       <div ref={containerRef} />
     </div>
   );
