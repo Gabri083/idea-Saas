@@ -21,9 +21,5 @@ export default async function PreviewSubmitPage({
   const businessId = resolveBusinessId(rawId);
   const embedStyle = style === "modal" || style === "lanzador" ? style : "inline";
 
-  return (
-    <div className="min-h-screen bg-[#f4f4f5] p-4 text-[#18181b]">
-      <SubmitWidgetMount businessId={businessId} style={embedStyle} />
-    </div>
-  );
+  return <SubmitWidgetMount businessId={businessId} style={embedStyle} />;
 }

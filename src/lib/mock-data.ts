@@ -202,4 +202,5 @@ export const mockWidgetConfig: WidgetConfig = {
   show_branding: true,
   review_form_welcome: null,
   review_form_thanks: null,
+  max_visible_reviews: 8,
 };

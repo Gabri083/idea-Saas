@@ -54,7 +54,7 @@ export async function GET(
           b.overall_ai_rating - a.overall_ai_rating ||
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       )
-      .slice(0, MANY_CARDS_LAYOUTS.includes(config.layout) ? 8 : 12);
+      .slice(0, MANY_CARDS_LAYOUTS.includes(config.layout) ? config.max_visible_reviews : 12);
 
     const average = recencyWeightedAverage(allPublicReviews, (r) => r.overall_ai_rating);
 

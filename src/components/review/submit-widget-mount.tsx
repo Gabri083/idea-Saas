@@ -15,6 +15,13 @@ import { useEffect, useRef } from "react";
  * by hand and appending it directly into this ref'd div keeps both the
  * correct mount point and document.currentScript (which widget-submit.js
  * relies on) working exactly like a real embed.
+ *
+ * Deliberately does NOT resize its own <iframe> to match content height —
+ * that was tried and made "Inline" (and an open modal/launcher) balloon to
+ * the full ~700px height of the real form, dominating the whole dashboard
+ * page. This stays a small, fixed-size preview box on purpose; the form
+ * itself scrolls internally (see widget-submit.js's dialog/panel
+ * max-height + overflow-y:auto) when it doesn't fit.
  */
 export function SubmitWidgetMount({ businessId, style }: { businessId: string; style: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,5 +42,18 @@ export function SubmitWidgetMount({ businessId, style }: { businessId: string; s
     };
   }, [businessId, style]);
 
-  return <div ref={containerRef} />;
+  // "inline" drops the real form straight into normal document flow — it
+  // genuinely needs this page to grow taller and scroll to reach the
+  // bottom, so overflow must stay visible/natural here. "modal"/"lanzador"
+  // only ever show a small trigger button/bubble in normal flow (the
+  // dialog/panel are position:fixed, scrolling internally on their own) —
+  // h-screen + overflow-hidden there guards against a 1px rounding overflow
+  // accidentally giving the iframe its OWN redundant scrollbar.
+  const isFixedTrigger = style === "modal" || style === "lanzador";
+
+  return (
+    <div className={`bg-[#f4f4f5] p-4 text-[#18181b] ${isFixedTrigger ? "h-screen overflow-hidden" : "min-h-screen"}`}>
+      <div ref={containerRef} />
+    </div>
+  );
 }

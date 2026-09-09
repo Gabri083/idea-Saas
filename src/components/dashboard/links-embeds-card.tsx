@@ -63,11 +63,16 @@ export function LinksEmbedsCard({
         <div className="mt-2 flex flex-col gap-1.5">
           <span className="text-xs font-medium text-muted">{dict.embedPreviewTitle}</span>
           <div className="overflow-hidden rounded-lg border border-border">
+            {/* A fixed, modest size on purpose — not tall enough to show the
+                whole form at once, but that's fine: this is a preview of the
+                embed STYLE, not a full render of the form, and the form
+                scrolls internally (natively for "inline", via widget-submit.js's
+                own overflow-y:auto for the modal/launcher) when it doesn't fit. */}
             <iframe
               key={embedStyle}
               src={`/embed/preview-submit/${businessId}?style=${embedStyle}`}
               title={dict.embedPreviewTitle}
-              className="h-[340px] w-full"
+              className="h-[420px] w-full"
             />
           </div>
           <p className="text-[11px] text-muted">{dict.embedPreviewHint}</p>
