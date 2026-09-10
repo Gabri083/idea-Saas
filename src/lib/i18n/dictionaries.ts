@@ -561,6 +561,10 @@ const es = {
       embedCopied: "¡Copiado!",
       embedPrefillHint:
         "Opcional: pasa el nombre, correo y producto del pedido para que el formulario llegue prellenado.",
+      autoOpenLabel: "Abrir solo, sin que el cliente haga clic",
+      autoOpenSecondsSuffix: "segundos después de cargar la página",
+      autoOpenHint:
+        "Si el cliente ya lo abrió o lo cerró por su cuenta, no se vuelve a abrir solo.",
       embedPreviewTitle: "Así se ve en tu web",
       embedPreviewHint: "\"En línea\" muestra el formulario directo; en los otros dos, haz clic en el botón para abrirlo.",
       gateBanner:
@@ -1618,6 +1622,9 @@ const en: typeof es = {
       embedCopied: "Copied!",
       embedPrefillHint:
         "Optional: pass the order's name, email, and product so the form arrives pre-filled.",
+      autoOpenLabel: "Open on its own, no click needed",
+      autoOpenSecondsSuffix: "seconds after the page loads",
+      autoOpenHint: "If the customer already opened or closed it themselves, it won't pop open again.",
       embedPreviewTitle: "What it looks like on your site",
       embedPreviewHint: "\"Inline\" shows the form directly; the other two need a click on the button to open it.",
       gateBanner: "Customizing the widget is part of the Growth plan. The default style is used meanwhile.",

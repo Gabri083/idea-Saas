@@ -23,7 +23,15 @@ import { useEffect, useRef } from "react";
  * itself scrolls internally (see widget-submit.js's dialog/panel
  * max-height + overflow-y:auto) when it doesn't fit.
  */
-export function SubmitWidgetMount({ businessId, style }: { businessId: string; style: string }) {
+export function SubmitWidgetMount({
+  businessId,
+  style,
+  autoOpenAfter,
+}: {
+  businessId: string;
+  style: string;
+  autoOpenAfter?: string;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,12 +43,13 @@ export function SubmitWidgetMount({ businessId, style }: { businessId: string; s
     script.src = "/widget-submit.js";
     script.setAttribute("data-business-id", businessId);
     script.setAttribute("data-style", style);
+    if (autoOpenAfter) script.setAttribute("data-auto-open-after", autoOpenAfter);
     container.appendChild(script);
 
     return () => {
       container.innerHTML = "";
     };
-  }, [businessId, style]);
+  }, [businessId, style, autoOpenAfter]);
 
   // "inline" drops the real form straight into normal document flow — it
   // genuinely needs this page to grow taller and scroll to reach the

@@ -14,12 +14,12 @@ export default async function PreviewSubmitPage({
   searchParams,
 }: {
   params: Promise<{ businessId: string }>;
-  searchParams: Promise<{ style?: string }>;
+  searchParams: Promise<{ style?: string; autoOpenAfter?: string }>;
 }) {
   const { businessId: rawId } = await params;
-  const { style } = await searchParams;
+  const { style, autoOpenAfter } = await searchParams;
   const businessId = resolveBusinessId(rawId);
   const embedStyle = style === "modal" || style === "lanzador" ? style : "inline";
 
-  return <SubmitWidgetMount businessId={businessId} style={embedStyle} />;
+  return <SubmitWidgetMount businessId={businessId} style={embedStyle} autoOpenAfter={autoOpenAfter} />;
 }

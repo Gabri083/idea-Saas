@@ -67,7 +67,7 @@
     register(iframe, null);
   }
 
-  function mountModal(container, src, label) {
+  function mountModal(container, src, label, autoOpenAfter) {
     var trigger = document.createElement("button");
     trigger.type = "button";
     trigger.className = "kelsira-submit-trigger";
@@ -108,17 +108,36 @@
       overlay.style.display = "none";
     }
 
-    trigger.addEventListener("click", open);
-    closeBtn.addEventListener("click", close);
+    // A visitor who already opened or dismissed this on their own shouldn't
+    // have it snap back open just because the timer happened to land after —
+    // auto-open is a nudge for someone who hasn't interacted at all yet.
+    var userInteracted = false;
+    trigger.addEventListener("click", function () {
+      userInteracted = true;
+      open();
+    });
+    closeBtn.addEventListener("click", function () {
+      userInteracted = true;
+      close();
+    });
     overlay.addEventListener("click", function (e) {
-      if (e.target === overlay) close();
+      if (e.target === overlay) {
+        userInteracted = true;
+        close();
+      }
     });
 
     container.appendChild(trigger);
     container.appendChild(overlay);
+
+    if (autoOpenAfter != null) {
+      setTimeout(function () {
+        if (!userInteracted) open();
+      }, autoOpenAfter * 1000);
+    }
   }
 
-  function mountLanzador(container, src, label) {
+  function mountLanzador(container, src, label, autoOpenAfter) {
     var wrap = document.createElement("div");
     wrap.className = "kelsira-submit-launcher";
 
@@ -159,11 +178,16 @@
         iframeMounted = true;
       }
     }
+
+    // Same "leave it alone once they've touched it" rule as the modal above.
+    var userInteracted = false;
     bubble.addEventListener("click", function () {
+      userInteracted = true;
       open = !open;
       render();
     });
     headClose.addEventListener("click", function () {
+      userInteracted = true;
       open = false;
       render();
     });
@@ -171,6 +195,15 @@
     wrap.appendChild(panel);
     wrap.appendChild(bubble);
     container.appendChild(wrap);
+
+    if (autoOpenAfter != null) {
+      setTimeout(function () {
+        if (!userInteracted && !open) {
+          open = true;
+          render();
+        }
+      }, autoOpenAfter * 1000);
+    }
   }
 
   function injectStyles(id) {
@@ -203,6 +236,17 @@
     var origin = new URL(script.src).origin;
     var src = buildSrc(origin, businessId, script);
 
+    // Opt-in only — omit data-auto-open-after and nothing changes from
+    // click-to-open. Any non-negative number of seconds; invalid values are
+    // ignored rather than treated as "open instantly", which would surprise
+    // a merchant who mistyped the attribute.
+    var autoOpenAfterRaw = script.getAttribute("data-auto-open-after");
+    var autoOpenAfter = null;
+    if (autoOpenAfterRaw != null) {
+      var parsed = parseFloat(autoOpenAfterRaw);
+      if (!isNaN(parsed) && parsed >= 0) autoOpenAfter = parsed;
+    }
+
     var container = document.createElement("div");
     container.className = "kelsira-submit-widget";
     script.parentNode.insertBefore(container, script.nextSibling);
@@ -210,9 +254,9 @@
     injectStyles("kelsira-submit-styles");
 
     if (style === "modal") {
-      mountModal(container, src, script.getAttribute("data-label") || DEFAULT_MODAL_LABEL);
+      mountModal(container, src, script.getAttribute("data-label") || DEFAULT_MODAL_LABEL, autoOpenAfter);
     } else if (style === "lanzador") {
-      mountLanzador(container, src, script.getAttribute("data-label") || DEFAULT_LAUNCHER_LABEL);
+      mountLanzador(container, src, script.getAttribute("data-label") || DEFAULT_LAUNCHER_LABEL, autoOpenAfter);
     } else {
       mountInline(container, src);
     }
