@@ -27,7 +27,11 @@ export function Sidebar({
   const pct = usage.cap == null ? null : Math.min(100, Math.round((usage.used / usage.cap) * 100));
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface/40 md:flex">
+    // h-screen: a plain flex sibling of the scrolling <main> in
+    // dashboard/layout.tsx, not a floating/sticky trick — main is the only
+    // thing that scrolls, so this stays put on every page without needing
+    // position: sticky.
+    <aside className="hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-surface/40 md:flex">
       <div className="flex items-center gap-2 px-6 py-5">
         <LogoMark size={32} />
         <span className="font-semibold tracking-tight">Kelsira</span>
