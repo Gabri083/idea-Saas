@@ -20,26 +20,35 @@ export function LinksEmbedsCard({
   dict: Dictionary["dashboard"]["widget"];
 }) {
   const [embedStyle, setEmbedStyle] = useState<EmbedStyle>("inline");
+  const [autoOpenEnabled, setAutoOpenEnabled] = useState(false);
+  const [autoOpenSeconds, setAutoOpenSeconds] = useState(4);
   const embedStyleLabels: Record<EmbedStyle, string> = {
     inline: dict.embedStyleInline,
     modal: dict.embedStyleModal,
     lanzador: dict.embedStyleLauncher,
   };
-  const embedSnippet = `<script src="${SITE_URL}/widget-submit.js" data-business-id="${businessId}" data-style="${embedStyle}"></script>`;
+  // "Inline" already shows the form with nothing to open — auto-open only
+  // means anything for the two styles that start closed.
+  const supportsAutoOpen = embedStyle !== "inline";
+  const autoOpenActive = supportsAutoOpen && autoOpenEnabled;
+  const embedSnippet =
+    `<script src="${SITE_URL}/widget-submit.js" data-business-id="${businessId}" data-style="${embedStyle}"` +
+    (autoOpenActive ? ` data-auto-open-after="${autoOpenSeconds}"` : "") +
+    `></script>`;
+  const previewSrc = `/embed/preview-submit/${businessId}?style=${embedStyle}${autoOpenActive ? `&autoOpenAfter=${autoOpenSeconds}` : ""}`;
 
   return (
     <Card className="p-5">
-      <p className="text-sm font-medium">{dict.linksCardTitle}</p>
-      <p className="mt-1 text-xs text-muted">{dict.linksCardSubtitle}</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted">{dict.publicLinkTitle}</span>
+          <CopyableLink path={`/review/${businessId}`} copyAria={dict.copyLinkAria} />
+        </div>
 
-      <div className="mt-4 flex flex-col gap-1">
-        <span className="text-xs font-medium text-muted">{dict.publicLinkTitle}</span>
-        <CopyableLink path={`/review/${businessId}`} copyAria={dict.copyLinkAria} />
-      </div>
-
-      <div className="mt-4 flex flex-col gap-1 border-t border-border pt-4">
-        <span className="text-xs font-medium text-muted">{dict.publicPageTitle}</span>
-        <CopyableLink path={`/resenas/${businessId}`} copyAria={dict.copyLinkAria} />
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted">{dict.publicPageTitle}</span>
+          <CopyableLink path={`/resenas/${businessId}`} copyAria={dict.copyLinkAria} />
+        </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-1.5 border-t border-border pt-4">
@@ -60,6 +69,33 @@ export function LinksEmbedsCard({
         <CopyableLink value={embedSnippet} copyAria={dict.embedCopyAria} />
         <p className="text-[11px] text-muted">{dict.embedPrefillHint}</p>
 
+        {supportsAutoOpen && (
+          <div className="flex flex-col gap-1.5 rounded-lg border border-border p-3">
+            <label className="flex items-center gap-2 text-xs font-medium">
+              <input
+                type="checkbox"
+                checked={autoOpenEnabled}
+                onChange={(e) => setAutoOpenEnabled(e.target.checked)}
+              />
+              {dict.autoOpenLabel}
+            </label>
+            {autoOpenEnabled && (
+              <div className="flex items-center gap-2 pl-6">
+                <input
+                  type="number"
+                  min={0}
+                  max={60}
+                  value={autoOpenSeconds}
+                  onChange={(e) => setAutoOpenSeconds(Math.max(0, Number(e.target.value)))}
+                  className="w-16 rounded-lg border border-border bg-surface px-2 py-1 text-xs outline-none ring-cobalt/40 focus:ring-2"
+                />
+                <span className="text-xs text-muted">{dict.autoOpenSecondsSuffix}</span>
+              </div>
+            )}
+            <p className="pl-6 text-[11px] text-muted">{dict.autoOpenHint}</p>
+          </div>
+        )}
+
         <div className="mt-2 flex flex-col gap-1.5">
           <span className="text-xs font-medium text-muted">{dict.embedPreviewTitle}</span>
           <div className="overflow-hidden rounded-lg border border-border">
@@ -69,8 +105,8 @@ export function LinksEmbedsCard({
                 scrolls internally (natively for "inline", via widget-submit.js's
                 own overflow-y:auto for the modal/launcher) when it doesn't fit. */}
             <iframe
-              key={embedStyle}
-              src={`/embed/preview-submit/${businessId}?style=${embedStyle}`}
+              key={previewSrc}
+              src={previewSrc}
               title={dict.embedPreviewTitle}
               className="h-[420px] w-full"
             />

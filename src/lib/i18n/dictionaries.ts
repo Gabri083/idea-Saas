@@ -503,6 +503,10 @@ const es = {
       requestRecalibration: "Solicitar recalibración",
       submitError: "No se pudo enviar. Intenta de nuevo.",
       noIssues: "No hay problemas recurrentes registrados todavía.",
+      // {page}/{totalPages} replaced client-side — see impactCalculator note above.
+      pageOf: "Página {page} de {totalPages}",
+      prevPage: "Anterior",
+      nextPage: "Siguiente",
       requestHistoryTitle: "Historial de solicitudes",
       noRequests: "Aún no has solicitado calibraciones.",
       requestStatusLabels: {
@@ -537,6 +541,12 @@ const es = {
     widget: {
       pageTitle: "Widget embebible",
       pageSubtitle: "Configura el estilo, previsualízalo en vivo y copia el código para tu e-commerce.",
+      section1Title: "Muestra tus reseñas en tu sitio",
+      section1Subtitle: "Apariencia, diseño y el código que las pone en tu tienda.",
+      groupAppearance: "Apariencia",
+      groupLayout: "Diseño",
+      groupContent: "Contenido",
+      installAccordionTitle: "Código e instalación",
       linksCardTitle: "Links y embeds",
       linksCardSubtitle: "Todas las formas en que un cliente encuentra o deja una reseña.",
       publicLinkTitle: "Link público para recibir reseñas",
@@ -557,6 +567,10 @@ const es = {
       embedCopied: "¡Copiado!",
       embedPrefillHint:
         "Opcional: pasa el nombre, correo y producto del pedido para que el formulario llegue prellenado.",
+      autoOpenLabel: "Abrir solo, sin que el cliente haga clic",
+      autoOpenSecondsSuffix: "segundos después de cargar la página",
+      autoOpenHint:
+        "Si el cliente ya lo abrió o lo cerró por su cuenta, no se vuelve a abrir solo.",
       embedPreviewTitle: "Así se ve en tu web",
       embedPreviewHint: "\"En línea\" muestra el formulario directo; en los otros dos, haz clic en el botón para abrirlo.",
       gateBanner:
@@ -1560,6 +1574,9 @@ const en: typeof es = {
       requestRecalibration: "Request recalibration",
       submitError: "Couldn't submit. Try again.",
       noIssues: "No recurring issues recorded yet.",
+      pageOf: "Page {page} of {totalPages}",
+      prevPage: "Previous",
+      nextPage: "Next",
       requestHistoryTitle: "Request history",
       noRequests: "You haven't requested any calibrations yet.",
       requestStatusLabels: {
@@ -1592,6 +1609,12 @@ const en: typeof es = {
     widget: {
       pageTitle: "Embeddable widget",
       pageSubtitle: "Configure the style, preview it live, and copy the code for your store.",
+      section1Title: "Show your reviews on your site",
+      section1Subtitle: "Appearance, layout, and the code that puts them on your store.",
+      groupAppearance: "Appearance",
+      groupLayout: "Layout",
+      groupContent: "Content",
+      installAccordionTitle: "Code & installation",
       linksCardTitle: "Links & embeds",
       linksCardSubtitle: "Every way a customer can find or leave a review.",
       publicLinkTitle: "Public link to receive reviews",
@@ -1611,6 +1634,9 @@ const en: typeof es = {
       embedCopied: "Copied!",
       embedPrefillHint:
         "Optional: pass the order's name, email, and product so the form arrives pre-filled.",
+      autoOpenLabel: "Open on its own, no click needed",
+      autoOpenSecondsSuffix: "seconds after the page loads",
+      autoOpenHint: "If the customer already opened or closed it themselves, it won't pop open again.",
       embedPreviewTitle: "What it looks like on your site",
       embedPreviewHint: "\"Inline\" shows the form directly; the other two need a click on the button to open it.",
       gateBanner: "Customizing the widget is part of the Growth plan. The default style is used meanwhile.",
