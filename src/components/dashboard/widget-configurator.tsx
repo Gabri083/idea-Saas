@@ -1587,7 +1587,7 @@ export function WidgetConfigurator({
         </Card>
       )}
 
-      {activeTab === "links" && <LinksEmbedsCard businessId={businessId} dict={dict} />}
+      {activeTab === "links" && <LinksEmbedsCard businessId={businessId} businessName={businessName} dict={dict} />}
     </div>
   );
 }
