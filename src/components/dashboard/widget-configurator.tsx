@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Check, Copy, Loader2, Sparkles } from "lucide-react";
+import { AlertTriangle, Check, ChevronRight, Copy, Loader2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlatformInstructions } from "@/components/dashboard/platform-instructions";
+import { LogoUploader } from "@/components/dashboard/logo-uploader";
 import { cn, isConfirmed, recencyWeightedAverage } from "@/lib/utils";
 import type { Review, WidgetConfig } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -1015,6 +1016,7 @@ export function WidgetConfigurator({
   canCustomize,
   benchmark,
   categoryLabel,
+  logoUrl,
   dict,
 }: {
   businessId: string;
@@ -1024,6 +1026,7 @@ export function WidgetConfigurator({
   canCustomize: boolean;
   benchmark: CategoryBenchmark;
   categoryLabel: string;
+  logoUrl: string | null;
   dict: WidgetDict;
 }) {
   const [config, setConfig] = useState(initialConfig);
@@ -1074,8 +1077,8 @@ export function WidgetConfigurator({
       .replace(/[^a-z0-9]+/g, "") + ".com";
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[380px_1fr]">
-      <Card className="flex flex-col gap-6 p-6">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
+      <div className="flex flex-col gap-4">
         {!canCustomize && (
           <div className="flex items-center gap-2 rounded-lg border border-cobalt/30 bg-cobalt/10 px-3 py-2.5 text-xs text-cobalt">
             <Sparkles size={14} className="shrink-0" />
@@ -1083,194 +1086,210 @@ export function WidgetConfigurator({
           </div>
         )}
         <fieldset disabled={!canCustomize} className={cn("contents border-0 p-0 m-0", !canCustomize && "opacity-50")}>
-        <div>
-          <p className="text-sm font-medium">{dict.accentColorLabel}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {accentPresets.map((c) => (
-              <button
-                key={c}
-                onClick={() => setConfig((p) => ({ ...p, accent_color: c }))}
-                className={cn(
-                  "h-8 w-8 rounded-full border-2 transition-transform",
-                  config.accent_color === c ? "scale-110 border-foreground" : "border-transparent",
-                )}
-                style={{ backgroundColor: c }}
-                aria-label={c}
-              />
-            ))}
-            <input
-              type="color"
-              value={config.accent_color}
-              onChange={(e) => setConfig((p) => ({ ...p, accent_color: e.target.value }))}
-              className="h-8 w-8 cursor-pointer rounded-full border border-border bg-transparent p-0"
-            />
-          </div>
-        </div>
+        <Card className="flex flex-col gap-4 p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{dict.groupAppearance}</p>
 
-        <div>
-          <p className="text-sm font-medium">{dict.modeLabel}</p>
-          <div className="mt-2 flex gap-2">
-            {(["light", "dark"] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setConfig((p) => ({ ...p, theme_mode: mode }))}
-                className={cn(
-                  "flex-1 rounded-lg border px-3 py-2 text-sm capitalize transition-colors",
-                  config.theme_mode === mode
-                    ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
-                    : "border-border text-muted hover:text-foreground",
-                )}
-              >
-                {mode === "light" ? dict.modeLight : dict.modeDark}
-              </button>
-            ))}
-          </div>
-        </div>
+          <LogoUploader initialLogoUrl={logoUrl} canCustomize={canCustomize} dict={dict} bare />
 
-        {radiusApplies(config.layout, config.card_style) && (
           <div>
-            <p className="text-sm font-medium">{dict.bordersLabel}</p>
-            <div className="mt-2 flex gap-2">
-              {radiusOptions.map((r) => (
+            <p className="text-sm font-medium">{dict.accentColorLabel}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {accentPresets.map((c) => (
                 <button
-                  key={r}
-                  onClick={() => setConfig((p) => ({ ...p, border_radius: r }))}
+                  key={c}
+                  onClick={() => setConfig((p) => ({ ...p, accent_color: c }))}
                   className={cn(
-                    "flex-1 border px-2 py-2 text-xs uppercase transition-colors",
-                    config.border_radius === r
+                    "h-8 w-8 rounded-full border-2 transition-transform",
+                    config.accent_color === c ? "scale-110 border-foreground" : "border-transparent",
+                  )}
+                  style={{ backgroundColor: c }}
+                  aria-label={c}
+                />
+              ))}
+              <input
+                type="color"
+                value={config.accent_color}
+                onChange={(e) => setConfig((p) => ({ ...p, accent_color: e.target.value }))}
+                className="h-8 w-8 cursor-pointer rounded-full border border-border bg-transparent p-0"
+              />
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-medium">{dict.modeLabel}</p>
+            <div className="mt-2 flex gap-2">
+              {(["light", "dark"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setConfig((p) => ({ ...p, theme_mode: mode }))}
+                  className={cn(
+                    "flex-1 rounded-lg border px-3 py-2 text-sm capitalize transition-colors",
+                    config.theme_mode === mode
                       ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
                       : "border-border text-muted hover:text-foreground",
                   )}
-                  style={{ borderRadius: radiusPx[r] }}
                 >
-                  {r}
+                  {mode === "light" ? dict.modeLight : dict.modeDark}
                 </button>
               ))}
             </div>
           </div>
-        )}
 
-        <div>
-          <p className="text-sm font-medium">{dict.fontLabel}</p>
-          <select
-            value={config.font_family}
-            onChange={(e) => setConfig((p) => ({ ...p, font_family: e.target.value }))}
-            className="mt-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm"
-          >
-            {fontOptions.map((f) => (
-              <option key={f} value={f}>
-                {f}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="flex gap-4">
+            {radiusApplies(config.layout, config.card_style) && (
+              <div className="flex-1">
+                <p className="text-sm font-medium">{dict.bordersLabel}</p>
+                <div className="mt-2 flex gap-1.5">
+                  {radiusOptions.map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => setConfig((p) => ({ ...p, border_radius: r }))}
+                      className={cn(
+                        "flex-1 border px-1.5 py-2 text-[11px] uppercase transition-colors",
+                        config.border_radius === r
+                          ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
+                          : "border-border text-muted hover:text-foreground",
+                      )}
+                      style={{ borderRadius: radiusPx[r] }}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        <div>
-          <p className="text-sm font-medium">{dict.layoutLabel}</p>
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            {layoutIds.map((id) => (
-              <button
-                key={id}
-                onClick={() => setConfig((p) => ({ ...p, layout: id }))}
-                className={cn(
-                  "rounded-lg border px-2 py-2 text-xs transition-colors",
-                  config.layout === id
-                    ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
-                    : "border-border text-muted hover:text-foreground",
-                )}
+            <div className="flex-1">
+              <p className="text-sm font-medium">{dict.fontLabel}</p>
+              <select
+                value={config.font_family}
+                onChange={(e) => setConfig((p) => ({ ...p, font_family: e.target.value }))}
+                className="mt-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm"
               >
-                {dict.layoutOptions[id]}
-              </button>
-            ))}
+                {fontOptions.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {CARD_STYLE_LAYOUTS.includes(config.layout) && (
+        <Card className="flex flex-col gap-4 p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{dict.groupLayout}</p>
+
           <div>
-            <p className="text-sm font-medium">{dict.cardStyleLabel}</p>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {cardStyleIds.map((id) => (
+            <p className="text-sm font-medium">{dict.layoutLabel}</p>
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {layoutIds.map((id) => (
                 <button
                   key={id}
-                  onClick={() => setConfig((p) => ({ ...p, card_style: id }))}
+                  onClick={() => setConfig((p) => ({ ...p, layout: id }))}
                   className={cn(
                     "rounded-lg border px-2 py-2 text-xs transition-colors",
-                    config.card_style === id
+                    config.layout === id
                       ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
                       : "border-border text-muted hover:text-foreground",
                   )}
                 >
-                  {dict.cardStyleOptions[id]}
+                  {dict.layoutOptions[id]}
                 </button>
               ))}
             </div>
           </div>
-        )}
 
-        {MANY_CARDS_LAYOUTS.includes(config.layout) && (
-          <div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">{dict.maxVisibleReviewsLabel}</p>
-              <span className="text-sm text-muted">{config.max_visible_reviews}</span>
+          {CARD_STYLE_LAYOUTS.includes(config.layout) && (
+            <div>
+              <p className="text-sm font-medium">{dict.cardStyleLabel}</p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {cardStyleIds.map((id) => (
+                  <button
+                    key={id}
+                    onClick={() => setConfig((p) => ({ ...p, card_style: id }))}
+                    className={cn(
+                      "rounded-lg border px-2 py-2 text-xs transition-colors",
+                      config.card_style === id
+                        ? "border-cobalt/40 bg-cobalt/10 text-cobalt"
+                        : "border-border text-muted hover:text-foreground",
+                    )}
+                  >
+                    {dict.cardStyleOptions[id]}
+                  </button>
+                ))}
+              </div>
             </div>
+          )}
+
+          {MANY_CARDS_LAYOUTS.includes(config.layout) && (
+            <div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">{dict.maxVisibleReviewsLabel}</p>
+                <span className="text-sm text-muted">{config.max_visible_reviews}</span>
+              </div>
+              <input
+                type="range"
+                min={2}
+                max={12}
+                step={1}
+                value={config.max_visible_reviews}
+                onChange={(e) => setConfig((p) => ({ ...p, max_visible_reviews: Number(e.target.value) }))}
+                className="mt-2 w-full accent-cobalt"
+              />
+              <p className="mt-1 text-xs text-muted">{dict.maxVisibleReviewsHint}</p>
+            </div>
+          )}
+        </Card>
+
+        <Card className="flex flex-col gap-3 p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{dict.groupContent}</p>
+
+          <label className="flex items-center gap-2 text-sm">
             <input
-              type="range"
-              min={2}
-              max={12}
-              step={1}
-              value={config.max_visible_reviews}
-              onChange={(e) => setConfig((p) => ({ ...p, max_visible_reviews: Number(e.target.value) }))}
-              className="mt-2 w-full accent-cobalt"
+              type="checkbox"
+              checked={config.show_breakdown}
+              onChange={(e) => setConfig((p) => ({ ...p, show_breakdown: e.target.checked }))}
+              className="h-4 w-4 rounded accent-cobalt"
             />
-            <p className="mt-1 text-xs text-muted">{dict.maxVisibleReviewsHint}</p>
+            {dict.showBreakdownLabel}
+          </label>
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={!config.show_branding}
+              onChange={(e) => setConfig((p) => ({ ...p, show_branding: !e.target.checked }))}
+              className="h-4 w-4 rounded accent-cobalt"
+            />
+            {dict.hideBrandingLabel}
+          </label>
+
+          <div>
+            <p className="text-sm font-medium">{dict.welcomeMessageLabel}</p>
+            <textarea
+              value={config.review_form_welcome ?? ""}
+              onChange={(e) => setConfig((p) => ({ ...p, review_form_welcome: e.target.value }))}
+              maxLength={200}
+              rows={2}
+              placeholder={dict.welcomeMessagePlaceholder}
+              className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
+            />
+            <p className="mt-1 text-xs text-muted">{dict.welcomeMessageHint}</p>
           </div>
-        )}
 
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={config.show_breakdown}
-            onChange={(e) => setConfig((p) => ({ ...p, show_breakdown: e.target.checked }))}
-            className="h-4 w-4 rounded accent-cobalt"
-          />
-          {dict.showBreakdownLabel}
-        </label>
-
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={!config.show_branding}
-            onChange={(e) => setConfig((p) => ({ ...p, show_branding: !e.target.checked }))}
-            className="h-4 w-4 rounded accent-cobalt"
-          />
-          {dict.hideBrandingLabel}
-        </label>
-
-        <div>
-          <p className="text-sm font-medium">{dict.welcomeMessageLabel}</p>
-          <textarea
-            value={config.review_form_welcome ?? ""}
-            onChange={(e) => setConfig((p) => ({ ...p, review_form_welcome: e.target.value }))}
-            maxLength={200}
-            rows={2}
-            placeholder={dict.welcomeMessagePlaceholder}
-            className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
-          />
-          <p className="mt-1 text-xs text-muted">{dict.welcomeMessageHint}</p>
-        </div>
-
-        <div>
-          <p className="text-sm font-medium">{dict.thanksMessageLabel}</p>
-          <textarea
-            value={config.review_form_thanks ?? ""}
-            onChange={(e) => setConfig((p) => ({ ...p, review_form_thanks: e.target.value }))}
-            maxLength={200}
-            rows={2}
-            placeholder={dict.thanksMessagePlaceholder}
-            className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
-          />
-          <p className="mt-1 text-xs text-muted">{dict.thanksMessageHint}</p>
-        </div>
+          <div>
+            <p className="text-sm font-medium">{dict.thanksMessageLabel}</p>
+            <textarea
+              value={config.review_form_thanks ?? ""}
+              onChange={(e) => setConfig((p) => ({ ...p, review_form_thanks: e.target.value }))}
+              maxLength={200}
+              rows={2}
+              placeholder={dict.thanksMessagePlaceholder}
+              className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
+            />
+            <p className="mt-1 text-xs text-muted">{dict.thanksMessageHint}</p>
+          </div>
+        </Card>
 
         <Button onClick={save} disabled={saveStatus === "saving"} className="w-full">
           {saveStatus === "saving" ? (
@@ -1290,9 +1309,9 @@ export function WidgetConfigurator({
           )}
         </Button>
         </fieldset>
-      </Card>
+      </div>
 
-      <div className="flex min-w-0 flex-col gap-6">
+      <div className="flex min-w-0 flex-col gap-4">
         <Card className="min-w-0 p-6">
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <p className="text-sm font-medium text-muted">{dict.livePreviewLabel}</p>
@@ -1492,31 +1511,35 @@ export function WidgetConfigurator({
           </div>
         </Card>
 
-        <Card className="min-w-0 p-6">
-          <p className="mb-3 text-sm font-medium text-muted">{dict.codeSectionTitle}</p>
-          <div className="flex min-w-0 items-start gap-2 rounded-xl border border-border bg-surface p-4">
-            <code
-              suppressHydrationWarning
-              className="min-w-0 flex-1 overflow-x-auto whitespace-pre text-xs text-foreground/90"
-            >
-              {snippet}
-            </code>
-            <button
-              onClick={copySnippet}
-              className="shrink-0 rounded-lg border border-border p-2 transition-colors hover:bg-surface-2"
-              aria-label={dict.copyCodeAria}
-            >
-              {copied ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
-            </button>
-          </div>
-          <p className="mt-2 text-xs text-muted">{dict.codeSectionHint}</p>
-          <p className="mt-1 text-xs text-muted">{dict.codeSectionMultiHint}</p>
-        </Card>
+        <details className="group min-w-0 rounded-2xl border border-border bg-surface/60 backdrop-blur-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-5 text-sm font-medium [&::-webkit-details-marker]:hidden">
+            {dict.installAccordionTitle}
+            <ChevronRight size={16} className="shrink-0 text-muted transition-transform group-open:rotate-90" />
+          </summary>
+          <div className="border-t border-border p-5 pt-4">
+            <p className="mb-3 text-sm font-medium text-muted">{dict.codeSectionTitle}</p>
+            <div className="flex min-w-0 items-start gap-2 rounded-xl border border-border bg-surface p-4">
+              <code
+                suppressHydrationWarning
+                className="min-w-0 flex-1 overflow-x-auto whitespace-pre text-xs text-foreground/90"
+              >
+                {snippet}
+              </code>
+              <button
+                onClick={copySnippet}
+                className="shrink-0 rounded-lg border border-border p-2 transition-colors hover:bg-surface-2"
+                aria-label={dict.copyCodeAria}
+              >
+                {copied ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-muted">{dict.codeSectionHint}</p>
+            <p className="mt-1 text-xs text-muted">{dict.codeSectionMultiHint}</p>
 
-        <Card className="min-w-0 p-6">
-          <p className="mb-3 text-sm font-medium text-muted">{dict.installStepsTitle}</p>
-          <PlatformInstructions dict={dict.platform} />
-        </Card>
+            <p className="mb-3 mt-5 text-sm font-medium text-muted">{dict.installStepsTitle}</p>
+            <PlatformInstructions dict={dict.platform} />
+          </div>
+        </details>
       </div>
     </div>
   );

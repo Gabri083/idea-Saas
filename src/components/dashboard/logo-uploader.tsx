@@ -13,10 +13,13 @@ export function LogoUploader({
   initialLogoUrl,
   canCustomize,
   dict,
+  bare,
 }: {
   initialLogoUrl: string | null;
   canCustomize: boolean;
   dict: Dictionary["dashboard"]["widget"];
+  /** Skips the outer Card and subtitle — for nesting inside another group (e.g. the Appearance card). */
+  bare?: boolean;
 }) {
   const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
   const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
@@ -54,11 +57,11 @@ export function LogoUploader({
     }
   }
 
-  return (
-    <Card className="p-5">
+  const body = (
+    <>
       <p className="text-sm font-medium">{dict.logoTitle}</p>
-      <p className="mt-1 text-xs text-muted">{dict.logoSubtitle}</p>
-      <div className="mt-3 flex items-center gap-3">
+      {!bare && <p className="mt-1 text-xs text-muted">{dict.logoSubtitle}</p>}
+      <div className="mt-2 flex items-center gap-3">
         <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-surface">
           {logoUrl ? (
             <Image src={logoUrl} alt="" width={56} height={56} className="h-full w-full object-contain" unoptimized />
@@ -89,6 +92,8 @@ export function LogoUploader({
           <AlertTriangle size={13} /> {error}
         </p>
       )}
-    </Card>
+    </>
   );
+
+  return bare ? body : <Card className="p-5">{body}</Card>;
 }

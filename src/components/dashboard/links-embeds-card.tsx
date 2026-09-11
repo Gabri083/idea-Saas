@@ -39,17 +39,16 @@ export function LinksEmbedsCard({
 
   return (
     <Card className="p-5">
-      <p className="text-sm font-medium">{dict.linksCardTitle}</p>
-      <p className="mt-1 text-xs text-muted">{dict.linksCardSubtitle}</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted">{dict.publicLinkTitle}</span>
+          <CopyableLink path={`/review/${businessId}`} copyAria={dict.copyLinkAria} />
+        </div>
 
-      <div className="mt-4 flex flex-col gap-1">
-        <span className="text-xs font-medium text-muted">{dict.publicLinkTitle}</span>
-        <CopyableLink path={`/review/${businessId}`} copyAria={dict.copyLinkAria} />
-      </div>
-
-      <div className="mt-4 flex flex-col gap-1 border-t border-border pt-4">
-        <span className="text-xs font-medium text-muted">{dict.publicPageTitle}</span>
-        <CopyableLink path={`/resenas/${businessId}`} copyAria={dict.copyLinkAria} />
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted">{dict.publicPageTitle}</span>
+          <CopyableLink path={`/resenas/${businessId}`} copyAria={dict.copyLinkAria} />
+        </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-1.5 border-t border-border pt-4">
