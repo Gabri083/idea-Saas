@@ -537,6 +537,9 @@ const es = {
         "{days} días para solucionar este cuello de botella antes de que afecte la ponderación de futuras reseñas.",
       acknowledgeButton: "Reconocer problema",
       requestCalibrationButton: "Solicitar calibración con evidencia",
+      pageOf: "Página {page} de {totalPages}",
+      prevPage: "Anterior",
+      nextPage: "Siguiente",
     },
     widget: {
       pageTitle: "Widget embebible",
@@ -1606,6 +1609,9 @@ const en: typeof es = {
       remainingText: "{days} days to fix this bottleneck before it affects the weighting of future reviews.",
       acknowledgeButton: "Acknowledge issue",
       requestCalibrationButton: "Request calibration with evidence",
+      pageOf: "Page {page} of {totalPages}",
+      prevPage: "Previous",
+      nextPage: "Next",
     },
     widget: {
       pageTitle: "Embeddable widget",

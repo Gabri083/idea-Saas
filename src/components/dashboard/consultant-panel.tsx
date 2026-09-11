@@ -2,12 +2,51 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertOctagon, CheckCircle2, Clock, History, TrendingUp } from "lucide-react";
+import { AlertOctagon, CheckCircle2, ChevronLeft, ChevronRight, Clock, History, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { daysUntil, formatDate } from "@/lib/utils";
 import type { RecurringIssue } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+
+const PAGE_SIZE = 10;
+
+function Pager({
+  page,
+  totalPages,
+  onPrev,
+  onNext,
+  dict,
+}: {
+  page: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
+  dict: Dictionary["dashboard"]["consultant"];
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between">
+      <button
+        onClick={onPrev}
+        disabled={page === 1}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+      >
+        <ChevronLeft size={14} /> {dict.prevPage}
+      </button>
+      <p className="text-xs text-muted">
+        {dict.pageOf.replace("{page}", String(page)).replace("{totalPages}", String(totalPages))}
+      </p>
+      <button
+        onClick={onNext}
+        disabled={page === totalPages}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+      >
+        {dict.nextPage} <ChevronRight size={14} />
+      </button>
+    </div>
+  );
+}
 
 export function ConsultantPanel({
   issues: initialIssues,
@@ -18,6 +57,7 @@ export function ConsultantPanel({
 }) {
   const [issues, setIssues] = useState(initialIssues);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   async function acknowledge(id: string) {
     setPendingId(id);
@@ -43,9 +83,12 @@ export function ConsultantPanel({
     );
   }
 
+  const totalPages = Math.max(1, Math.ceil(issues.length / PAGE_SIZE));
+  const paginatedIssues = issues.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
     <div className="flex flex-col gap-4">
-      {issues.map((issue) => {
+      {paginatedIssues.map((issue) => {
         const remaining = daysUntil(issue.resolution_deadline);
         const overdue = remaining < 0 && issue.status !== "resolved";
 
@@ -107,6 +150,14 @@ export function ConsultantPanel({
           </Card>
         );
       })}
+
+      <Pager
+        page={page}
+        totalPages={totalPages}
+        onPrev={() => setPage((p) => Math.max(1, p - 1))}
+        onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+        dict={dict}
+      />
     </div>
   );
 }
