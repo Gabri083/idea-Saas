@@ -10,15 +10,15 @@ import type { Dictionary } from "@/lib/i18n/dictionaries";
 const EMBED_STYLES = ["inline", "modal", "lanzador"] as const;
 type EmbedStyle = (typeof EMBED_STYLES)[number];
 
-// "Inline" needs enough room — and the full width — to show real form
-// fields; "modal"/"lanzador" only show a small trigger button/bubble by
-// default (nothing is open yet), so a box the same size as inline's just
-// reads as broken empty space around one small button. Narrower AND
-// shorter for those two (see the wrapper's max-w-[280px] below).
+// Only "inline" gets a shorter box — its real form is what was feeling
+// oversized. "modal"/"lanzador" stay at their original size: their opened
+// dialog/panel is position:fixed and gets clipped by the iframe's own
+// viewport if the box is too short, so shrinking them broke the open state
+// rather than just trimming empty space.
 const PREVIEW_HEIGHT: Record<EmbedStyle, string> = {
   inline: "h-[300px]",
-  modal: "h-[160px]",
-  lanzador: "h-[160px]",
+  modal: "h-[420px]",
+  lanzador: "h-[420px]",
 };
 
 // Every "how a customer reaches a review" link/snippet in one compact card
@@ -121,16 +121,10 @@ export function LinksEmbedsCard({
         <div className="mt-2 flex flex-col gap-1.5">
           <span className="text-xs font-medium text-muted">{dict.embedPreviewTitle}</span>
           {/* Same "fake browser" framing as the display widget's live preview
-              (dots + domain chip) instead of a bare edge-to-edge iframe —
-              and a size tailored per style (see PREVIEW_SIZE) so "modal"/
-              "lanzador", which only show a small trigger by default, don't
-              sit in a sea of empty space the way a one-size-fits-all box did. */}
-          <div
-            className={cn(
-              "overflow-hidden rounded-2xl border border-[#e2e4ea] shadow-[0_20px_45px_-30px_rgba(20,30,70,.4)]",
-              embedStyle !== "inline" && "mx-auto max-w-[280px]",
-            )}
-          >
+              (dots + domain chip) instead of a bare edge-to-edge iframe. Only
+              "inline" gets a shorter box (see PREVIEW_HEIGHT) — modal/lanzador
+              keep their full size so their opened dialog/panel isn't clipped. */}
+          <div className="overflow-hidden rounded-2xl border border-[#e2e4ea] shadow-[0_20px_45px_-30px_rgba(20,30,70,.4)]">
             <div className="flex items-center gap-1.5 border-b border-[#e5e7ec] bg-white px-3.5 py-2.5">
               <span className="h-2 w-2 rounded-full bg-[#dcdee4]" />
               <span className="h-2 w-2 rounded-full bg-[#dcdee4]" />
