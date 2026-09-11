@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Check, ChevronRight, Copy, Loader2, Sparkles } from "lucide-react";
+import { AlertTriangle, Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlatformInstructions } from "@/components/dashboard/platform-instructions";
 import { LogoUploader } from "@/components/dashboard/logo-uploader";
+import { LinksEmbedsCard } from "@/components/dashboard/links-embeds-card";
 import { cn, isConfirmed, recencyWeightedAverage } from "@/lib/utils";
 import type { Review, WidgetConfig } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -138,6 +139,9 @@ const layoutIds: WidgetConfig["layout"][] = [
   "franja",
   "cierre",
 ];
+type ConfiguratorTab = "design" | "settings" | "install" | "links";
+const CONFIGURATOR_TABS: ConfiguratorTab[] = ["design", "settings", "install", "links"];
+
 const cardStyleIds: WidgetConfig["card_style"][] = ["recibo", "medidor"];
 // grid/wall/carousel repeat one card per review — the other four layouts are
 // single aggregate displays, so the card-style choice doesn't apply to them.
@@ -1032,6 +1036,7 @@ export function WidgetConfigurator({
   const [config, setConfig] = useState(initialConfig);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<ConfiguratorTab>("design");
 
   const snippet = `<script src="${SITE_URL}/widget.js" data-business-id="${businessId}" data-layout="${config.layout}"></script>`;
 
@@ -1076,16 +1081,67 @@ export function WidgetConfigurator({
       .replace(/\p{Diacritic}/gu, "")
       .replace(/[^a-z0-9]+/g, "") + ".com";
 
+  const tabLabels: Record<ConfiguratorTab, string> = {
+    design: dict.tabDesign,
+    settings: dict.tabSettings,
+    install: dict.tabInstall,
+    links: dict.tabLinks,
+  };
+
+  const gateBanner = !canCustomize && (
+    <div className="flex items-center gap-2 rounded-lg border border-cobalt/30 bg-cobalt/10 px-3 py-2.5 text-xs text-cobalt">
+      <Sparkles size={14} className="shrink-0" />
+      {dict.gateBanner}
+    </div>
+  );
+
+  const saveButton = (
+    <Button onClick={save} disabled={saveStatus === "saving"} className="w-full">
+      {saveStatus === "saving" ? (
+        <>
+          <Loader2 size={16} className="animate-spin" /> {dict.saving}
+        </>
+      ) : saveStatus === "saved" ? (
+        <>
+          <Check size={16} /> {dict.saved}
+        </>
+      ) : saveStatus === "error" ? (
+        <>
+          <AlertTriangle size={16} /> {dict.saveError}
+        </>
+      ) : (
+        dict.saveIdle
+      )}
+    </Button>
+  );
+
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
-      <div className="flex flex-col gap-4">
-        {!canCustomize && (
-          <div className="flex items-center gap-2 rounded-lg border border-cobalt/30 bg-cobalt/10 px-3 py-2.5 text-xs text-cobalt">
-            <Sparkles size={14} className="shrink-0" />
-            {dict.gateBanner}
-          </div>
-        )}
-        <fieldset disabled={!canCustomize} className={cn("contents border-0 p-0 m-0", !canCustomize && "opacity-50")}>
+    <div className="flex flex-col gap-4">
+      {/* Each tab shows its own content and hides the rest — no long scroll
+          mixing "how it looks" with "how to install it" with "how customers
+          reach it". Save lives in both editable tabs (design, settings)
+          since either one can have unsaved changes regardless of which is
+          open. */}
+      <div className="flex gap-1 overflow-x-auto rounded-xl border border-border bg-surface-2 p-1">
+        {CONFIGURATOR_TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              "flex-1 whitespace-nowrap rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors sm:text-sm",
+              activeTab === tab ? "bg-cobalt text-white" : "text-muted hover:bg-surface hover:text-foreground",
+            )}
+          >
+            {tabLabels[tab]}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "design" && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
+          <div className="flex flex-col gap-4">
+            {gateBanner}
+            <fieldset disabled={!canCustomize} className={cn("contents border-0 p-0 m-0", !canCustomize && "opacity-50")}>
         <Card className="flex flex-col gap-4 p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">{dict.groupAppearance}</p>
 
@@ -1240,78 +1296,11 @@ export function WidgetConfigurator({
             </div>
           )}
         </Card>
-
-        <Card className="flex flex-col gap-3 p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">{dict.groupContent}</p>
-
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={config.show_breakdown}
-              onChange={(e) => setConfig((p) => ({ ...p, show_breakdown: e.target.checked }))}
-              className="h-4 w-4 rounded accent-cobalt"
-            />
-            {dict.showBreakdownLabel}
-          </label>
-
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={!config.show_branding}
-              onChange={(e) => setConfig((p) => ({ ...p, show_branding: !e.target.checked }))}
-              className="h-4 w-4 rounded accent-cobalt"
-            />
-            {dict.hideBrandingLabel}
-          </label>
-
-          <div>
-            <p className="text-sm font-medium">{dict.welcomeMessageLabel}</p>
-            <textarea
-              value={config.review_form_welcome ?? ""}
-              onChange={(e) => setConfig((p) => ({ ...p, review_form_welcome: e.target.value }))}
-              maxLength={200}
-              rows={2}
-              placeholder={dict.welcomeMessagePlaceholder}
-              className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
-            />
-            <p className="mt-1 text-xs text-muted">{dict.welcomeMessageHint}</p>
+              {saveButton}
+            </fieldset>
           </div>
 
-          <div>
-            <p className="text-sm font-medium">{dict.thanksMessageLabel}</p>
-            <textarea
-              value={config.review_form_thanks ?? ""}
-              onChange={(e) => setConfig((p) => ({ ...p, review_form_thanks: e.target.value }))}
-              maxLength={200}
-              rows={2}
-              placeholder={dict.thanksMessagePlaceholder}
-              className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
-            />
-            <p className="mt-1 text-xs text-muted">{dict.thanksMessageHint}</p>
-          </div>
-        </Card>
-
-        <Button onClick={save} disabled={saveStatus === "saving"} className="w-full">
-          {saveStatus === "saving" ? (
-            <>
-              <Loader2 size={16} className="animate-spin" /> {dict.saving}
-            </>
-          ) : saveStatus === "saved" ? (
-            <>
-              <Check size={16} /> {dict.saved}
-            </>
-          ) : saveStatus === "error" ? (
-            <>
-              <AlertTriangle size={16} /> {dict.saveError}
-            </>
-          ) : (
-            dict.saveIdle
-          )}
-        </Button>
-        </fieldset>
-      </div>
-
-      <div className="flex min-w-0 flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-4">
         <Card className="min-w-0 p-6">
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <p className="text-sm font-medium text-muted">{dict.livePreviewLabel}</p>
@@ -1510,37 +1499,95 @@ export function WidgetConfigurator({
             </div>
           </div>
         </Card>
-
-        <details className="group min-w-0 rounded-2xl border border-border bg-surface/60 backdrop-blur-sm">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-5 text-sm font-medium [&::-webkit-details-marker]:hidden">
-            {dict.installAccordionTitle}
-            <ChevronRight size={16} className="shrink-0 text-muted transition-transform group-open:rotate-90" />
-          </summary>
-          <div className="border-t border-border p-5 pt-4">
-            <p className="mb-3 text-sm font-medium text-muted">{dict.codeSectionTitle}</p>
-            <div className="flex min-w-0 items-start gap-2 rounded-xl border border-border bg-surface p-4">
-              <code
-                suppressHydrationWarning
-                className="min-w-0 flex-1 overflow-x-auto whitespace-pre text-xs text-foreground/90"
-              >
-                {snippet}
-              </code>
-              <button
-                onClick={copySnippet}
-                className="shrink-0 rounded-lg border border-border p-2 transition-colors hover:bg-surface-2"
-                aria-label={dict.copyCodeAria}
-              >
-                {copied ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-muted">{dict.codeSectionHint}</p>
-            <p className="mt-1 text-xs text-muted">{dict.codeSectionMultiHint}</p>
-
-            <p className="mb-3 mt-5 text-sm font-medium text-muted">{dict.installStepsTitle}</p>
-            <PlatformInstructions dict={dict.platform} />
           </div>
-        </details>
-      </div>
+        </div>
+      )}
+
+      {activeTab === "settings" && (
+        <div className="flex max-w-xl flex-col gap-4">
+          {gateBanner}
+          <fieldset disabled={!canCustomize} className={cn("contents border-0 p-0 m-0", !canCustomize && "opacity-50")}>
+            <Card className="flex flex-col gap-3 p-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">{dict.groupContent}</p>
+
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={config.show_breakdown}
+                  onChange={(e) => setConfig((p) => ({ ...p, show_breakdown: e.target.checked }))}
+                  className="h-4 w-4 rounded accent-cobalt"
+                />
+                {dict.showBreakdownLabel}
+              </label>
+
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={!config.show_branding}
+                  onChange={(e) => setConfig((p) => ({ ...p, show_branding: !e.target.checked }))}
+                  className="h-4 w-4 rounded accent-cobalt"
+                />
+                {dict.hideBrandingLabel}
+              </label>
+
+              <div>
+                <p className="text-sm font-medium">{dict.welcomeMessageLabel}</p>
+                <textarea
+                  value={config.review_form_welcome ?? ""}
+                  onChange={(e) => setConfig((p) => ({ ...p, review_form_welcome: e.target.value }))}
+                  maxLength={200}
+                  rows={2}
+                  placeholder={dict.welcomeMessagePlaceholder}
+                  className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
+                />
+                <p className="mt-1 text-xs text-muted">{dict.welcomeMessageHint}</p>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium">{dict.thanksMessageLabel}</p>
+                <textarea
+                  value={config.review_form_thanks ?? ""}
+                  onChange={(e) => setConfig((p) => ({ ...p, review_form_thanks: e.target.value }))}
+                  maxLength={200}
+                  rows={2}
+                  placeholder={dict.thanksMessagePlaceholder}
+                  className="mt-2 w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none ring-cobalt/40 placeholder:text-muted focus:ring-2"
+                />
+                <p className="mt-1 text-xs text-muted">{dict.thanksMessageHint}</p>
+              </div>
+            </Card>
+            {saveButton}
+          </fieldset>
+        </div>
+      )}
+
+      {activeTab === "install" && (
+        <Card className="max-w-2xl p-5">
+          <p className="mb-3 text-sm font-medium text-muted">{dict.codeSectionTitle}</p>
+          <div className="flex min-w-0 items-start gap-2 rounded-xl border border-border bg-surface p-4">
+            <code
+              suppressHydrationWarning
+              className="min-w-0 flex-1 overflow-x-auto whitespace-pre text-xs text-foreground/90"
+            >
+              {snippet}
+            </code>
+            <button
+              onClick={copySnippet}
+              className="shrink-0 rounded-lg border border-border p-2 transition-colors hover:bg-surface-2"
+              aria-label={dict.copyCodeAria}
+            >
+              {copied ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-muted">{dict.codeSectionHint}</p>
+          <p className="mt-1 text-xs text-muted">{dict.codeSectionMultiHint}</p>
+
+          <p className="mb-3 mt-5 text-sm font-medium text-muted">{dict.installStepsTitle}</p>
+          <PlatformInstructions dict={dict.platform} />
+        </Card>
+      )}
+
+      {activeTab === "links" && <LinksEmbedsCard businessId={businessId} businessName={businessName} dict={dict} />}
     </div>
   );
 }
