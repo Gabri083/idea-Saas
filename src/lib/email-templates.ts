@@ -305,15 +305,38 @@ function insightList(locale: Locale, items: string[], emptyLabel: string): strin
     .join("")}</ul>`;
 }
 
+function statCell(value: string, label: string): string {
+  return `<td align="center" style="padding:10px 6px;">
+    <div style="font-size:20px;font-weight:700;color:#111318;">${value}</div>
+    <div style="font-size:10.5px;color:#8a8f98;margin-top:2px;">${label}</div>
+  </td>`;
+}
+
+function statGrid(cells: [string, string][]): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#f4f5f7;border-radius:10px;">
+    <tr>${cells.map(([value, label]) => statCell(value, label)).join("")}</tr>
+  </table>`;
+}
+
+function topIssueCallout(label: string | null, occurrences: number, prefix: string, suffix: string): string {
+  if (!label) return "";
+  return `<p style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px;font-size:13px;color:#9a3412;">
+    ${prefix} <strong>${escapeHtml(label)}</strong> ${suffix.replace("{n}", String(occurrences))}
+  </p>`;
+}
+
 /** Sent to the business owner — locale follows the business's saved preference (Settings).
- * Enterprise-only monthly AI report: the numbers are computed in code, the three lists
- * (wins/issues/recommendations) come from generateMonthlyReportInsights, never invented here. */
+ * Enterprise-only monthly AI report: every number here is computed in code (never by the
+ * model); only the three lists (wins/issues/recommendations) come from
+ * generateMonthlyReportInsights. */
 export function monthlyReportEmail(params: {
   locale: Locale;
   businessName: string;
   period: string;
   reviewCount: number;
   avgAiRating: number;
+  savedFromUnfairCount: number;
+  topIssue: { label: string; occurrences: number } | null;
   insights: { wins: string[]; issues: string[]; recommendations: string[] };
 }): { subject: string; html: string } {
   const business = escapeHtml(params.businessName);
@@ -326,8 +349,12 @@ export function monthlyReportEmail(params: {
         "en",
         `Monthly report — ${period}`,
         `<p>Hi ${business} team,</p>
-         <p>${params.reviewCount} review${params.reviewCount === 1 ? "" : "s"} this period, average AI
-         score <strong>${params.avgAiRating.toFixed(1)}/5</strong>.</p>
+         ${statGrid([
+           [String(params.reviewCount), params.reviewCount === 1 ? "review" : "reviews this period"],
+           [`${params.avgAiRating.toFixed(1)}/5`, "average AI score"],
+           [String(params.savedFromUnfairCount), "saved from an unfair rating"],
+         ])}
+         ${topIssueCallout(params.topIssue?.label ?? null, params.topIssue?.occurrences ?? 0, "Most frequent issue:", "({n} mentions)")}
          <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">What's going well</h2>
          ${insightList("en", params.insights.wins, "Nothing stood out this period.")}
          <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">What needs attention</h2>
@@ -345,8 +372,12 @@ export function monthlyReportEmail(params: {
       "es",
       `Reporte mensual — ${period}`,
       `<p>Hola equipo de <strong>${business}</strong>,</p>
-       <p>${params.reviewCount} reseña${params.reviewCount === 1 ? "" : "s"} este período, puntaje IA
-       promedio <strong>${params.avgAiRating.toFixed(1)}/5</strong>.</p>
+       ${statGrid([
+         [String(params.reviewCount), params.reviewCount === 1 ? "reseña este período" : "reseñas este período"],
+         [`${params.avgAiRating.toFixed(1)}/5`, "puntaje IA promedio"],
+         [String(params.savedFromUnfairCount), "salvadas de una calificación injusta"],
+       ])}
+       ${topIssueCallout(params.topIssue?.label ?? null, params.topIssue?.occurrences ?? 0, "Problema que más se repite:", "({n} menciones)")}
        <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">Lo que va bien</h2>
        ${insightList("es", params.insights.wins, "Nada destacable este período.")}
        <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">Lo que necesita atención</h2>

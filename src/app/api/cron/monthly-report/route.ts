@@ -26,6 +26,13 @@ interface EnterpriseBusinessRow {
 const avg = (nums: number[]): number | null => (nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null);
 const round1 = (n: number | null): number | null => (n == null ? null : Math.round(n * 10) / 10);
 
+// Same "a full star or more" threshold as OVERALL_CONFIRM_EPSILON in
+// lib/utils.ts's isConfirmed() — the one already used to decide whether a
+// review gets the "!" fairness note. Kept as its own constant here since
+// that one isn't exported, but it's the same definition of "the AI
+// meaningfully corrected the customer's own pick."
+const UNFAIR_SAVE_THRESHOLD = 1;
+
 function currentYearMonth(): string {
   return new Date().toISOString().slice(0, 7); // "YYYY-MM"
 }
@@ -93,6 +100,11 @@ export async function GET(request: NextRequest) {
       .order("occurrences", { ascending: false })
       .limit(5);
 
+    const openIssues = (issueRows ?? []).map((i) => ({ label: i.issue_label, occurrences: i.occurrences }));
+    const savedFromUnfairCount = reviews.filter(
+      (r) => r.customer_star_rating != null && r.overall_ai_rating - r.customer_star_rating >= UNFAIR_SAVE_THRESHOLD,
+    ).length;
+
     const stats: MonthlyReportStats = {
       reviewCount: reviews.length,
       avgAiRating: round1(avg(reviews.map((r) => r.overall_ai_rating))) ?? 0,
@@ -104,7 +116,9 @@ export async function GET(request: NextRequest) {
         service: round1(avg(reviews.map((r) => r.service_score).filter((v): v is number => v != null))),
         delivery: round1(avg(reviews.map((r) => r.delivery_score).filter((v): v is number => v != null))),
       },
-      openIssues: (issueRows ?? []).map((i) => ({ label: i.issue_label, occurrences: i.occurrences })),
+      openIssues,
+      topIssue: openIssues[0] ?? null,
+      savedFromUnfairCount,
       summarySample: reviews
         .map((r) => r.ai_summary)
         .filter((s): s is string => Boolean(s))
@@ -129,6 +143,8 @@ export async function GET(request: NextRequest) {
       period,
       reviewCount: stats.reviewCount,
       avgAiRating: stats.avgAiRating,
+      savedFromUnfairCount: stats.savedFromUnfairCount,
+      topIssue: stats.topIssue,
       insights,
     });
 
