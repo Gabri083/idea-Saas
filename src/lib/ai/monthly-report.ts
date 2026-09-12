@@ -17,6 +17,16 @@ export interface MonthlyReportStats {
   avgCustomerRating: number | null;
   dimensionAverages: { product: number | null; service: number | null; delivery: number | null };
   openIssues: { label: string; occurrences: number }[];
+  /** The single most-mentioned open recurring issue this period — same list
+   * as openIssues[0], surfaced separately so the email can call it out on
+   * its own instead of it only appearing buried in a list. */
+  topIssue: { label: string; occurrences: number } | null;
+  /** Reviews where the AI's score corrected the customer's own star pick
+   * upward by a full star or more — the same "AI disagreed with an unfairly
+   * low rating" threshold already used for the "!" fairness note shown on
+   * individual reviews (see isConfirmed in lib/utils.ts), just counted over
+   * the period instead of shown per-review. */
+  savedFromUnfairCount: number;
   /** Recent ai_summary strings (already a distilled, factual one-liner per
    * review from the per-review scoring pass) — gives the model qualitative
    * texture without re-processing raw review text or letting a huge period
@@ -65,6 +75,8 @@ export async function generateMonthlyReportInsights(
     avg_customer_rating: stats.avgCustomerRating,
     dimension_averages: stats.dimensionAverages,
     open_recurring_issues: stats.openIssues,
+    most_frequent_open_issue: stats.topIssue,
+    reviews_saved_from_an_unfair_rating: stats.savedFromUnfairCount,
     sample_review_summaries: stats.summarySample,
   });
 
