@@ -14,47 +14,44 @@ export function Pricing({ dict }: { dict: Dictionary["pricing"] }) {
   ];
 
   return (
-    <section id="precios" className="mx-auto max-w-7xl px-6 py-24">
-      <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{dict.title}</h2>
-        <p className="mt-4 text-muted">{dict.subtitle}</p>
+    <section id="precios" className="mx-auto max-w-7xl px-6 py-20">
+      <div className="mx-auto max-w-xl text-center">
+        <h2 className="text-balance text-3xl font-extrabold tracking-tight sm:text-4xl">{dict.title}</h2>
+        <p className="mt-3 text-[15.5px] text-muted">{dict.subtitle}</p>
       </div>
 
-      <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => (
           <Card
             key={plan.name}
-            className={cn(
-              "flex flex-col p-8",
-              plan.highlighted && "border-cobalt/50 bg-cobalt/[0.04] ring-1 ring-cobalt/30",
-            )}
+            className={cn("flex flex-col p-7", plan.highlighted && "border-cobalt ring-1 ring-cobalt")}
           >
             {plan.highlighted && (
-              <span className="mb-4 inline-flex w-fit items-center rounded-full bg-cobalt/15 px-3 py-1 text-xs font-medium text-cobalt">
+              <span className="mb-3.5 inline-flex w-fit items-center rounded-full bg-cobalt px-2.5 py-1 text-[11px] font-bold text-white">
                 {dict.mostPopular}
               </span>
             )}
-            <h3 className="text-lg font-medium">{plan.name}</h3>
-            <p className="mt-1 text-sm text-muted">{plan.description}</p>
-            <p className="mt-6 text-4xl font-semibold tracking-tight">
+            <h3 className="text-[17px] font-bold">{plan.name}</h3>
+            <p className="mt-1.5 min-h-[32px] text-[12.5px] text-muted">{plan.description}</p>
+            <p className="mt-5 text-[30px] font-extrabold tracking-tight">
               {plan.price}
-              <span className="text-base font-normal text-muted">{plan.suffix}</span>
+              <span className="text-[13px] font-medium text-muted">{plan.suffix}</span>
             </p>
-            <p className="mt-1 text-xs text-muted">{plan.trialNote}</p>
+            <p className="mt-0.5 text-[11px] text-muted">{plan.trialNote}</p>
 
-            <ul className="mt-8 flex flex-1 flex-col gap-3">
+            <ul className="mt-6 flex flex-1 flex-col gap-2.5">
               {plan.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-sm">
-                  <Check size={16} className="mt-0.5 shrink-0 text-emerald" />
-                  <span className="text-foreground/90">{feature}</span>
+                <li key={feature} className="flex items-start gap-2 text-[13px]">
+                  <Check size={15} className="mt-0.5 shrink-0 text-emerald" />
+                  <span>{feature}</span>
                 </li>
               ))}
             </ul>
 
             <LinkButton
               href="/signup"
-              variant={plan.highlighted ? "primary" : "secondary"}
-              className="mt-8 w-full"
+              variant={plan.highlighted ? "primary" : "outline"}
+              className="mt-6 w-full rounded-full"
             >
               {plan.name === dict.plans.free.name ? dict.ctaFree : dict.ctaPaid(plan.name)}
             </LinkButton>

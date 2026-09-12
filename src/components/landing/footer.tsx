@@ -6,12 +6,12 @@ export function Footer({ dict }: { dict: Dictionary["footer"] }) {
   const columns = [dict.columns.product, dict.columns.legal, dict.columns.contact];
 
   return (
-    <footer className="border-t border-border/60 py-16">
+    <footer className="border-t border-border bg-[var(--bg-soft)] py-14">
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div className="col-span-2 sm:col-span-1">
-            <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-              <LogoMark size={32} />
+            <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight">
+              <LogoMark size={30} />
               Kelsira
             </Link>
             <p className="mt-3 max-w-xs text-sm text-muted">{dict.tagline}</p>
@@ -19,7 +19,7 @@ export function Footer({ dict }: { dict: Dictionary["footer"] }) {
 
           {columns.map((col) => (
             <div key={col.title}>
-              <p className="text-sm font-medium">{col.title}</p>
+              <p className="text-[12.5px] font-bold">{col.title}</p>
               <ul className="mt-4 flex flex-col gap-3">
                 {col.links.map((link) => (
                   <li key={link.label}>

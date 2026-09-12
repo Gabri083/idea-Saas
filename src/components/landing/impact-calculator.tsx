@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Calculator, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
@@ -30,22 +30,19 @@ export function ImpactCalculator({ dict }: { dict: Dictionary["impactCalculator"
   }, [unfairReviews]);
 
   return (
-    <section className="mx-auto max-w-5xl px-6 py-24">
-      <Card className="overflow-hidden p-8 sm:p-10">
-        <div className="flex items-center gap-2 text-cobalt">
-          <Calculator size={18} />
-          <span className="text-sm font-semibold uppercase tracking-wide">{dict.label}</span>
-        </div>
-        <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">{dict.title}</h2>
-        <p className="mt-2 max-w-xl text-muted">{dict.body}</p>
+    <section className="mx-auto max-w-5xl px-6 py-20">
+      <div className="mx-auto max-w-xl text-center">
+        <p className="text-sm font-bold text-cobalt">{dict.label}</p>
+        <h2 className="text-balance mt-2.5 text-3xl font-extrabold tracking-tight sm:text-4xl">{dict.title}</h2>
+        <p className="mt-3 text-[15.5px] leading-relaxed text-muted">{dict.body}</p>
+      </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-2">
+      <Card className="mt-10 overflow-hidden p-8 sm:p-10">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
           <div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted">{dict.sliderLabel}</span>
-              <span className="rounded-full bg-surface-2 px-2.5 py-1 font-mono text-foreground">
-                {unfairReviews}
-              </span>
+              <span className="text-xl font-bold">{unfairReviews}</span>
             </div>
             <input
               type="range"
@@ -61,27 +58,25 @@ export function ImpactCalculator({ dict }: { dict: Dictionary["impactCalculator"
               <span>50</span>
             </div>
 
-            <p className="mt-8 text-xs text-muted">
+            <p className="mt-8 text-xs leading-relaxed text-muted">
               {dict.assumption
                 .replace("{total}", String(TOTAL_MONTHLY_REVIEWS))
                 .replace("{avg}", HAPPY_CUSTOMER_AVERAGE.toFixed(1))}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-border bg-surface p-5">
-              <p className="text-xs text-muted">{dict.currentAvgLabel}</p>
-              <p className="mt-2 text-3xl font-semibold text-rose">{averageWithout.toFixed(2)}★</p>
-              <p className="mt-1 text-xs text-muted">{dict.currentAvgSub}</p>
+          <div className="flex flex-col gap-3.5">
+            <div className="flex items-center justify-between rounded-xl border border-border bg-background px-5 py-4">
+              <p className="text-[13px] text-muted">{dict.currentAvgLabel}</p>
+              <p className="text-xl font-bold text-rose">{averageWithout.toFixed(2)}★</p>
             </div>
-            <div className="rounded-xl border border-emerald/30 bg-emerald/[0.06] p-5">
-              <p className="text-xs text-muted">{dict.kelsiraAvgLabel}</p>
-              <p className="mt-2 text-3xl font-semibold text-emerald">{averageWith.toFixed(2)}★</p>
-              <p className="mt-1 text-xs text-muted">{dict.kelsiraAvgSub}</p>
+            <div className="flex items-center justify-between rounded-xl border border-border bg-background px-5 py-4">
+              <p className="text-[13px] text-muted">{dict.kelsiraAvgLabel}</p>
+              <p className="text-xl font-bold text-emerald">{averageWith.toFixed(2)}★</p>
             </div>
-            <div className="col-span-full flex items-center gap-3 rounded-xl border border-cobalt/30 bg-cobalt/[0.06] p-5">
-              <Sparkles size={20} className="shrink-0 text-cobalt" />
-              <p className="text-sm">
+            <div className="flex items-center gap-2.5 rounded-xl bg-cobalt/[0.08] px-5 py-3.5 text-[13.5px]">
+              <Sparkles size={16} className="shrink-0 text-cobalt" />
+              <p>
                 {dict.recoveredPrefix}{" "}
                 <span className="font-semibold text-cobalt">
                   {dict.recoveredHighlight.replace("{n}", recovered.toFixed(2))}

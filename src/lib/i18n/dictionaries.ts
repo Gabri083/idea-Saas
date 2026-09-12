@@ -20,33 +20,85 @@ const es = {
       "Kelsira lee lo que tus clientes realmente escriben y lo califica según los hechos — para que un momento de rabia no hunda tu calificación para siempre. Nunca ocultamos, editamos ni borramos nada.",
     ctaPrimary: "Empezar gratis",
     ctaSecondary: "Ver Demo Interactiva",
+    checks: ["El texto nunca se edita", "Puntaje 100% auditable", "Funciona con tu tienda"],
+    recoveredCardLabel: "Promedio de calificación recuperado",
+    recoveredCardValue: "+0.32★",
+    recoveredCardTag: "este mes",
     exampleLabel: "Reseña del cliente (texto intacto)",
     exampleQuote:
       "El producto es hermoso, pero el envío tardó 3 días de más y nadie me avisó — 1★ en caliente",
     scoreLabel: "Puntaje Objetivo IA",
     shippingPenalty: "Envío: -2 pts",
   },
-  problemSolution: {
+  trust: {
+    heading: "Funciona con la plataforma en la que ya vendes",
+    platforms: ["Shopify", "WooCommerce", "Wix", "Squarespace", "HTML personalizado"],
+  },
+  features: {
+    eyebrow: "Funciones destacadas",
+    title: "Todo lo que una reseña justa necesita",
+    subtitle:
+      "Desde el momento en que un cliente escribe, hasta el widget en tu tienda — cada paso es transparente y está pensado para defender tu calificación, no inflarla.",
+    items: [
+      {
+        title: "Puntaje Objetivo IA",
+        body: "Producto, Atención y Entrega evaluados por separado y ponderados 40/30/30 — nunca una copia directa de la estrella que el cliente marcó.",
+        mockLabel: "La entrega se atrasó, todo lo demás estuvo genial",
+        mockTag: "3.8 / 5",
+      },
+      {
+        title: "Nada se oculta ni se edita",
+        body: "Cada reseña se publica exactamente como fue escrita — buena o mala. Kelsira solo agrega una revisión de justicia al puntaje, nunca a las palabras.",
+        mockLabel: "“Todo perfecto, pero llegó tarde”",
+        mockTag: "sin editar",
+      },
+      {
+        title: "Alertas de fallas recurrentes",
+        body: "La IA agrupa quejas operativas repetidas y te da 30 días para resolver la causa antes de que penalice nuevas reseñas.",
+        mockLabel: "Retrasos de envío con la transportista X",
+        mockTag: "4 reportes",
+      },
+      {
+        title: "Widget personalizable",
+        body: "15 diseños, tus colores, tu tipografía — pega un script en tu tienda y listo.",
+        mockLabel: "★★★★☆ 4.4 general",
+        mockTag: "128 reseñas",
+      },
+    ],
+  },
+  benefits: {
+    eyebrow: "Beneficios",
     title: "Una mala tarde no debería definir tu reputación",
     subtitle:
-      "Las plataformas tradicionales premian la emoción del momento. Nosotros medimos los hechos.",
-    problemLabel: "El problema",
-    problemTitle: "Clientes que aman el producto, pero califican con rabia",
-    problemBody:
-      "Un cliente ama tu producto, pero el transportista se retrasó 3 días. Escribe una reseña detallando lo bueno y lo malo — y aun así te deja 1 estrella en caliente. Esa nota, descontextualizada, arrastra tu promedio global para siempre.",
-    problemExampleQuote: "“Todo perfecto, pero llegó tarde”",
-    problemExampleSub: "Calificación tradicional: ★☆☆☆☆ (1.0)",
-    solutionLabel: "Nuestra solución",
-    solutionTitle: "Puntaje Objetivo IA",
-    solutionBody:
-      "Evaluamos Producto, Atención y Tiempos de Entrega por separado y calculamos una nota objetiva — sin tocar ni una palabra del texto original del cliente.",
-    solutionExampleQuote: "Mismo texto, evaluado por hechos",
-    solutionExampleSub: "Puntaje Objetivo IA: ★★★★☆ (3.8)",
-    weightingLabel: "Ponderación transparente",
-    weightProduct: "Calidad del producto",
-    weightService: "Atención recibida",
-    weightFootnote:
-      "El 30% restante corresponde al cumplimiento de tiempos de envío — cada componente es auditable en el desglose público de la reseña.",
+      "Las plataformas tradicionales premian la emoción del momento. Nosotros medimos los hechos — y mostramos el trabajo.",
+    items: [
+      {
+        title: "Protege a los negocios buenos de una mala tarde",
+        body: "Una estrella de rabia por un envío tardío ya no borra meses de clientes felices.",
+      },
+      {
+        title: "Cada puntaje es auditable",
+        body: "Las ponderaciones de Producto, Atención y Entrega son públicas — nada del cálculo es una caja negra.",
+      },
+      {
+        title: "Funciona en cualquier tienda",
+        body: "Shopify, WooCommerce, Wix o un sitio hecho a mano — un solo script, sin necesitar un equipo de desarrollo.",
+      },
+      {
+        title: "30 días para resolverlo, antes de que te penalice",
+        body: "Una falla recurrente se marca temprano, con tiempo para resolverla antes de que afecte nuevas reseñas.",
+      },
+    ],
+  },
+  stats: {
+    eyebrow: "En números",
+    title: "El mecanismo, no el marketing",
+    items: [
+      { value: "3", label: "Dimensiones evaluadas — Producto, Atención, Entrega" },
+      { value: "30", label: "Días antes de que una falla recurrente pueda penalizar nuevas reseñas" },
+      { value: "100%", label: "Del texto de la reseña publicado tal cual fue escrito" },
+      { value: "0", label: "Reseñas ocultadas, editadas o borradas, jamás" },
+    ],
   },
   howItWorks: {
     title: "Cómo funciona",
@@ -67,6 +119,15 @@ const es = {
         description:
           "El resultado se publica en tu e-commerce con un widget transparente y auditable — cada punto tiene una explicación.",
       },
+    ],
+    showcaseTag: "3 de 15 estilos de widget",
+    showcaseBadgeScore: "4.6",
+    showcaseBadgeReviews: "312 reseñas verificadas",
+    showcaseQuote: "“Producto hermoso — el envío se atrasó unos días, pero lo solucionaron.”",
+    showcaseQuoteName: "Priya K.",
+    showcaseCards: [
+      { quote: "“Tal cual lo describieron, envío rápido.”", name: "Marco T." },
+      { quote: "“Buena calidad, el empaque podría mejorar.”", name: "Aiko S." },
     ],
   },
   impactCalculator: {
@@ -1107,32 +1168,84 @@ const en: typeof es = {
       "Kelsira reads what your customers actually write and scores it by the facts — so one angry moment doesn't drag your rating down for good. Nothing is ever hidden, edited, or deleted.",
     ctaPrimary: "Start free",
     ctaSecondary: "See Interactive Demo",
+    checks: ["Text never edited", "Fully auditable score", "Works with your store"],
+    recoveredCardLabel: "Average rating recovered",
+    recoveredCardValue: "+0.32★",
+    recoveredCardTag: "this month",
     exampleLabel: "Customer review (text untouched)",
     exampleQuote:
       "The product is beautiful, but shipping took 3 extra days and nobody told me — 1★ in the heat of the moment",
     scoreLabel: "AI Objective Score",
     shippingPenalty: "Shipping: -2 pts",
   },
-  problemSolution: {
+  trust: {
+    heading: "Works with the platform you already sell on",
+    platforms: ["Shopify", "WooCommerce", "Wix", "Squarespace", "Custom HTML"],
+  },
+  features: {
+    eyebrow: "Valuable features",
+    title: "Everything a fair review needs",
+    subtitle:
+      "From the moment a customer writes, to the widget on your storefront — every step is transparent and built to defend your rating, not inflate it.",
+    items: [
+      {
+        title: "AI Objective Score",
+        body: "Product, Service, and Delivery scored separately, then weighted 40/30/30 — never a passthrough of the star the customer clicked.",
+        mockLabel: "Delivery ran late, everything else was great",
+        mockTag: "3.8 / 5",
+      },
+      {
+        title: "Nothing hidden or edited",
+        body: "Every review publishes exactly as written — good or bad. Kelsira only adds a fairness check on the score, never on the words.",
+        mockLabel: "“Everything perfect, but it arrived late”",
+        mockTag: "unedited",
+      },
+      {
+        title: "Recurring issue alerts",
+        body: "The AI groups repeat operational complaints and gives you 30 days to fix the root cause before it penalizes new reviews.",
+        mockLabel: "Shipping delays with carrier X",
+        mockTag: "4 reports",
+      },
+      {
+        title: "Customizable widget",
+        body: "15 layouts, your colors, your font — drop one script tag anywhere on your storefront and it just works.",
+        mockLabel: "★★★★☆ 4.4 overall",
+        mockTag: "128 reviews",
+      },
+    ],
+  },
+  benefits: {
+    eyebrow: "Benefits",
     title: "A bad day shouldn't define your reputation",
-    subtitle: "Traditional platforms reward the emotion of the moment. We measure the facts.",
-    problemLabel: "The problem",
-    problemTitle: "Customers who love the product, but rate out of anger",
-    problemBody:
-      "A customer loves your product, but the carrier was 3 days late. They write a review detailing both the good and the bad — and still leave you 1 star in the heat of the moment. That score, stripped of context, drags down your overall average forever.",
-    problemExampleQuote: "“Everything perfect, but it arrived late”",
-    problemExampleSub: "Traditional rating: ★☆☆☆☆ (1.0)",
-    solutionLabel: "Our solution",
-    solutionTitle: "The AI Objective Score",
-    solutionBody:
-      "We evaluate Product, Service, and Delivery Times separately and compute an objective score — without touching a single word of the customer's original text.",
-    solutionExampleQuote: "Same text, scored by facts",
-    solutionExampleSub: "AI Objective Score: ★★★★☆ (3.8)",
-    weightingLabel: "Transparent weighting",
-    weightProduct: "Product quality",
-    weightService: "Service received",
-    weightFootnote:
-      "The remaining 30% covers on-time delivery — every component is auditable in the review's public breakdown.",
+    subtitle: "Traditional platforms reward the emotion of the moment. We measure the facts — and show our work.",
+    items: [
+      {
+        title: "Protects good stores from one bad day",
+        body: "An angry 1-star about a shipping delay no longer erases months of happy customers.",
+      },
+      {
+        title: "Every score is auditable",
+        body: "Product, Service, and Delivery weights are public — nothing about the math is a black box.",
+      },
+      {
+        title: "Works on any store",
+        body: "Shopify, WooCommerce, Wix, or a hand-rolled site — one script tag, no dev team required.",
+      },
+      {
+        title: "30 days to fix it, before it penalizes you",
+        body: "A recurring issue gets flagged early, with time to resolve it before new reviews feel it.",
+      },
+    ],
+  },
+  stats: {
+    eyebrow: "By the numbers",
+    title: "The mechanism, not the marketing",
+    items: [
+      { value: "3", label: "Dimensions scored — Product, Service, Delivery" },
+      { value: "30", label: "Days before a recurring issue can penalize new reviews" },
+      { value: "100%", label: "Of review text published exactly as written" },
+      { value: "0", label: "Reviews ever hidden, edited, or deleted" },
+    ],
   },
   howItWorks: {
     title: "How it works",
@@ -1153,6 +1266,15 @@ const en: typeof es = {
         description:
           "The result is published on your storefront with a transparent, auditable widget — every point comes with an explanation.",
       },
+    ],
+    showcaseTag: "3 of 15 widget styles",
+    showcaseBadgeScore: "4.6",
+    showcaseBadgeReviews: "312 verified reviews",
+    showcaseQuote: "“Beautiful product — shipping ran a few days late, but they made it right.”",
+    showcaseQuoteName: "Priya K.",
+    showcaseCards: [
+      { quote: "“Exactly as described, fast shipping.”", name: "Marco T." },
+      { quote: "“Great quality, packaging could improve.”", name: "Aiko S." },
     ],
   },
   impactCalculator: {
