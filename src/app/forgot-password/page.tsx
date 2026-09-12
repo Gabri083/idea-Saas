@@ -1,33 +1,21 @@
 import Link from "next/link";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
-import { LogoMark } from "@/components/brand/logo-mark";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { getDictionary } from "@/lib/i18n/get-locale";
 
 export default async function ForgotPasswordPage() {
   const dict = await getDictionary();
   return (
-    <main className="flex flex-1 flex-col items-center bg-grid px-4 py-12 sm:py-20">
-      <div className="w-full max-w-md">
-        <Link href="/" className="flex items-center justify-center gap-2 text-sm font-semibold">
-          <LogoMark size={28} />
-          Kelsira
+    <AuthShell
+      title={dict.auth.forgotPassword.title}
+      subtitle={dict.auth.forgotPassword.subtitle}
+      footer={
+        <Link href="/login" className="text-cobalt hover:underline">
+          {dict.auth.forgotPassword.backToLogin}
         </Link>
-
-        <div className="mt-8 rounded-2xl border border-border bg-surface/70 p-6 backdrop-blur sm:p-8">
-          <h1 className="text-xl font-semibold tracking-tight">{dict.auth.forgotPassword.title}</h1>
-          <p className="mt-1 text-sm text-muted">{dict.auth.forgotPassword.subtitle}</p>
-
-          <div className="mt-6">
-            <ForgotPasswordForm dict={dict.auth} />
-          </div>
-
-          <p className="mt-6 text-center text-sm text-muted">
-            <Link href="/login" className="text-cobalt hover:underline">
-              {dict.auth.forgotPassword.backToLogin}
-            </Link>
-          </p>
-        </div>
-      </div>
-    </main>
+      }
+    >
+      <ForgotPasswordForm dict={dict.auth} />
+    </AuthShell>
   );
 }

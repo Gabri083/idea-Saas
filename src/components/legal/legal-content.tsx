@@ -12,7 +12,7 @@ export function LegalTitle({
 }) {
   return (
     <div className="mb-10">
-      <h1 className="text-3xl font-semibold tracking-tight">{children}</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight">{children}</h1>
       <p className="mt-2 text-sm text-muted">
         {updatedLabel} {updated}
       </p>

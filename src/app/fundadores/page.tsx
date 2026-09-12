@@ -16,17 +16,17 @@ export default async function FundadoresPage() {
   const isFew = !status.soldOut && status.remaining <= 10;
 
   return (
-    <>
+    <div className="site-light flex min-h-full flex-col bg-background text-foreground">
       <Navbar dict={dict.nav} locale={locale} />
-      <main className="flex-1 bg-grid">
+      <main className="flex-1">
         <section className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-24">
           <span className="inline-flex items-center rounded-full border border-cobalt/30 bg-cobalt/10 px-3 py-1 text-xs font-medium text-cobalt">
             {t.badge}
           </span>
-          <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">{t.title}</h1>
+          <h1 className="mt-5 text-4xl font-extrabold tracking-tight sm:text-5xl">{t.title}</h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-muted">{t.subtitle}</p>
 
-          <div className="mx-auto mt-10 grid max-w-md grid-cols-3 divide-x divide-border overflow-hidden rounded-2xl border border-border bg-surface/70 backdrop-blur">
+          <div className="mx-auto mt-10 grid max-w-md grid-cols-3 divide-x divide-border overflow-hidden rounded-2xl border border-border bg-surface">
             <div className="px-3 py-5">
               <p className="text-2xl font-semibold tracking-tight text-cobalt">30%</p>
               <p className="mt-1 text-[11px] uppercase tracking-wide text-muted">{t.statDiscount}</p>
@@ -54,6 +54,6 @@ export default async function FundadoresPage() {
         </section>
       </main>
       <Footer dict={dict.footer} />
-    </>
+    </div>
   );
 }
