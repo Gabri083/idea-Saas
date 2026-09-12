@@ -3,6 +3,7 @@ title: "One Unfair Review Shouldn't Define Your Store"
 excerpt: "Why star ratings alone are a bad measure of how a business actually performs — and what a fairer alternative looks like."
 date: "2026-08-26"
 locale: "en"
+coverImage: "/blog/one-unfair-review-shouldnt-define-your-store.png"
 ---
 
 If you've run an online store for more than a few months, you already know the feeling: a customer has a bad day, misreads a shipping estimate, or is annoyed about something minor — and drops a 1-star review that has almost nothing to do with how you actually run your business.
