@@ -41,7 +41,7 @@ export default async function Home() {
     ],
   };
   return (
-    <div className="landing flex min-h-full flex-col bg-background text-foreground">
+    <div className="site-light flex min-h-full flex-col bg-background text-foreground">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar dict={dict.nav} locale={locale} />
       <main className="flex-1">

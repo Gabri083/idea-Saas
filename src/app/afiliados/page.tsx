@@ -21,14 +21,14 @@ export default async function AfiliadosPage() {
   const t = dict.affiliates;
 
   return (
-    <>
+    <div className="site-light flex min-h-full flex-col bg-background text-foreground">
       <Navbar dict={dict.nav} locale={locale} />
-      <main className="flex-1 bg-grid">
+      <main className="flex-1">
         <section className="mx-auto max-w-4xl px-6 py-20 text-center">
           <span className="inline-flex items-center rounded-full border border-cobalt/30 bg-cobalt/10 px-3 py-1 text-xs font-medium text-cobalt">
             {t.badge}
           </span>
-          <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">{t.heroTitle}</h1>
+          <h1 className="mt-5 text-4xl font-extrabold tracking-tight sm:text-5xl">{t.heroTitle}</h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted">{t.heroSubtitle}</p>
           <a
             href={AFFILIATE_SIGNUP_URL}
@@ -73,6 +73,6 @@ export default async function AfiliadosPage() {
         </section>
       </main>
       <Footer dict={dict.footer} />
-    </>
+    </div>
   );
 }

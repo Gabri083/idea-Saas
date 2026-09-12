@@ -7,14 +7,14 @@ export default async function LegalLayout({ children }: { children: React.ReactN
   const dict = await getDictionary();
   const links = dict.footer.columns.legal.links;
   return (
-    <>
-      <header className="border-b border-border/60 bg-background/80 backdrop-blur-md">
+    <div className="site-light flex min-h-full flex-col bg-background text-foreground">
+      <header className="border-b border-border bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <LogoMark size={32} />
+          <Link href="/" className="flex items-center gap-2 font-extrabold tracking-tight">
+            <LogoMark size={30} />
             Kelsira
           </Link>
-          <nav className="hidden gap-6 text-sm text-muted sm:flex">
+          <nav className="hidden gap-6 text-sm font-medium text-muted sm:flex">
             {links.map((l) => (
               <Link key={l.href} href={l.href} className="transition-colors hover:text-foreground">
                 {l.label}
@@ -23,10 +23,10 @@ export default async function LegalLayout({ children }: { children: React.ReactN
           </nav>
         </div>
       </header>
-      <main className="flex-1 bg-grid">
+      <main className="flex-1">
         <div className="mx-auto max-w-3xl px-6 py-16">{children}</div>
       </main>
       <Footer dict={dict.footer} />
-    </>
+    </div>
   );
 }

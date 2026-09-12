@@ -19,11 +19,11 @@ export default async function BlogIndexPage() {
   const posts = getAllBlogPosts();
 
   return (
-    <>
+    <div className="site-light flex min-h-full flex-col bg-background text-foreground">
       <Navbar dict={dict.nav} locale={locale} />
-      <main className="flex-1 bg-grid">
+      <main className="flex-1">
         <section className="mx-auto max-w-3xl px-6 py-16 text-center sm:py-24">
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{t.pageTitle}</h1>
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">{t.pageTitle}</h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-muted">{t.pageSubtitle}</p>
         </section>
 
@@ -58,6 +58,6 @@ export default async function BlogIndexPage() {
         </section>
       </main>
       <Footer dict={dict.footer} />
-    </>
+    </div>
   );
 }

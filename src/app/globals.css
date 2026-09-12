@@ -16,14 +16,15 @@
   --rose: #fb7185;
 }
 
-/* The marketing homepage is a deliberately light page inside an otherwise
-   dark-only app (the dashboard keeps its forced-dark theme). Re-pointing the
-   same semantic tokens Card/Button/Badge/etc. already use — rather than
-   introducing parallel "light" variants — means every shared component
-   just works correctly inside `.landing`, with nothing outside it affected.
-   --cobalt/--emerald/--amber/--rose are genuine brand colors, not a
-   light/dark pair, so they carry over unchanged. */
-.landing {
+/* The public marketing site (homepage, auth, blog, legal, affiliates...) is
+   deliberately light, inside an otherwise dark-only app (the dashboard
+   keeps its forced-dark theme). Re-pointing the same semantic tokens
+   Card/Button/Badge/etc. already use — rather than introducing parallel
+   "light" variants — means every shared component just works correctly
+   inside `.site-light`, with nothing outside it affected. --cobalt/
+   --emerald/--amber/--rose are genuine brand colors, not a light/dark
+   pair, so they carry over unchanged. */
+.site-light {
   color-scheme: light;
   --background: #ffffff;
   --surface: #f5f6f8;

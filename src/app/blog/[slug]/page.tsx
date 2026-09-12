@@ -63,10 +63,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   };
 
   return (
-    <>
+    <div className="site-light flex min-h-full flex-col bg-background text-foreground">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Navbar dict={dict.nav} locale={locale} />
-      <main className="flex-1 bg-grid">
+      <main className="flex-1">
         <article className="mx-auto max-w-2xl px-6 py-16 sm:py-24">
           <Link
             href="/blog"
@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </Link>
 
           <p className="mt-6 text-xs text-muted">{formatDate(post.date, post.locale)}</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{post.title}</h1>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{post.title}</h1>
 
           {post.coverImage && (
             <Image
@@ -94,6 +94,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </article>
       </main>
       <Footer dict={dict.footer} />
-    </>
+    </div>
   );
 }
