@@ -297,3 +297,64 @@ export function reviewCapReachedEmail(params: {
     ),
   };
 }
+
+function insightList(locale: Locale, items: string[], emptyLabel: string): string {
+  if (items.length === 0) return `<p style="color:#8a8f98;">${emptyLabel}</p>`;
+  return `<ul style="margin:0;padding-left:18px;">${items
+    .map((item) => `<li style="margin-bottom:6px;">${escapeHtml(item)}</li>`)
+    .join("")}</ul>`;
+}
+
+/** Sent to the business owner — locale follows the business's saved preference (Settings).
+ * Enterprise-only monthly AI report: the numbers are computed in code, the three lists
+ * (wins/issues/recommendations) come from generateMonthlyReportInsights, never invented here. */
+export function monthlyReportEmail(params: {
+  locale: Locale;
+  businessName: string;
+  period: string;
+  reviewCount: number;
+  avgAiRating: number;
+  insights: { wins: string[]; issues: string[]; recommendations: string[] };
+}): { subject: string; html: string } {
+  const business = escapeHtml(params.businessName);
+  const period = escapeHtml(params.period);
+
+  if (params.locale === "en") {
+    return {
+      subject: `Your Kelsira monthly report — ${params.period}`,
+      html: shell(
+        "en",
+        `Monthly report — ${period}`,
+        `<p>Hi ${business} team,</p>
+         <p>${params.reviewCount} review${params.reviewCount === 1 ? "" : "s"} this period, average AI
+         score <strong>${params.avgAiRating.toFixed(1)}/5</strong>.</p>
+         <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">What's going well</h2>
+         ${insightList("en", params.insights.wins, "Nothing stood out this period.")}
+         <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">What needs attention</h2>
+         ${insightList("en", params.insights.issues, "No open issues this period.")}
+         <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">Recommendations</h2>
+         ${insightList("en", params.insights.recommendations, "Nothing specific to recommend this period.")}
+         <p style="color:#8a8f98;font-size:12px;margin-top:20px;">This report is written by AI from your
+         actual review data — see the full detail in your dashboard, under AI Consultant.</p>`,
+      ),
+    };
+  }
+  return {
+    subject: `Tu reporte mensual de Kelsira — ${params.period}`,
+    html: shell(
+      "es",
+      `Reporte mensual — ${period}`,
+      `<p>Hola equipo de <strong>${business}</strong>,</p>
+       <p>${params.reviewCount} reseña${params.reviewCount === 1 ? "" : "s"} este período, puntaje IA
+       promedio <strong>${params.avgAiRating.toFixed(1)}/5</strong>.</p>
+       <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">Lo que va bien</h2>
+       ${insightList("es", params.insights.wins, "Nada destacable este período.")}
+       <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">Lo que necesita atención</h2>
+       ${insightList("es", params.insights.issues, "Sin problemas abiertos este período.")}
+       <h2 style="font-size:14px;margin:20px 0 8px;color:#111318;">Recomendaciones</h2>
+       ${insightList("es", params.insights.recommendations, "Nada puntual que recomendar este período.")}
+       <p style="color:#8a8f98;font-size:12px;margin-top:20px;">Este reporte lo escribe la IA a partir
+       de tus datos reales de reseñas — puedes ver el detalle completo en tu panel, sección Consultor IA.</p>`,
+    ),
+  };
+}
