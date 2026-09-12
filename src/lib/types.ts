@@ -6,7 +6,7 @@ export type Plan = "free" | "starter" | "growth" | "enterprise";
 export const PLAN_REVIEW_CAP: Record<Plan, number | null> = {
   free: 20,
   starter: 200,
-  growth: null,
+  growth: 1000,
   enterprise: null,
 };
 
