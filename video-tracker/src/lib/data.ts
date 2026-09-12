@@ -16,6 +16,20 @@ export async function fetchEditors(supabase: SupabaseClient): Promise<Editor[]> 
   return data ?? [];
 }
 
+export async function fetchEditorByToken(
+  supabase: SupabaseClient,
+  token: string
+): Promise<Editor | null> {
+  const { data, error } = await supabase
+    .from("editors")
+    .select("*")
+    .eq("access_token", token)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 export type VideoFilters = {
   editorId?: string;
   status?: VideoStatus;

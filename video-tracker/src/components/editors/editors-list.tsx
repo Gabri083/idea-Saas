@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditorFormModal } from "@/components/editors/editor-form-modal";
+import { PortalLink } from "@/components/editors/portal-link";
 import { formatCurrency } from "@/lib/utils";
 import type { Editor } from "@/lib/types";
 
@@ -71,6 +72,9 @@ export function EditorsList({
                       {!editor.active && (
                         <Badge className="bg-slate-100 text-slate-500">Inactivo</Badge>
                       )}
+                    </div>
+                    <div className="mt-1.5">
+                      <PortalLink editorId={editor.id} accessToken={editor.access_token} />
                     </div>
                   </td>
                   <td className="px-4 py-3 text-slate-600">

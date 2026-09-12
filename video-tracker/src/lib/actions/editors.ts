@@ -50,6 +50,23 @@ export async function updateEditor(id: string, formData: FormData) {
   revalidatePath("/dashboard/videos");
 }
 
+export async function regenerateEditorToken(id: string) {
+  const supabase = await createClient();
+  const newToken = crypto.randomUUID();
+
+  const { error } = await supabase
+    .from("editors")
+    .update({ access_token: newToken })
+    .eq("id", id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/editors");
+  revalidatePath(`/dashboard/editors/${id}`);
+
+  return newToken;
+}
+
 export async function registerPayment(
   editorId: string,
   videoIds: string[],

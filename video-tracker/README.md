@@ -23,6 +23,13 @@ ni base de datos con Kelsira) — vive en `video-tracker/` con su propio
   se le debe y cuánto se le ha pagado.
 - **Detalle de editor** (`/dashboard/editors/[id]`) — todos los reels de
   ese editor y registro de pagos.
+- **Portal del editor** (`/e/[access_token]`) — un link único y privado
+  por editor (sin necesidad de crear cuenta) donde el editor ve solo sus
+  reels y puede marcarlos como **Sin empezar / En proceso / Terminado**,
+  pegando el link del video al terminar. Cópialo o regenéralo desde la
+  lista de editores o el detalle de cada uno ("Copiar link del editor").
+  Al marcar "Terminado" el reel pasa a "En revisión" para que lo apruebes
+  desde el dashboard; una vez aprobado el editor ya no puede modificarlo.
 
 Cada vez que marcas reels como pagados se crea un registro en la tabla
 `payments`, así queda un historial de qué se pagó y cuándo.
@@ -49,7 +56,9 @@ Abre [http://localhost:3000](http://localhost:3000).
 
 3. Corre `supabase/schema.sql` en el SQL Editor del proyecto (crea las
    tablas `editors`, `videos`, `payments` y las políticas de RLS). Si
-   quieres datos de ejemplo, corre después `supabase/seed.sql`.
+   quieres datos de ejemplo, corre después `supabase/seed.sql`. Si ya
+   habías corrido `schema.sql` antes, aplica también
+   `supabase/migrations/0001_editor_access_token.sql`.
 4. Crea a los usuarios que van a entrar al panel desde
    **Authentication → Users → Add user** en el dashboard de Supabase
    (este proyecto no tiene registro público; es una herramienta interna).
@@ -61,15 +70,17 @@ src/
   app/
     login/                página de acceso
     dashboard/             resumen, reels, editores (protegidos por middleware)
+    e/[token]/              portal público del editor (autenticado por token)
   components/
     dashboard/              sidebar, tarjetas de resumen
     videos/                 tabla de reels, filtros, modal de reel, modal de pago
-    editors/                lista de editores, modal de editor
+    editors/                lista de editores, modal de editor, link del portal
+    editor-portal/          tarjeta de reel del portal del editor
     ui/                     botón, input, badge, tarjeta (primitivas)
   lib/
-    actions/                server actions: videos.ts, editors.ts, auth.ts
+    actions/                server actions: videos.ts, editors.ts, auth.ts, editor-portal.ts
     data.ts                 consultas a Supabase + cálculo de totales
-    supabase/               clientes browser / server / middleware
+    supabase/               clientes browser / server / middleware / admin (service role)
 supabase/
   schema.sql                tablas + RLS
   seed.sql                  datos de ejemplo

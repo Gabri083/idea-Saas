@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { editorTotals, fetchEditors, fetchVideos } from "@/lib/data";
 import { SummaryCard } from "@/components/dashboard/summary-card";
 import { VideosTable } from "@/components/videos/videos-table";
+import { PortalLink } from "@/components/editors/portal-link";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function EditorDetailPage({
@@ -37,6 +38,13 @@ export default async function EditorDetailPage({
               {editor.email || "Sin email"} · {editor.phone || "Sin teléfono"} · Tarifa{" "}
               {formatCurrency(editor.rate_per_video)} · {editor.payment_method || "Sin método de pago"}
             </p>
+            <div className="mt-2">
+              <PortalLink
+                editorId={editor.id}
+                accessToken={editor.access_token}
+                showRegenerate
+              />
+            </div>
           </div>
         </div>
       </div>

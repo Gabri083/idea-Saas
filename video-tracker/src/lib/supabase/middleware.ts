@@ -2,6 +2,12 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  // The editor self-service portal authenticates via its own secret token
+  // (see src/lib/actions/editor-portal.ts), not a Supabase Auth session.
+  if (request.nextUrl.pathname.startsWith("/e/")) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

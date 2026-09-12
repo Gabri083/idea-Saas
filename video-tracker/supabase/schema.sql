@@ -35,6 +35,9 @@ create table if not exists editors (
   payment_method text,
   active boolean not null default true,
   notes text,
+  -- Secret used in the editor's self-service link (/e/[access_token]) so
+  -- they can update their own reels without a Supabase Auth account.
+  access_token uuid not null unique default gen_random_uuid(),
   created_at timestamptz not null default now()
 );
 

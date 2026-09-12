@@ -30,6 +30,7 @@ export type Editor = {
   payment_method: string | null;
   active: boolean;
   notes: string | null;
+  access_token: string;
   created_at: string;
 };
 
