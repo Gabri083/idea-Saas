@@ -970,6 +970,8 @@ const es = {
     statCap: "cupos totales",
     spotsRemaining: "Quedan {n} de {cap} cupos",
     spotsFew: "¡Quedan pocos cupos!",
+    bannerText: "Los primeros 40 negocios se llevan 30% de descuento por 6 meses.",
+    bannerCta: "Reclama tu cupo →",
     soldOutTitle: "Los 40 cupos de fundador ya se llenaron",
     soldOutBody:
       "Pero puedes dejarnos tu correo — te avisamos apenas abramos más cupos o lancemos la próxima oferta.",
@@ -2103,6 +2105,8 @@ const en: typeof es = {
     statCap: "total spots",
     spotsRemaining: "{n} of {cap} spots left",
     spotsFew: "Only a few spots left!",
+    bannerText: "The first 40 businesses get 30% off for 6 months.",
+    bannerCta: "Claim your spot →",
     soldOutTitle: "All 40 founding spots are taken",
     soldOutBody: "But leave us your email — we'll let you know as soon as we open more spots or launch the next offer.",
     formBusinessName: "Your business name",
