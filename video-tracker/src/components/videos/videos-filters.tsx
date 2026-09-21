@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Input, Select } from "@/components/ui/input";
-import { PAYMENT_STATUSES, VIDEO_STATUSES, type Editor } from "@/lib/types";
+import { PAYMENT_STATUSES, PLATFORM_OPTIONS, VIDEO_STATUSES, type Editor } from "@/lib/types";
 
 export function VideosFilters({ editors }: { editors: Editor[] }) {
   const router = useRouter();
@@ -56,6 +56,21 @@ export function VideosFilters({ editors }: { editors: Editor[] }) {
           {PAYMENT_STATUSES.map((s) => (
             <option key={s.value} value={s.value}>
               {s.label}
+            </option>
+          ))}
+        </Select>
+      </div>
+
+      <div className="w-44">
+        <Select
+          value={searchParams.get("platform") ?? ""}
+          onChange={(e) => updateParam("platform", e.target.value)}
+        >
+          <option value="">Todos los tipos</option>
+          <option value="sin_definir">Sin definir</option>
+          {PLATFORM_OPTIONS.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
             </option>
           ))}
         </Select>

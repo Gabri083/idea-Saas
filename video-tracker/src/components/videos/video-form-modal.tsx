@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { createVideo, updateVideo } from "@/lib/actions/videos";
-import type { Editor, VideoWithEditor } from "@/lib/types";
+import { PLATFORM_OPTIONS, type Editor, type VideoWithEditor } from "@/lib/types";
 
 export function VideoFormModal({
   editors,
@@ -70,13 +70,15 @@ export function VideoFormModal({
               />
             </div>
             <div>
-              <Label htmlFor="platform">Plataforma</Label>
-              <Input
-                id="platform"
-                name="platform"
-                defaultValue={video?.platform ?? ""}
-                placeholder="instagram, tiktok..."
-              />
+              <Label htmlFor="platform">Tipo</Label>
+              <Select id="platform" name="platform" defaultValue={video?.platform ?? ""}>
+                <option value="">Sin definir</option>
+                {PLATFORM_OPTIONS.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
+                ))}
+              </Select>
             </div>
           </div>
 

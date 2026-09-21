@@ -3,13 +3,15 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/input";
 import { StatusBadge, PaymentBadge } from "@/components/videos/status-badges";
 import { VideoFormModal } from "@/components/videos/video-form-modal";
 import { BulkPayModal } from "@/components/videos/bulk-pay-modal";
+import { QuickAddModal } from "@/components/videos/quick-add-modal";
 import { deleteVideo, updateVideoPaymentStatus, updateVideoStatus } from "@/lib/actions/videos";
 import { effectivePrice } from "@/lib/data";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, PLATFORM_LABELS } from "@/lib/utils";
 import { PAYMENT_STATUSES, VIDEO_STATUSES } from "@/lib/types";
 import type { Editor, PaymentStatus, VideoStatus, VideoWithEditor } from "@/lib/types";
 
@@ -25,6 +27,7 @@ export function VideosTable({
     { mode: "create" } | { mode: "edit"; video: VideoWithEditor } | null
   >(null);
   const [showBulkPay, setShowBulkPay] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [, startTransition] = useTransition();
 
   const allSelected = videos.length > 0 && selected.size === videos.length;
@@ -75,6 +78,9 @@ export function VideosTable({
               Marcar como pagado ({selected.size})
             </Button>
           )}
+          <Button variant="secondary" onClick={() => setShowQuickAdd(true)}>
+            Agregar por link
+          </Button>
           <Button onClick={() => setFormState({ mode: "create" })}>
             Nuevo reel
           </Button>
@@ -115,9 +121,18 @@ export function VideosTable({
                   />
                 </td>
                 <td className="px-4 py-3">
-                  <p className="font-medium text-slate-900">{video.reference}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-medium text-slate-900">{video.reference}</p>
+                    {video.platform ? (
+                      <Badge className="bg-slate-100 text-slate-600">
+                        {PLATFORM_LABELS[video.platform] ?? video.platform}
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-amber-100 text-amber-700">Sin definir</Badge>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-500">
-                    {video.client_name ?? "—"}
+                    {video.client_name ?? "Sin cliente"}
                     {video.video_url && (
                       <>
                         {" · "}
@@ -220,6 +235,10 @@ export function VideosTable({
             setSelected(new Set());
           }}
         />
+      )}
+
+      {showQuickAdd && (
+        <QuickAddModal editors={editors} onClose={() => setShowQuickAdd(false)} />
       )}
     </div>
   );

@@ -35,6 +35,43 @@ export async function createVideo(formData: FormData) {
   revalidateVideoPaths();
 }
 
+export async function createVideosFromLinks(formData: FormData): Promise<number> {
+  const raw = String(formData.get("links") ?? "");
+  const editorId = String(formData.get("editor_id") ?? "") || null;
+
+  const links = Array.from(
+    new Set(
+      raw
+        .split(/[\n,]/)
+        .map((link) => link.trim())
+        .filter((link) => /^https?:\/\//i.test(link))
+    )
+  );
+
+  if (links.length === 0) return 0;
+
+  const supabase = await createClient();
+
+  const { count, error: countError } = await supabase
+    .from("videos")
+    .select("id", { count: "exact", head: true });
+
+  if (countError) throw new Error(countError.message);
+
+  const start = (count ?? 0) + 1;
+  const rows = links.map((video_url, i) => ({
+    reference: `Video #${String(start + i).padStart(3, "0")}`,
+    video_url,
+    editor_id: editorId,
+  }));
+
+  const { error } = await supabase.from("videos").insert(rows);
+  if (error) throw new Error(error.message);
+
+  revalidateVideoPaths();
+  return links.length;
+}
+
 export async function updateVideo(id: string, formData: FormData) {
   const supabase = await createClient();
 

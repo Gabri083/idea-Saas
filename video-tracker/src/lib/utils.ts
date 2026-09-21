@@ -50,6 +50,12 @@ export const PAYMENT_BADGE_CLASSES: Record<PaymentStatus, string> = {
   pagado: "bg-emerald-100 text-emerald-700",
 };
 
+export const PLATFORM_LABELS: Record<string, string> = {
+  reel: "Reel",
+  youtube: "YouTube",
+  otro: "Otro",
+};
+
 export function currentMonthRange(monthValue?: string) {
   const now = monthValue ? new Date(`${monthValue}-01T00:00:00`) : new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), 1);

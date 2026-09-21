@@ -21,6 +21,14 @@ export const PAYMENT_STATUSES: { value: PaymentStatus; label: string }[] = [
   { value: "pagado", label: "Pagado" },
 ];
 
+export type Platform = "reel" | "youtube" | "otro";
+
+export const PLATFORM_OPTIONS: { value: Platform; label: string }[] = [
+  { value: "reel", label: "Reel (Instagram/TikTok)" },
+  { value: "youtube", label: "Video de YouTube" },
+  { value: "otro", label: "Otro" },
+];
+
 export type Editor = {
   id: string;
   name: string;

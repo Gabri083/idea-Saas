@@ -8,6 +8,7 @@ type SearchParams = {
   editorId?: string;
   status?: string;
   paymentStatus?: string;
+  platform?: string;
   month?: string;
   search?: string;
 };
@@ -26,6 +27,7 @@ export default async function VideosPage({
       editorId: params.editorId || undefined,
       status: (params.status as VideoStatus) || undefined,
       paymentStatus: (params.paymentStatus as PaymentStatus) || undefined,
+      platform: params.platform || undefined,
       month: params.month || undefined,
       search: params.search || undefined,
     }),

@@ -34,6 +34,7 @@ export type VideoFilters = {
   editorId?: string;
   status?: VideoStatus;
   paymentStatus?: PaymentStatus;
+  platform?: string;
   month?: string;
   search?: string;
 };
@@ -50,6 +51,8 @@ export async function fetchVideos(
   if (filters.editorId) query = query.eq("editor_id", filters.editorId);
   if (filters.status) query = query.eq("status", filters.status);
   if (filters.paymentStatus) query = query.eq("payment_status", filters.paymentStatus);
+  if (filters.platform === "sin_definir") query = query.is("platform", null);
+  else if (filters.platform) query = query.eq("platform", filters.platform);
   if (filters.month) {
     const { start, end } = currentMonthRange(filters.month);
     query = query.gte("created_at", start).lt("created_at", end);
