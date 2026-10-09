@@ -63,6 +63,12 @@ export default async function DashboardOverviewPage() {
   const openAlerts = recurringIssues.filter(
     (i) => i.status === "open" && isPastDeadline(i.resolution_deadline),
   );
+  // Only the top few, by how often each one's been reported — with a
+  // business that has dozens of open issues, dumping every single label
+  // into one line turns the banner into an unreadable wall of text.
+  const MAX_ALERT_LABELS = 4;
+  const topAlerts = [...openAlerts].sort((a, b) => b.occurrences - a.occurrences).slice(0, MAX_ALERT_LABELS);
+  const remainingAlertsCount = openAlerts.length - topAlerts.length;
 
   return (
     <div className="flex flex-col gap-8">
@@ -163,7 +169,8 @@ export default async function DashboardOverviewPage() {
             <div className="flex-1">
               <p className="text-sm font-medium">{t.alertBanner(openAlerts.length)}</p>
               <p className="mt-1 text-sm text-muted">
-                {openAlerts.map((i) => i.issue_label).join(" · ")}
+                {topAlerts.map((i) => i.issue_label).join(" · ")}
+                {remainingAlertsCount > 0 && ` ${t.alertsMore(remainingAlertsCount)}`}
               </p>
             </div>
             <Link

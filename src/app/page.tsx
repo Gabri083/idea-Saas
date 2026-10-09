@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/navbar";
+import { FoundersBanner } from "@/components/landing/founders-banner";
 import { Hero } from "@/components/landing/hero";
 import { Trust } from "@/components/landing/trust";
 import { Features } from "@/components/landing/features";
@@ -43,6 +44,7 @@ export default async function Home() {
   return (
     <div className="site-light flex min-h-full flex-col bg-background text-foreground">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <FoundersBanner dict={dict.founders} />
       <Navbar dict={dict.nav} locale={locale} />
       <main className="flex-1">
         <Hero dict={dict.hero} />
