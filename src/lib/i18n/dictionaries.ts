@@ -321,6 +321,7 @@ const es = {
       alertsHint: "Problemas recurrentes fuera de plazo",
       alertBanner: (n: number) =>
         `${n} problema${n > 1 ? "s" : ""} operativo${n > 1 ? "s" : ""} sin resolver está${n > 1 ? "n" : ""} penalizando tus nuevas reseñas`,
+      alertsMore: (n: number) => `+${n} más`,
       viewConsultant: "Ver consultor IA",
       recentReviews: "Reseñas recientes",
       viewAll: "Ver todas",
@@ -1471,6 +1472,7 @@ const en: typeof es = {
       alertsHint: "Recurring issues past their deadline",
       alertBanner: (n: number) =>
         `${n} unresolved operational issue${n > 1 ? "s" : ""} ${n > 1 ? "are" : "is"} penalizing your new reviews`,
+      alertsMore: (n: number) => `+${n} more`,
       viewConsultant: "View AI consultant",
       recentReviews: "Recent reviews",
       viewAll: "View all",
